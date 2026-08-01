@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Card } from "@/components/ui/Card";
 import { relativeTime } from "@/lib/format";
 import { ACTIVITY_META, type ActivityEvent } from "@/lib/data/activity";
@@ -15,53 +17,47 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
       {events.map((event) => {
         const meta = ACTIVITY_META[event.kind];
         const Icon = meta.icon;
+        const href =
+          event.kind === "announcement"
+            ? `/courses/${event.courseId}/announcements`
+            : `/courses/${event.courseId}`;
 
         return (
           <li key={event.id}>
-            <Card className="flex gap-4 px-5 py-4">
-              <span
-                className={cn(
-                  "grid size-9 shrink-0 place-items-center rounded-full border bg-ink",
-                  TONE_CLASSES[meta.tone],
-                )}
-              >
-                <Icon size={17} strokeWidth={1.75} aria-hidden="true" />
-                <span className="sr-only">{meta.label}</span>
-              </span>
+            <Card className="transition-colors hover:border-accent-deep">
+              <Link href={href} className="flex gap-4 px-5 py-4">
+                <span
+                  className={cn(
+                    "grid size-9 shrink-0 place-items-center rounded-full border bg-ink",
+                    TONE_CLASSES[meta.tone],
+                  )}
+                >
+                  <Icon size={17} strokeWidth={1.75} aria-hidden="true" />
+                  <span className="sr-only">{meta.label}</span>
+                </span>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-medium leading-snug text-paper">
-                    {event.title}
-                  </p>
-                  <time
-                    dateTime={event.at.toISOString()}
-                    className="shrink-0 text-[11px] text-disabled"
-                  >
-                    {relativeTime(event.at)}
-                  </time>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-medium leading-snug text-paper">
+                      {event.title}
+                    </p>
+                    <time
+                      dateTime={event.at.toISOString()}
+                      className="shrink-0 text-[11px] text-disabled"
+                    >
+                      {relativeTime(event.at)}
+                    </time>
+                  </div>
+
+                  <p className="mt-1 text-xs text-accent">{event.course}</p>
+
+                  {event.detail && (
+                    <p className="mt-2 line-clamp-2 whitespace-pre-line text-[13px] leading-relaxed text-muted">
+                      {event.detail}
+                    </p>
+                  )}
                 </div>
-
-                <p className="mt-1 text-xs text-accent">{event.course}</p>
-
-                {event.detail && (
-                  <p className="mt-2 text-[13px] leading-relaxed text-muted">
-                    {event.detail}
-                  </p>
-                )}
-
-                {event.score && (
-                  <p className="mt-2.5 inline-flex items-baseline gap-1.5 rounded-[8px] border border-line bg-ink px-2.5 py-1">
-                    <span className="numeric text-sm font-medium text-paper">
-                      {event.score.value}
-                    </span>
-                    <span className="text-[11px] text-disabled">من</span>
-                    <span className="numeric text-[11px] text-muted">
-                      {event.score.outOf}
-                    </span>
-                  </p>
-                )}
-              </div>
+              </Link>
             </Card>
           </li>
         );

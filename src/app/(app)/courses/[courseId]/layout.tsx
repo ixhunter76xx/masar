@@ -23,7 +23,7 @@ export default async function CourseLayout({
 }: Params & { children: React.ReactNode }) {
   const { courseId } = await params;
   const { course, user } = await requireCourseAccess(courseId);
-  const counts = await getCourseTabCounts(course.id, user.id);
+  const counts = await getCourseTabCounts(course.id, user.id, user.role);
 
   return (
     <AppPage title={course.title} hidePageHeader>

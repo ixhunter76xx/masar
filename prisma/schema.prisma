@@ -46,6 +46,12 @@ model User {
   /// المواد التي رفعها
   uploadedMaterials CourseMaterial[] @relation("MaterialUploader")
 
+  /// الإعلانات التي نشرها
+  authoredAnnouncements Announcement[] @relation("AnnouncementAuthor")
+
+  /// الإعلانات التي قرأها
+  announcementReads AnnouncementRead[]
+
   @@index([role])
   @@map("users")
 }
@@ -91,8 +97,9 @@ model Course {
   instructorId String
   instructor   User   @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: Restrict)
 
-  enrollments Enrollment[]
-  materials   CourseMaterial[]
+  enrollments   Enrollment[]
+  materials     CourseMaterial[]
+  announcements Announcement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -176,4 +183,50 @@ model CourseMaterial {
   @@index([courseId, position])
   @@index([courseId, status])
   @@map("course_materials")
+}
+
+/// إعلان على مستوى المقرر
+model Announcement {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title String
+  body  String
+
+  authorId String
+  author   User   @relation("AnnouncementAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  /// null يعني مسودة لا يراها الطلاب
+  publishedAt DateTime?
+
+  /// يُثبّت الإعلان أعلى القائمة
+  isPinned Boolean @default(false)
+
+  reads AnnouncementRead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, publishedAt])
+  @@map("announcements")
+}
+
+/// سجل قراءة إعلان — أساس عدّاد "غير المقروء"
+model AnnouncementRead {
+  id String @id @default(cuid())
+
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  /// قراءة واحدة لكل مستخدم لكل إعلان
+  @@unique([announcementId, userId])
+  @@index([userId])
+  @@map("announcement_reads")
 }

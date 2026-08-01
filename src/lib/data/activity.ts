@@ -1,28 +1,25 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  ClipboardCheck,
-  Megaphone,
-  FileUp,
-  CalendarClock,
-  MessageSquare,
-} from "lucide-react";
+import "server-only";
 
-/** أنواع أحداث سجل النشاط */
-export type ActivityKind =
-  | "grade" // درجة مُنشورة
-  | "announcement" // إعلان جديد
-  | "material" // مادة تعليمية مرفوعة
-  | "due" // موعد تسليم يقترب
-  | "message"; // رسالة جديدة
+import type { LucideIcon } from "lucide-react";
+import { Megaphone, FileVideo } from "lucide-react";
+
+import { db } from "@/server/db";
+import {
+  Role,
+  EnrollmentStatus,
+  MaterialStatus,
+} from "@/generated/prisma/enums";
+
+/** أنواع أحداث سجل النشاط المتاحة حاليًا */
+export type ActivityKind = "announcement" | "material";
 
 export type ActivityEvent = {
   id: string;
   kind: ActivityKind;
   title: string;
+  courseId: string;
   course: string;
   detail?: string;
-  /** درجة اختيارية تُعرض بخط Mono */
-  score?: { value: number; outOf: number };
   at: Date;
 };
 
@@ -30,74 +27,93 @@ export const ACTIVITY_META: Record<
   ActivityKind,
   { label: string; icon: LucideIcon; tone: "neutral" | "warning" | "success" }
 > = {
-  grade: { label: "درجة", icon: ClipboardCheck, tone: "success" },
   announcement: { label: "إعلان", icon: Megaphone, tone: "neutral" },
-  material: { label: "مادة", icon: FileUp, tone: "neutral" },
-  due: { label: "موعد", icon: CalendarClock, tone: "warning" },
-  message: { label: "رسالة", icon: MessageSquare, tone: "neutral" },
+  material: { label: "محاضرة", icon: FileVideo, tone: "success" },
 };
 
+const FEED_LIMIT = 20;
+
+/** نطاق المقررات المرئية للمستخدم حسب دوره */
+function courseScope(userId: string, role: Role) {
+  if (role === Role.INSTRUCTOR) return { instructorId: userId };
+  if (role === Role.STUDENT) {
+    return {
+      enrollments: {
+        some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
+      },
+    };
+  }
+  return {};
+}
+
 /**
- * أحداث سجل النشاط.
+ * سجل النشاط: الإعلانات المنشورة والمحاضرات الجاهزة عبر مقررات المستخدم،
+ * مدمجة ومرتّبة زمنيًا.
  *
- * ⚠️ بيانات تجريبية — لا توجد جداول للمقررات والدرجات والإعلانات بعد.
- * عند إضافتها استبدل جسم الدالة باستعلام حقيقي مع إبقاء نفس التوقيع
- * ونوع `ActivityEvent`؛ صفحة العرض لن تحتاج أي تعديل.
+ * سيتوسّع تلقائيًا عند إضافة الدرجات والواجبات — يكفي دمج مصدر جديد هنا.
  */
 export async function getActivityFeed(
-  _userId: string,
+  userId: string,
+  role: Role,
 ): Promise<ActivityEvent[]> {
-  const now = Date.now();
-  const hoursAgo = (h: number) => new Date(now - h * 3_600_000);
+  const scope = courseScope(userId, role);
+  const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  return [
-    {
-      id: "1",
-      kind: "grade",
-      title: "نُشرت درجة الاختبار القصير الثاني",
-      course: "التفاضل والتكامل",
-      score: { value: 18, outOf: 20 },
-      at: hoursAgo(2),
-    },
-    {
-      id: "2",
-      kind: "due",
-      title: "الواجب الرابع — تسليم خلال يومين",
-      course: "مقدمة في البرمجة",
-      detail: "الأحد ١١:٥٩ مساءً",
-      at: hoursAgo(5),
-    },
-    {
-      id: "3",
-      kind: "announcement",
-      title: "تأجيل محاضرة الأربعاء إلى الخميس",
-      course: "التفاضل والتكامل",
-      detail: "لظرف طارئ، ستُعقد المحاضرة الخميس في نفس التوقيت والقاعة.",
-      at: hoursAgo(21),
-    },
-    {
-      id: "4",
-      kind: "material",
-      title: "رُفعت ملزمة الوحدة الثالثة",
-      course: "مقدمة في البرمجة",
-      detail: "PDF · ٢٤ صفحة",
-      at: hoursAgo(29),
-    },
-    {
-      id: "5",
-      kind: "grade",
-      title: "نُشرت درجة الواجب الثالث",
-      course: "مقدمة في البرمجة",
-      score: { value: 9, outOf: 10 },
-      at: hoursAgo(52),
-    },
-    {
-      id: "6",
-      kind: "message",
-      title: "رسالة جديدة من د. منى عبدالله",
-      course: "التفاضل والتكامل",
-      detail: "بخصوص استفسارك عن حل التمرين الخامس…",
-      at: hoursAgo(74),
-    },
+  const [announcements, materials] = await Promise.all([
+    db.announcement.findMany({
+      where: {
+        course: scope,
+        ...(canSeeDrafts ? {} : { publishedAt: { not: null } }),
+      },
+      orderBy: { createdAt: "desc" },
+      take: FEED_LIMIT,
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        publishedAt: true,
+        createdAt: true,
+        course: { select: { id: true, title: true } },
+      },
+    }),
+    db.courseMaterial.findMany({
+      where: {
+        course: scope,
+        status: MaterialStatus.READY,
+        ...(canSeeDrafts ? {} : { publishedAt: { not: null } }),
+      },
+      orderBy: { createdAt: "desc" },
+      take: FEED_LIMIT,
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        course: { select: { id: true, title: true } },
+      },
+    }),
+  ]);
+
+  const events: ActivityEvent[] = [
+    ...announcements.map((a) => ({
+      id: `a-${a.id}`,
+      kind: "announcement" as const,
+      title: a.title,
+      courseId: a.course.id,
+      course: a.course.title,
+      detail: a.body.length > 160 ? `${a.body.slice(0, 160)}…` : a.body,
+      at: a.publishedAt ?? a.createdAt,
+    })),
+    ...materials.map((m) => ({
+      id: `m-${m.id}`,
+      kind: "material" as const,
+      title: `رُفعت محاضرة: ${m.title}`,
+      courseId: m.course.id,
+      course: m.course.title,
+      at: m.createdAt,
+    })),
   ];
+
+  return events
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, FEED_LIMIT);
 }

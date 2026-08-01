@@ -138,7 +138,53 @@ async function main() {
     console.log(`✓ مقرر    ${c.code.padEnd(10)} ${c.title}`);
   }
 
-  // ٤) تسجيل الطالب في كل المقررات
+  // ٤) إعلانات على أول مقررين
+  const ANNOUNCEMENTS = [
+    {
+      code: "MATH101",
+      title: "تأجيل محاضرة الأربعاء إلى الخميس",
+      body: "لظرف طارئ، ستُعقد محاضرة هذا الأسبوع يوم الخميس في نفس التوقيت والقاعة. اعتذر عن الإزعاج.",
+      isPinned: true,
+    },
+    {
+      code: "MATH101",
+      title: "توزيع ملزمة الوحدة الثالثة",
+      body: "رُفعت ملزمة الوحدة الثالثة في تبويب المحتوى. راجعوها قبل محاضرة الأحد.",
+      isPinned: false,
+    },
+    {
+      code: "CS102",
+      title: "موعد تسليم الواجب الرابع",
+      body: "آخر موعد لتسليم الواجب الرابع هو الأحد الساعة ١١:٥٩ مساءً. لا تُقبل التسليمات المتأخرة.",
+      isPinned: false,
+    },
+  ];
+
+  for (const a of ANNOUNCEMENTS) {
+    const course = courses.find((c) => c.code === a.code)!;
+
+    // upsert يدوي: البذر قابل لإعادة التشغيل بلا تكرار
+    const existing = await db.announcement.findFirst({
+      where: { courseId: course.id, title: a.title },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      await db.announcement.create({
+        data: {
+          courseId: course.id,
+          title: a.title,
+          body: a.body,
+          isPinned: a.isPinned,
+          authorId: instructorId,
+          publishedAt: new Date(),
+        },
+      });
+    }
+    console.log(`✓ إعلان   ${a.code.padEnd(10)} ${a.title}`);
+  }
+
+  // ٥) تسجيل الطالب في كل المقررات
   const studentId = users.get("20231045")!;
   for (const c of courses) {
     await db.enrollment.upsert({

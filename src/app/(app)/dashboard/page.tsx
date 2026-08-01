@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "سجل النشاط" };
 
 export default async function ActivityPage() {
   const session = await auth();
-  const events = await getActivityFeed(session!.user.id);
+  const events = await getActivityFeed(session!.user.id, session!.user.role);
 
   return (
     <AppPage

@@ -1,16 +1,20 @@
+import "server-only";
+
 import type { CourseTabCounts } from "@/lib/course-tabs";
+import { countUnreadInCourse } from "@/lib/data/announcements";
+import type { Role } from "@/generated/prisma/enums";
 
 /**
  * عدّادات تبويبات المقرر.
- *
- * ⚠️ ترجع أصفارًا حاليًا لأن جدولَي الإعلانات والرسائل غير موجودين بعد.
- * الشارات لا تُعرض عند الصفر (قاعدة التصميم: العدّاد يظهر فقط عند وجود
- * ما يتطلب إجراءً)، فبمجرد إضافة الجداول واستبدال جسم هذه الدالة
- * ستظهر الشارات تلقائيًا دون تعديل الواجهة.
+ * "الرسائل" بلا جدول بعد فيبقى صفرًا — والشارة لا تظهر عند الصفر.
  */
 export async function getCourseTabCounts(
-  _courseId: string,
-  _userId: string,
+  courseId: string,
+  userId: string,
+  role: Role,
 ): Promise<CourseTabCounts> {
-  return { announcements: 0, messages: 0 };
+  return {
+    announcements: await countUnreadInCourse(courseId, userId, role),
+    messages: 0,
+  };
 }

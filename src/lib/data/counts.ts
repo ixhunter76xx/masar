@@ -1,15 +1,27 @@
+import "server-only";
+
 import type { NavCounts } from "@/lib/navigation";
+import { countUnreadForUser } from "@/lib/data/announcements";
+import type { Role } from "@/generated/prisma/enums";
 
 /**
  * عدّادات القائمة الجانبية.
  *
- * ⚠️ بيانات مؤقتة — لا توجد جداول للدرجات والرسائل بعد. عند إضافتها
- * استبدل جسم الدالة باستعلامات حقيقية مع إبقاء نفس التوقيع؛ الواجهة
- * لن تتغيّر.
+ * قاعدة التصميم: العدّاد يظهر فقط عند وجود ما يتطلب إجراءً من المستخدم،
+ * ومكوّن CountBadge لا يعرض شيئًا عند الصفر.
+ *
+ * "الدرجات" و"الرسائل" ليس لهما جداول بعد فيبقيان صفرًا — بلا شارات
+ * وهمية. تُضاف قيمهما هنا فور بناء النظامين.
  */
-export async function getNavCounts(_userId: string): Promise<NavCounts> {
+export async function getNavCounts(
+  userId: string,
+  role: Role,
+): Promise<NavCounts> {
+  const unreadAnnouncements = await countUnreadForUser(userId, role);
+
   return {
-    "/grades": 3,
-    "/messages": 5,
+    "/courses": unreadAnnouncements,
+    "/grades": 0,
+    "/messages": 0,
   };
 }

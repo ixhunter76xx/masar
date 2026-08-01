@@ -19,7 +19,7 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
 
   const user = { name: session.user.name ?? "", role: session.user.role };
-  const counts = await getNavCounts(session.user.id);
+  const counts = await getNavCounts(session.user.id, session.user.role);
 
   return (
     <div className="min-h-dvh bg-ink">

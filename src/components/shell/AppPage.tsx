@@ -21,7 +21,7 @@ export async function AppPage({
     name: session!.user.name ?? "",
     role: session!.user.role,
   };
-  const counts = await getNavCounts(session!.user.id);
+  const counts = await getNavCounts(session!.user.id, session!.user.role);
 
   return (
     <>

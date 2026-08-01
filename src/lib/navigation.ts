@@ -25,7 +25,13 @@ export type NavItem = {
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "سجل النشاط", icon: History },
-  { href: "/courses", label: "مقرراتي", icon: LibraryBig },
+  {
+    href: "/courses",
+    label: "مقرراتي",
+    icon: LibraryBig,
+    // العدّاد = الإعلانات غير المقروءة عبر كل المقررات
+    badgeTone: "neutral",
+  },
   { href: "/grades", label: "الدرجات", icon: ClipboardList, badgeTone: "neutral" },
   { href: "/messages", label: "الرسائل", icon: Mail, badgeTone: "danger" },
   { href: "/profile", label: "الملف الشخصي", icon: CircleUserRound },
