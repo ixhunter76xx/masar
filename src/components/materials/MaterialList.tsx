@@ -2,6 +2,7 @@ import { CirclePlay, CircleAlert, Clock } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
 import { VideoPlayer } from "@/components/materials/VideoPlayer";
+import { DeleteMaterialButton } from "@/components/materials/DeleteMaterialButton";
 import { MaterialStatus } from "@/generated/prisma/enums";
 import { formatBytes } from "@/lib/uploads";
 import { relativeTime } from "@/lib/format";
@@ -50,9 +51,19 @@ export function MaterialList({
                     <p className="text-sm font-medium leading-snug text-paper">
                       {m.title}
                     </p>
-                    <time className="shrink-0 text-[11px] text-disabled">
-                      {relativeTime(m.createdAt)}
-                    </time>
+
+                    <div className="flex shrink-0 items-start gap-2">
+                      <time className="mt-1.5 text-[11px] text-disabled">
+                        {relativeTime(m.createdAt)}
+                      </time>
+                      {canManage && (
+                        <DeleteMaterialButton
+                          courseId={courseId}
+                          materialId={m.id}
+                          title={m.title}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-disabled">
