@@ -52,6 +52,12 @@ model User {
   /// الإعلانات التي قرأها
   announcementReads AnnouncementRead[]
 
+  /// الاختبارات التي أنشأها
+  authoredQuizzes Quiz[] @relation("QuizAuthor")
+
+  /// محاولاته في الاختبارات
+  quizAttempts QuizAttempt[]
+
   @@index([role])
   @@map("users")
 }
@@ -100,6 +106,7 @@ model Course {
   enrollments   Enrollment[]
   materials     CourseMaterial[]
   announcements Announcement[]
+  quizzes       Quiz[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -229,4 +236,142 @@ model AnnouncementRead {
   @@unique([announcementId, userId])
   @@index([userId])
   @@map("announcement_reads")
+}
+
+/// حالة الاختبار
+enum QuizStatus {
+  DRAFT /// مسودة — المدرب وحده يراها
+  PUBLISHED /// متاح للطلاب
+  CLOSED /// مغلق — لا تُقبل محاولات جديدة
+}
+
+/// نوع السؤال — موضوعي فقط في هذه المرحلة (تصحيح آلي كامل)
+enum QuestionKind {
+  MULTIPLE_CHOICE /// اختيار من متعدد
+  TRUE_FALSE /// صح أو خطأ
+}
+
+model Quiz {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  status      QuizStatus @default(DRAFT)
+
+  /// عدد المحاولات المسموح بها. الدرجة المعتمدة هي **أعلى** محاولة.
+  maxAttempts Int @default(1)
+
+  /// مدة الاختبار بالدقائق — null يعني بلا حد
+  timeLimitMin Int?
+
+  /// نافذة الإتاحة — null يعني بلا قيد
+  opensAt  DateTime?
+  closesAt DateTime?
+
+  /// ترتيب عشوائي للأسئلة عند كل محاولة
+  shuffleQuestions Boolean @default(false)
+
+  authorId String
+  author   User   @relation("QuizAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, status])
+  @@map("quizzes")
+}
+
+model Question {
+  id String @id @default(cuid())
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  kind QuestionKind @default(MULTIPLE_CHOICE)
+  text String
+
+  /// درجة السؤال
+  points Int @default(1)
+
+  position Int @default(0)
+
+  options QuestionOption[]
+  answers Answer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quizId, position])
+  @@map("questions")
+}
+
+/// خيار إجابة. صح/خطأ يُمثَّل بخيارين، فيتوحّد منطق التصحيح.
+model QuestionOption {
+  id String @id @default(cuid())
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  text      String
+  isCorrect Boolean @default(false)
+  position  Int     @default(0)
+
+  answers Answer[]
+
+  @@index([questionId, position])
+  @@map("question_options")
+}
+
+model QuizAttempt {
+  id String @id @default(cuid())
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  /// رقم المحاولة لهذا الطالب في هذا الاختبار، يبدأ من ١
+  attemptNumber Int
+
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  /// تُحسب عند التسليم
+  earnedPoints Int?
+  totalPoints  Int?
+
+  answers Answer[]
+
+  /// لا تتكرر المحاولة نفسها لنفس الطالب
+  @@unique([quizId, studentId, attemptNumber])
+  @@index([studentId])
+  @@map("quiz_attempts")
+}
+
+model Answer {
+  id String @id @default(cuid())
+
+  attemptId String
+  attempt   QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  selectedOptionId String?
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+
+  /// نتيجة التصحيح الآلي وقت التسليم
+  isCorrect    Boolean?
+  earnedPoints Int?
+
+  /// إجابة واحدة لكل سؤال في المحاولة الواحدة
+  @@unique([attemptId, questionId])
+  @@map("answers")
 }
