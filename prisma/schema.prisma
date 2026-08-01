@@ -1,0 +1,179 @@
+// مخطط قاعدة بيانات منصة مركز حساب
+// المرحلة الحالية: المستخدمون والأدوار، الفصول الدراسية، المقررات، التسجيل.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "nodejs"
+}
+
+// في Prisma 7 لم يعد `url` مسموحًا هنا — انتقل إلى prisma.config.ts
+datasource db {
+  provider = "postgresql"
+}
+
+/// أدوار المنصة الثلاثة
+enum Role {
+  STUDENT /// طالب
+  INSTRUCTOR /// مدرب
+  ADMIN /// إدارة
+}
+
+model User {
+  id String @id @default(cuid())
+
+  /// اسم الدخول: الرقم الأكاديمي أو البريد المؤسسي
+  username String  @unique
+  email    String? @unique
+  name     String
+
+  /// تجزئة bcrypt — لا تُخزَّن كلمة المرور الأصلية إطلاقًا
+  passwordHash String
+
+  role     Role    @default(STUDENT)
+  isActive Boolean @default(true)
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  /// المقررات التي يُدرّسها (للمدرب)
+  coursesTaught Course[] @relation("CourseInstructor")
+
+  /// المقررات المسجَّل بها (للطالب)
+  enrollments Enrollment[]
+
+  /// المواد التي رفعها
+  uploadedMaterials CourseMaterial[] @relation("MaterialUploader")
+
+  @@index([role])
+  @@map("users")
+}
+
+/// حالة الفصل الدراسي
+enum TermStatus {
+  ACTIVE /// نشط — الفصل الجاري
+  ARCHIVED /// مؤرشف — فصل منتهٍ
+}
+
+/// الفصل الدراسي — كيان مستقل يسمح بتنظيم المقررات وأرشفة المنتهية منها
+model Term {
+  id String @id @default(cuid())
+
+  /// مثال: "2025/2026 — الفصل الثاني"
+  name String @unique
+
+  startsOn DateTime   @db.Date
+  endsOn   DateTime   @db.Date
+  status   TermStatus @default(ACTIVE)
+
+  courses Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, startsOn])
+  @@map("terms")
+}
+
+model Course {
+  id String @id @default(cuid())
+
+  /// رمز المقرر، مثال: "MATH101"
+  code        String
+  title       String
+  description String?
+
+  /// كل مقرر يخصّ فصلًا دراسيًا واحدًا — لا نص حر
+  termId String
+  term   Term   @relation(fields: [termId], references: [id], onDelete: Restrict)
+
+  instructorId String
+  instructor   User   @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: Restrict)
+
+  enrollments Enrollment[]
+  materials   CourseMaterial[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// الرمز نفسه قد يتكرر عبر الفصول، لكنه فريد داخل الفصل الواحد
+  @@unique([termId, code])
+  @@index([instructorId])
+  @@map("courses")
+}
+
+/// حالة تسجيل الطالب في المقرر
+enum EnrollmentStatus {
+  ACTIVE /// مسجَّل ومتابع
+  COMPLETED /// أنهى المقرر
+  DROPPED /// انسحب
+}
+
+model Enrollment {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+
+  /// لا يُسجَّل الطالب في المقرر نفسه مرتين
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+/// نوع المادة التعليمية — يبدأ بالفيديو ويتوسّع لاحقًا
+enum MaterialKind {
+  VIDEO /// محاضرة مسجّلة
+}
+
+/// حالة المادة في دورة حياة الرفع
+enum MaterialStatus {
+  PENDING /// أُنشئ السجل والرفع جارٍ أو لم يكتمل
+  READY /// اكتمل الرفع وتحقّق الخادم من الملف
+  FAILED /// فشل الرفع أو رُفض الملف بعد التحقق
+}
+
+/// مادة تعليمية داخل مقرر — حاليًا فيديو مخزَّن على Cloudflare R2
+model CourseMaterial {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  kind   MaterialKind   @default(VIDEO)
+  status MaterialStatus @default(PENDING)
+
+  title       String
+  description String?
+
+  /// مفتاح الكائن داخل دلو R2
+  objectKey   String  @unique
+  contentType String  @default("video/mp4")
+
+  /// الحجم الفعلي بعد التحقق من R2 — BigInt استعدادًا لملفات أكبر لاحقًا
+  sizeBytes   BigInt?
+  durationSec Int?
+
+  uploadedById String
+  uploadedBy   User   @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  /// ترتيب العرض داخل المقرر
+  position Int @default(0)
+
+  /// null يعني مسودة لا يراها الطلاب
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, position])
+  @@index([courseId, status])
+  @@map("course_materials")
+}

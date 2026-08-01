@@ -1,0 +1,23 @@
+# قاعدة بيانات التطوير المحلية
+# التشغيل: docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: hisab-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hisab
+      POSTGRES_PASSWORD: hisab_dev_password
+      POSTGRES_DB: hisab
+    ports:
+      - "5432:5432"
+    volumes:
+      - hisab-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hisab -d hisab"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hisab-pgdata:

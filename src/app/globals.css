@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   نظام تصميم منصة "مركز حساب"
+   مستخرج من لوحة الألوان الرسمية (Hisab Design System)
+   ========================================================================== */
+
+@theme {
+  /* --- الألوان الأساسية --- */
+  --color-ink: #0d1013; /* كحلي داكن — الخلفية الأساسية */
+  --color-panel: #111a24; /* كحلي لوحة — أسطح البطاقات واللوحات */
+  --color-line: #26333f; /* حدود وفواصل بين الأسطح */
+  --color-paper: #eef3f7; /* أبيض الشعار — النص الأساسي */
+
+  /* --- الأزرق الرمادي (لون التمييز) --- */
+  --color-accent: #7e9aae; /* أزرق رمادي — التمييز */
+  --color-accent-bright: #a9c3d4; /* أزرق رمادي فاتح — الروابط وحالة hover */
+  --color-accent-deep: #4f6d83; /* أزرق رمادي غامق — العناصر الثانوية */
+
+  /* --- لون الفعل الأساسي --- */
+  /* درجة أعلى تشبّعًا من نفس العائلة، مخصّصة للأزرار الأساسية والضوابط
+     المفعّلة. تباينها مع سطح البطاقة 7.83:1 ومع النص الداكن 8.51:1. */
+  --color-action: #8fb2c8;
+  --color-action-active: #7fa8c2;
+
+  /* --- النصوص والحالات --- */
+  --color-muted: #9dafbd; /* نص ثانوي — الوصف والمساعدة */
+  --color-disabled: #5c6878; /* معطل — غير متاح */
+  --color-danger: #a0524f; /* خطر — حذف أو خطأ */
+  --color-warning: #c79a56; /* تحذير — موعد يقترب */
+  --color-success: #4e8c6a; /* نجاح — تسليم ناجح */
+
+  /* --- الخطوط --- */
+  --font-sans: var(--font-plex-arabic), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* --- أنصاف الأقطار --- */
+  --radius-field: 10px; /* الحقول والأزرار */
+  --radius-card: 14px; /* البطاقات */
+
+  /* --- الحد الأدنى لمساحة اللمس --- */
+  --spacing-touch: 44px;
+}
+
+/* ==========================================================================
+   الأساسيات
+   ========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* الأرقام دائماً بخط Mono مع أرقام لاتينية وعرض ثابت */
+  .numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+
+  /* حلقة التركيز الموحّدة — بلا ظلال ملوّنة، فقط إطار واضح */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-bright);
+    outline-offset: 2px;
+  }
+
+  /* إخفاء أسهم حقول الأرقام */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* منع تلوين الملء التلقائي في المتصفحات بخلفية بيضاء */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-paper);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-ink) inset;
+    caret-color: var(--color-paper);
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-deep);
+    color: var(--color-paper);
+  }
+}

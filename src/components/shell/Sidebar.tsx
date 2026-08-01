@@ -1,0 +1,68 @@
+import { Logo } from "@/components/ui/Logo";
+import { cn } from "@/lib/utils";
+import { SidebarNav } from "@/components/shell/SidebarNav";
+import { UserChip } from "@/components/shell/UserChip";
+import { SITE } from "@/lib/site";
+import type { NavCounts } from "@/lib/navigation";
+import type { Role } from "@/generated/prisma/enums";
+
+/** محتوى الشريط الجانبي — يُستخدم في نسخة سطح المكتب واللوحة المنسحبة معًا */
+export function SidebarContent({
+  user,
+  counts,
+  onNavigate,
+}: {
+  user: { name: string; role: Role };
+  counts?: NavCounts;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col">
+      {/* الهوية */}
+      <div className="flex items-center gap-3 px-5 py-5">
+        <Logo size={44} />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-paper truncate">{SITE.name}</p>
+          <p className="text-[11px] text-muted truncate">للتعليم والتدريب</p>
+        </div>
+      </div>
+
+      <div className="mx-5 border-t border-line" />
+
+      {/* التنقّل */}
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <SidebarNav counts={counts} onNavigate={onNavigate} />
+      </div>
+
+      <div className="mx-5 border-t border-line" />
+
+      {/* المستخدم */}
+      <div className="px-5 py-4">
+        <UserChip name={user.name} role={user.role} />
+      </div>
+    </div>
+  );
+}
+
+/** الشريط الجانبي المثبّت — يظهر من مقاس lg فأعلى */
+export function Sidebar({
+  user,
+  counts,
+}: {
+  user: { name: string; role: Role };
+  counts?: NavCounts;
+}) {
+  return (
+    <aside
+      className={cn(
+        "hidden lg:block fixed inset-y-0 w-[260px] bg-panel",
+        // start = يمين في RTL، ويسار تلقائيًا في LTR
+        "start-0",
+        // الحدّ على الوجه المقابل للمحتوى
+        "border-e border-line",
+      )}
+    >
+      <SidebarContent user={user} counts={counts} />
+    </aside>
+  );
+}
