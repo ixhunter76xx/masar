@@ -12,5 +12,3 @@ tsconfig.tsbuildinfo
 
 # Prisma
 /src/generated
-
-.netlify/

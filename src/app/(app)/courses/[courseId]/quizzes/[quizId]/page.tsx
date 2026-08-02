@@ -8,9 +8,15 @@ import { QuizSettingsForm } from "@/components/quizzes/QuizSettingsForm";
 import { QuizToolbar } from "@/components/quizzes/QuizToolbar";
 import { QuestionEditor } from "@/components/quizzes/QuestionEditor";
 import { AddQuestionButtons } from "@/components/quizzes/AddQuestionButtons";
+import { QuizOverview } from "@/components/quizzes/QuizOverview";
 import { requireCourseAccess } from "@/lib/data/courses";
 import { canManageCourse } from "@/lib/data/materials";
 import { getQuizForEditing, publishBlockers } from "@/lib/data/quizzes";
+import {
+  getQuizForStudent,
+  listStudentAttempts,
+  startBlocker,
+} from "@/lib/data/quiz-attempts";
 
 type Params = { params: Promise<{ courseId: string; quizId: string }> };
 
@@ -20,9 +26,50 @@ export default async function QuizEditorPage({ params }: Params) {
   const { courseId, quizId } = await params;
   const { user } = await requireCourseAccess(courseId);
 
-  // صفحة تحرير — الطالب لا يصلها إطلاقًا، وإلا لرأى الإجابات الصحيحة
   const canManage = await canManageCourse(courseId, user.id, user.role);
-  if (!canManage) notFound();
+
+  // الطالب يرى نظرة عامة تُبنى من استعلام لا يُحمّل الإجابات الصحيحة
+  if (!canManage) {
+    const forStudent = await getQuizForStudent(
+      quizId,
+      courseId,
+      user.id,
+      user.role,
+    );
+    if (!forStudent) notFound();
+
+    const attempts = await listStudentAttempts(quizId, user.id);
+
+    return (
+      <AppPage title={forStudent.title} hidePageHeader>
+        <Link
+          href={`/courses/${courseId}`}
+          className="mb-4 inline-flex items-center gap-1.5 text-[12px] text-muted transition-colors hover:text-paper"
+        >
+          <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
+          العودة إلى محتوى المقرر
+        </Link>
+
+        <QuizOverview
+          courseId={courseId}
+          quiz={{
+            id: forStudent.id,
+            title: forStudent.title,
+            description: forStudent.description,
+            maxAttempts: forStudent.maxAttempts,
+            timeLimitMin: forStudent.timeLimitMin,
+            questionCount: forStudent.questions.length,
+            totalPoints: forStudent.questions.reduce(
+              (sum, q) => sum + q.points,
+              0,
+            ),
+          }}
+          attempts={attempts}
+          blocker={startBlocker(forStudent, attempts)}
+        />
+      </AppPage>
+    );
+  }
 
   const quiz = await getQuizForEditing(quizId, courseId);
   if (!quiz) notFound();
