@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AppPage } from "@/components/shell/AppPage";
 import { CourseHeaderCard } from "@/components/courses/CourseHeaderCard";
+import { CourseSwipeArea } from "@/components/courses/CourseSwipeArea";
 import { requireCourseAccess } from "@/lib/data/courses";
 import { getCourseTabCounts } from "@/lib/data/course-tab-counts";
 
@@ -28,7 +29,7 @@ export default async function CourseLayout({
   return (
     <AppPage title={course.title} hidePageHeader>
       <CourseHeaderCard course={course} counts={counts} />
-      {children}
+      <CourseSwipeArea courseId={course.id}>{children}</CourseSwipeArea>
     </AppPage>
   );
 }

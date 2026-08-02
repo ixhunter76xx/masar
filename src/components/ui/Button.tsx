@@ -62,7 +62,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center gap-2 rounded-[10px]",
           "font-medium whitespace-nowrap select-none",
-          "transition-colors duration-150",
+          "press",
           "disabled:cursor-not-allowed",
           variants[variant],
           sizes[size],

@@ -7,6 +7,7 @@ import { MaterialStatus } from "@/generated/prisma/enums";
 import { formatBytes } from "@/lib/uploads";
 import { relativeTime } from "@/lib/format";
 import type { MaterialListItem } from "@/lib/data/materials";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 export function MaterialList({
   materials,
@@ -18,13 +19,13 @@ export function MaterialList({
   canManage: boolean;
 }) {
   return (
-    <ol className="space-y-3">
+    <StaggerList className="space-y-3">
       {materials.map((m) => {
         const ready = m.status === MaterialStatus.READY;
         const failed = m.status === MaterialStatus.FAILED;
 
         return (
-          <li key={m.id}>
+          <StaggerItem key={m.id}>
             <Card className="px-5 py-4">
               <div className="flex items-start gap-4">
                 <span
@@ -88,9 +89,9 @@ export function MaterialList({
                 </div>
               </div>
             </Card>
-          </li>
+          </StaggerItem>
         );
       })}
-    </ol>
+    </StaggerList>
   );
 }

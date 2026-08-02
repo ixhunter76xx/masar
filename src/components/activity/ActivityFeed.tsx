@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { relativeTime } from "@/lib/format";
 import { ACTIVITY_META, type ActivityEvent } from "@/lib/data/activity";
 import { cn } from "@/lib/utils";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 const TONE_CLASSES = {
   neutral: "text-accent border-line",
@@ -13,7 +14,7 @@ const TONE_CLASSES = {
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
   return (
-    <ol className="space-y-3">
+    <StaggerList className="space-y-3">
       {events.map((event) => {
         const meta = ACTIVITY_META[event.kind];
         const Icon = meta.icon;
@@ -24,8 +25,8 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
             : `/courses/${event.courseId}`);
 
         return (
-          <li key={event.id}>
-            <Card className="transition-colors hover:border-accent-deep">
+          <StaggerItem key={event.id}>
+            <Card className="lift hover:border-accent-deep">
               <Link href={href} className="flex gap-4 px-5 py-4">
                 <span
                   className={cn(
@@ -60,9 +61,9 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
                 </div>
               </Link>
             </Card>
-          </li>
+          </StaggerItem>
         );
       })}
-    </ol>
+    </StaggerList>
   );
 }

@@ -105,7 +105,7 @@ export function QuizOverview({
           <ol className="space-y-2">
             {graded.map((a) => (
               <li key={a.id}>
-                <Card className="transition-colors hover:border-accent-deep">
+                <Card className="lift hover:border-accent-deep">
                   <Link
                     href={`/courses/${courseId}/quizzes/${quiz.id}/attempt/${a.id}`}
                     className="flex items-center justify-between gap-3 px-5 py-3"

@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+
+import { MotionRoot } from "@/components/motion/MotionRoot";
 import { plexArabic, plexMono } from "@/lib/fonts";
 import { SITE } from "@/lib/site";
 import "./globals.css";
@@ -29,7 +31,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-ink text-paper antialiased">
-        {children}
+        <MotionRoot>{children}</MotionRoot>
       </body>
     </html>
   );

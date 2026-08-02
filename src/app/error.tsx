@@ -54,7 +54,7 @@ export default function Error({
           </button>
           <Link
             href="/dashboard"
-            className="inline-flex h-11 items-center rounded-[10px] border border-line px-5 text-sm text-muted transition-colors hover:border-accent-deep hover:text-paper"
+            className="inline-flex h-11 items-center rounded-[10px] border border-line px-5 text-sm text-muted press hover:border-accent-deep hover:text-paper"
           >
             العودة للرئيسية
           </Link>

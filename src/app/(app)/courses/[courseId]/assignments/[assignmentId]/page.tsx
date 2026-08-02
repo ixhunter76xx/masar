@@ -138,7 +138,7 @@ export default async function AssignmentPage({ params }: Params) {
                   {s.objectKey && (
                     <a
                       href={`/api/courses/${courseId}/assignments/${a.id}/submission/${s.id}/download`}
-                      className="mt-3 inline-flex items-center gap-2 rounded-[10px] border border-line px-3 py-2 text-[12px] text-muted transition-colors hover:border-accent-deep hover:text-paper"
+                      className="mt-3 inline-flex items-center gap-2 rounded-[10px] border border-line px-3 py-2 text-[12px] text-muted press hover:border-accent-deep hover:text-paper"
                     >
                       <Download size={14} strokeWidth={1.75} aria-hidden="true" />
                       {s.fileName}

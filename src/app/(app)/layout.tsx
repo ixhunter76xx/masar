@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { PageTransition } from "@/components/motion/PageTransition";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { getShellData } from "@/lib/data/shell";
 
@@ -32,7 +33,9 @@ export default async function AppLayout({
       <Sidebar user={shell.user} counts={shell.counts} />
 
       {/* الهامش يقابل عرض الشريط الجانبي — ms أي يمين في RTL ويسار في LTR */}
-      <div className="lg:ms-[260px]">{children}</div>
+      <div className="lg:ms-[260px]">
+        <PageTransition>{children}</PageTransition>
+      </div>
     </div>
   );
 }

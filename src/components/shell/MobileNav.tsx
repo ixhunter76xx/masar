@@ -3,33 +3,49 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useTransform,
+} from "motion/react";
 import { Menu, X } from "lucide-react";
 
 import { SidebarContent } from "@/components/shell/Sidebar";
+import { useLogicalAxis } from "@/lib/use-direction";
+import {
+  DRAG_DISTANCE_THRESHOLD,
+  DRAG_VELOCITY_THRESHOLD,
+  DUR,
+  EASE,
+  SPRING,
+} from "@/lib/motion";
 import type { NavCounts } from "@/lib/navigation";
 import type { Role } from "@/generated/prisma/enums";
 
-/** مدة الانتقال — تطابق قيم duration في الأصناف أدناه */
-const ANIM_MS = 220;
+const PANEL_WIDTH = 280;
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /**
  * لوحة التنقّل المنسحبة للشاشات الصغيرة.
- * تنسحب من الحافة الابتدائية (اليمين في RTL).
  *
  * ── لماذا Portal، وهو إصلاح لا تحسين ────────────────────────────────
  * هذا المكوّن يعيش داخل الرأسية، والرأسية عليها `backdrop-blur`.
  * و`backdrop-filter` — مثل `transform` — **يُنشئ كتلة احتواء** لكل
  * عنصر `position: fixed` بداخلها. فكان `inset-0` يُحسب على صندوق
- * الرأسية (٣٧٥×٦٤) لا على النافذة (٣٧٥×٧٢٠): ينهار ارتفاع اللوحة إلى
- * ٦٤ بكسل ويظهر محتوى الصفحة تحتها.
+ * الرأسية (٣٧٥×٦٤) لا على النافذة (٣٧٥×٧٢٠).
  *
  * `createPortal` إلى `document.body` يُخرج اللوحة من كتلة الاحتواء
- * ومن سياق تكديس الرأسية معًا، فتغطي النافذة كاملة مهما تغيّرت أنماط
- * الرأسية لاحقًا.
- * ────────────────────────────────────────────────────────────────────
+ * ومن سياق تكديس الرأسية معًا.
+ *
+ * ── الإيماءة واتجاهها ────────────────────────────────────────────────
+ * اللوحة تجلس عند بداية السطر (يمين في RTL)، فإخراجها من الشاشة يعني
+ * تحريكها للخلف عن بداية السطر. لا تُكتب هنا كلمة يمين ولا يسار: كل
+ * المنطق بإشارة `toLogical` من `useLogicalAxis`، والقاعدة الثابتة أن
+ * المنطقي السالب هو اتجاه الإغلاق أيًا كان اتجاه القراءة.
+ * ─────────────────────────────────────────────────────────────────────
  */
 export function MobileNav({
   user,
@@ -39,43 +55,42 @@ export function MobileNav({
   counts?: NavCounts;
 }) {
   const [open, setOpen] = React.useState(false);
-  /** يبقى مركّبًا أثناء انتقال الخروج فلا تختفي اللوحة فجأة */
+  /** البوابة لا تُصيَّر على الخادم — لا يوجد document هناك */
   const [mounted, setMounted] = React.useState(false);
-  const [entered, setEntered] = React.useState(false);
 
   const pathname = usePathname();
   const panelRef = React.useRef<HTMLDivElement>(null);
   const openerRef = React.useRef<HTMLButtonElement>(null);
 
+  const { toLogical, toPhysical } = useLogicalAxis();
+
+  /** موضع اللوحة أفقيًا — يقوده الإصبع أثناء السحب والنابض بعده */
+  const x = useMotionValue(0);
+  /** الموضع الفيزيائي الذي تكون عنده اللوحة خارج الشاشة تمامًا */
+  const closedX = toPhysical(-PANEL_WIDTH);
+  /** الحجاب يخفت مع سحب اللوحة — يربط الإيماءة بنتيجتها بصريًا */
+  const overlayOpacity = useTransform(x, [0, closedX], [1, 0], {
+    clamp: true,
+  });
+
+  React.useEffect(() => setMounted(true), []);
+
   // أغلق اللوحة عند تغيّر المسار
   React.useEffect(() => setOpen(false), [pathname]);
 
-  /* التركيب والتفكيك مع مهلة تسمح بانتقال الخروج */
-  React.useEffect(() => {
-    if (open) {
-      setMounted(true);
-      // إطار واحد قبل تفعيل حالة الدخول، وإلا لن يعمل الانتقال
-      const id = requestAnimationFrame(() => setEntered(true));
-      return () => cancelAnimationFrame(id);
-    }
-    setEntered(false);
-    const id = setTimeout(() => setMounted(false), ANIM_MS);
-    return () => clearTimeout(id);
-  }, [open]);
-
   /* منع تمرير الصفحة خلف اللوحة */
   React.useEffect(() => {
-    if (!mounted) return;
+    if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [mounted]);
+  }, [open]);
 
   /* حبس التركيز داخل اللوحة، وإعادته إلى الزر عند الإغلاق */
   React.useEffect(() => {
-    if (!open || !mounted) return;
+    if (!open) return;
 
     const panel = panelRef.current;
     if (!panel) return;
@@ -116,7 +131,90 @@ export function MobileNav({
       document.removeEventListener("keydown", onKeyDown);
       openerRef.current?.focus();
     };
-  }, [open, mounted]);
+  }, [open]);
+
+  const panel = (
+    <AnimatePresence>
+      {open && (
+        <div className="lg:hidden fixed inset-0 z-[100]">
+          <motion.button
+            type="button"
+            aria-label="إغلاق القائمة"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-ink/80"
+            style={{ opacity: overlayOpacity }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+              transition: { duration: DUR.base, ease: EASE.in },
+            }}
+          />
+
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="التنقّل"
+            className="absolute inset-y-0 start-0 flex w-[280px] max-w-[85vw]
+              flex-col border-e border-line bg-panel touch-pan-y"
+            style={{ x }}
+            initial={{ x: closedX }}
+            animate={{ x: 0 }}
+            exit={{
+              x: closedX,
+              transition: { duration: DUR.base, ease: EASE.in },
+            }}
+            transition={SPRING.panel}
+            /* السحب حرّ باتجاه الإغلاق فقط ومشدود كالمطاط في عكسه.
+               القيد {left:0,right:0} يجعل موضع الاستقرار صفرًا، فترتدّ
+               اللوحة وحدها إن لم تبلغ الإيماءة عتبتها. */
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={
+              closedX < 0 ? { left: 1, right: 0 } : { left: 0, right: 1 }
+            }
+            dragMomentum={false}
+            onDragEnd={(_, info) => {
+              const distance = toLogical(info.offset.x);
+              const speed = toLogical(info.velocity.x);
+              // سالب = باتجاه بداية السطر = باتجاه الخروج من الشاشة
+              if (
+                distance < -DRAG_DISTANCE_THRESHOLD ||
+                speed < -DRAG_VELOCITY_THRESHOLD
+              ) {
+                setOpen(false);
+              }
+            }}
+          >
+            {/* مقبض — دلالة بصرية أن اللوحة تُسحب، على الحافة الداخلية */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 end-1 grid place-items-center"
+            >
+              <span className="h-10 w-1 rounded-full bg-line" />
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="إغلاق القائمة"
+              className="absolute top-4 end-4 z-10 grid size-9 place-items-center
+                rounded-[10px] text-muted transition-colors hover:bg-ink hover:text-paper press"
+            >
+              <X size={18} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+
+            <SidebarContent
+              user={user}
+              counts={counts}
+              onNavigate={() => setOpen(false)}
+            />
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <>
@@ -126,51 +224,13 @@ export function MobileNav({
         onClick={() => setOpen(true)}
         aria-label="فتح القائمة"
         aria-expanded={open}
-        className="lg:hidden grid size-11 place-items-center rounded-[10px] text-muted transition-colors hover:bg-panel hover:text-paper"
+        className="lg:hidden grid size-11 place-items-center rounded-[10px] text-muted
+          transition-colors hover:bg-panel hover:text-paper press"
       >
         <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
       </button>
 
-      {mounted &&
-        createPortal(
-          <div className="lg:hidden fixed inset-0 z-[100]">
-            <button
-              type="button"
-              aria-label="إغلاق القائمة"
-              onClick={() => setOpen(false)}
-              className={`absolute inset-0 bg-ink/80 transition-opacity duration-200 ${
-                entered ? "opacity-100" : "opacity-0"
-              }`}
-            />
-
-            <div
-              ref={panelRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="التنقّل"
-              className={`absolute inset-y-0 start-0 w-[280px] max-w-[85vw]
-                border-e border-line bg-panel
-                transition-transform duration-200 ease-out
-                ${entered ? "translate-x-0" : "ltr:-translate-x-full rtl:translate-x-full"}`}
-            >
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="إغلاق القائمة"
-                className="absolute top-4 end-4 z-10 grid size-9 place-items-center rounded-[10px] text-muted transition-colors hover:bg-ink hover:text-paper"
-              >
-                <X size={18} strokeWidth={1.75} aria-hidden="true" />
-              </button>
-
-              <SidebarContent
-                user={user}
-                counts={counts}
-                onNavigate={() => setOpen(false)}
-              />
-            </div>
-          </div>,
-          document.body,
-        )}
+      {mounted && createPortal(panel, document.body)}
     </>
   );
 }

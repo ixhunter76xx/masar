@@ -4,6 +4,7 @@ import { FileQuestion, Timer, Repeat } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { QuizStatus } from "@/generated/prisma/enums";
 import type { QuizSummary } from "@/lib/data/quizzes";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 const STATUS_LABEL: Record<QuizStatus, { text: string; className: string }> = {
   DRAFT: { text: "مسودة", className: "border-line text-warning" },
@@ -21,15 +22,15 @@ export function QuizList({
   canManage: boolean;
 }) {
   return (
-    <ol className="space-y-3">
+    <StaggerList className="space-y-3">
       {quizzes.map((q) => {
         const status = STATUS_LABEL[q.status];
         // الطالب يفتح صفحة الأداء (المرحلة القادمة)؛ المدرب يفتح التحرير
         const href = `/courses/${courseId}/quizzes/${q.id}`;
 
         return (
-          <li key={q.id}>
-            <Card className="transition-colors hover:border-accent-deep">
+          <StaggerItem key={q.id}>
+            <Card className="lift hover:border-accent-deep">
               <Link href={href} className="flex gap-4 px-5 py-4">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-ink text-accent">
                   <FileQuestion size={17} strokeWidth={1.75} aria-hidden="true" />
@@ -77,9 +78,9 @@ export function QuizList({
                 </div>
               </Link>
             </Card>
-          </li>
+          </StaggerItem>
         );
       })}
-    </ol>
+    </StaggerList>
   );
 }

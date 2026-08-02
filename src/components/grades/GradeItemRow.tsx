@@ -13,7 +13,7 @@ export function GradeItemRow({ item }: { item: GradeItem }) {
       : 0;
 
   return (
-    <Card className="transition-colors hover:border-accent-deep">
+    <Card className="lift hover:border-accent-deep">
       <Link href={item.href} className="flex items-center gap-4 px-5 py-3">
         <span className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-ink text-accent">
           <Icon size={15} strokeWidth={1.75} aria-hidden="true" />

@@ -92,7 +92,7 @@ export default async function AdminCoursesPage() {
 
               <Link
                 href={`/settings/courses/${c.id}`}
-                className="inline-flex items-center gap-1.5 rounded-[10px] border border-line px-3 py-2 text-[12px] text-muted transition-colors hover:border-accent-deep hover:text-paper"
+                className="inline-flex items-center gap-1.5 rounded-[10px] border border-line px-3 py-2 text-[12px] text-muted press hover:border-accent-deep hover:text-paper"
               >
                 <Users size={14} strokeWidth={1.75} aria-hidden="true" />
                 <span className="numeric">{c._count.enrollments}</span> طالب

@@ -11,6 +11,7 @@ import { deleteAnnouncement } from "@/app/(app)/courses/[courseId]/announcements
 import { relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AnnouncementItem } from "@/lib/data/announcements";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 export function AnnouncementList({
   courseId,
@@ -24,10 +25,10 @@ export function AnnouncementList({
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   return (
-    <ol className="space-y-3">
+    <StaggerList className="space-y-3">
       {announcements.map((a) =>
         editingId === a.id ? (
-          <li key={a.id}>
+          <StaggerItem key={a.id}>
             <AnnouncementForm
               courseId={courseId}
               editing={{
@@ -39,19 +40,19 @@ export function AnnouncementList({
               }}
               onDone={() => setEditingId(null)}
             />
-          </li>
+          </StaggerItem>
         ) : (
-          <li key={a.id}>
+          <StaggerItem key={a.id}>
             <Row
               courseId={courseId}
               announcement={a}
               canManage={canManage}
               onEdit={() => setEditingId(a.id)}
             />
-          </li>
+          </StaggerItem>
         ),
       )}
-    </ol>
+    </StaggerList>
   );
 }
 

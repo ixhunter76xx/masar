@@ -98,14 +98,14 @@ export default async function CourseContentPage({ params }: Params) {
         <div className="mt-6 flex flex-wrap gap-2">
           <Link
             href={`/courses/${courseId}/quizzes/new`}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line px-5 text-sm text-muted transition-colors hover:border-accent-deep hover:text-paper"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line px-5 text-sm text-muted press hover:border-accent-deep hover:text-paper"
           >
             <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
             إنشاء اختبار
           </Link>
           <Link
             href={`/courses/${courseId}/assignments/new`}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line px-5 text-sm text-muted transition-colors hover:border-accent-deep hover:text-paper"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line px-5 text-sm text-muted press hover:border-accent-deep hover:text-paper"
           >
             <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
             إنشاء واجب

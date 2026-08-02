@@ -46,6 +46,14 @@
   --radius-field: 10px; /* الحقول والأزرار */
   --radius-card: 14px; /* البطاقات */
 
+  /* --- الحركة: مطابقة لـ src/lib/motion.ts --- */
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
   /* --- الحد الأدنى لمساحة اللمس --- */
   --spacing-touch: 44px;
 }
@@ -90,6 +98,55 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* ==========================================================================
+     حالات التفاعل — CSS لا JS
+
+     الأزرار والبطاقات مكوّنات خادم تُصيَّر في كل صفحة. تحويلها إلى
+     مكوّنات عميلة لأجل حركة ضغط يعني شحن JS لكل زر في المنصة. القاعدة
+     هنا تعطي نفس الإحساس بصفر جافاسكربت، وتستخدم نفس منحنيات وأزمنة
+     `src/lib/motion.ts` فيبقى الإحساس واحدًا مع الحركة المكتوبة بـ motion.
+
+     `@media (hover: hover)` يمنع بقاء أثر hover عالقًا بعد اللمس على
+     الهاتف — سلوك معروف لأجهزة اللمس.
+     ========================================================================== */
+
+  .press {
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .press:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* بطاقة قابلة للنقر: ترتفع قليلًا عند التصويب وتنخفض عند الضغط */
+  .lift {
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  .lift:active {
+    transform: translateY(0) scale(0.995);
+  }
+
+  /* حقول النماذج: الحد يتلوّن بمنحنى بدل قفزة لونية */
+  .field-motion {
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
   }
 
   /* حلقة التركيز الموحّدة — بلا ظلال ملوّنة، فقط إطار واضح */

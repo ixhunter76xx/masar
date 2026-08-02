@@ -41,7 +41,7 @@ export default async function GradesPage() {
           <ul className="space-y-2">
             {courses.map((c) => (
               <li key={c.id}>
-                <Card className="transition-colors hover:border-accent-deep">
+                <Card className="lift hover:border-accent-deep">
                   <Link
                     href={`/courses/${c.id}/grades`}
                     className="flex items-center justify-between gap-3 px-5 py-4"

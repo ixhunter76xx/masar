@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { AssignmentStatus } from "@/generated/prisma/enums";
 import { relativeTime } from "@/lib/format";
 import type { AssignmentSummary } from "@/lib/data/assignments";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 const STATUS: Record<AssignmentStatus, { text: string; className: string }> = {
   DRAFT: { text: "مسودة", className: "border-line text-warning" },
@@ -22,10 +23,10 @@ export function AssignmentList({
   canManage: boolean;
 }) {
   return (
-    <ol className="space-y-3">
+    <StaggerList className="space-y-3">
       {assignments.map((a) => (
-        <li key={a.id}>
-          <Card className="transition-colors hover:border-accent-deep">
+        <StaggerItem key={a.id}>
+          <Card className="lift hover:border-accent-deep">
             <Link
               href={`/courses/${courseId}/assignments/${a.id}`}
               className="flex gap-4 px-5 py-4"
@@ -84,8 +85,8 @@ export function AssignmentList({
               </div>
             </Link>
           </Card>
-        </li>
+        </StaggerItem>
       ))}
-    </ol>
+    </StaggerList>
   );
 }

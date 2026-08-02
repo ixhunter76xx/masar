@@ -15,8 +15,8 @@ export function CourseCard({
     <Card
       className={
         archived
-          ? "transition-colors hover:border-accent-deep/60 opacity-75 hover:opacity-100"
-          : "transition-colors hover:border-accent-deep"
+          ? "lift hover:border-accent-deep/60 opacity-75 hover:opacity-100"
+          : "lift hover:border-accent-deep"
       }
     >
       <Link href={`/courses/${course.id}`} className="block px-5 py-4">

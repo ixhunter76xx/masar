@@ -42,7 +42,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           "bg-ink text-paper text-sm",
           "border border-line",
           "placeholder:text-disabled",
-          "transition-colors duration-150",
+          "field-motion",
           "hover:border-accent-deep",
           "focus:border-accent focus:outline-none",
           "focus-visible:outline-none",
@@ -141,7 +141,7 @@ export const Checkbox = React.forwardRef<
           className={cn(
             "peer appearance-none size-[18px] rounded-[5px]",
             "bg-ink border border-line",
-            "transition-colors duration-150",
+            "field-motion",
             "hover:border-accent-deep",
             "checked:bg-action checked:border-action",
             "disabled:cursor-not-allowed disabled:border-line disabled:bg-panel",
