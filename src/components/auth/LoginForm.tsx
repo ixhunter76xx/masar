@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/Button";
-import { Input, HelpText, Checkbox } from "@/components/ui/Field";
+import { Input, Label, HelpText, Checkbox } from "@/components/ui/Field";
 import { loginSchema, type LoginInput, type LoginValues } from "@/lib/validation";
 import { authenticate } from "@/app/(auth)/login/actions";
 import { SITE } from "@/lib/site";
@@ -54,10 +54,13 @@ export function LoginForm() {
       )}
 
       <div>
+        {/* تسمية حقيقية لا placeholder: النص النائب يختفي عند الكتابة
+            فيفقد المستخدم مرجعه، ولا يُعدّ تسمية في معايير الوصولية. */}
+        <Label htmlFor="username">اسم المستخدم</Label>
         <Input
           id="username"
           autoComplete="username"
-          placeholder="اسم المستخدم"
+          placeholder="الرقم الأكاديمي أو البريد المؤسسي"
           invalid={Boolean(errors.username)}
           aria-describedby={errors.username ? "username-error" : undefined}
           {...register("username")}
@@ -70,11 +73,11 @@ export function LoginForm() {
       </div>
 
       <div>
+        <Label htmlFor="password">كلمة المرور</Label>
         <Input
           id="password"
           type="password"
           autoComplete="current-password"
-          placeholder="كلمة المرور"
           invalid={Boolean(errors.password)}
           aria-describedby={errors.password ? "password-error" : undefined}
           {...register("password")}

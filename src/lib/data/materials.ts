@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { db } from "@/server/db";
 import { Role, MaterialStatus } from "@/generated/prisma/enums";
 
@@ -7,7 +9,7 @@ import { Role, MaterialStatus } from "@/generated/prisma/enums";
  * يتحقق أن المستخدم يملك حق **الرفع** في هذا المقرر:
  * مدرب المقرر نفسه، أو الإدارة. الطالب لا يرفع إطلاقًا.
  */
-export async function canManageCourse(
+export const canManageCourse = cache(async function canManageCourse(
   courseId: string,
   userId: string,
   role: Role,
@@ -23,7 +25,7 @@ export async function canManageCourse(
     );
   }
   return false;
-}
+});
 
 export type MaterialListItem = {
   id: string;

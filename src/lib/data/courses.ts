@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -102,8 +103,14 @@ export async function getCoursesByTerm(
   });
 }
 
-/** تفاصيل مقرر واحد — يُرجع null إن لم يكن المستخدم مخوّلًا بالوصول */
-export async function getCourseForUser(
+/**
+ * تفاصيل مقرر واحد — يُرجع null إن لم يكن المستخدم مخوّلًا بالوصول.
+ *
+ * مخزّنة لكل طلب: `requireCourseAccess` تُستدعى في تخطيط المقرر وفي كل
+ * صفحة تبويب (وهو مطلوب أمنيًا لأن Next ينفّذهما على التوازي)، لكن
+ * الاستعلام لا يُنفَّذ إلا مرة واحدة.
+ */
+export const getCourseForUser = cache(async function getCourseForUser(
   courseId: string,
   userId: string,
   role: Role,
@@ -120,7 +127,7 @@ export async function getCourseForUser(
       _count: { select: { enrollments: true } },
     },
   });
-}
+});
 
 /** نوع مقرر مع بياناته المعروضة في رأس الصفحة */
 export type CourseDetail = NonNullable<
@@ -134,7 +141,9 @@ export type CourseDetail = NonNullable<
  * التخطيط والصفحة على التوازي، فلا يكفي التحقق في التخطيط وحده لمنع
  * الصفحة من قراءة بيانات ليست للمستخدم.
  */
-export async function requireCourseAccess(courseId: string) {
+export const requireCourseAccess = cache(async function requireCourseAccess(
+  courseId: string,
+) {
   const session = await auth();
   if (!session?.user) notFound();
 
@@ -146,4 +155,4 @@ export async function requireCourseAccess(courseId: string) {
   if (!course) notFound();
 
   return { course, user: session.user };
-}
+});
