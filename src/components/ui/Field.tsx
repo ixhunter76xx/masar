@@ -129,9 +129,13 @@ export const Checkbox = React.forwardRef<
   React.InputHTMLAttributes<HTMLInputElement> & { label: string }
 >(function Checkbox({ className, label, id, ...props }, ref) {
   return (
+    /* الحد الأدنى ٤٤ بكسل ارتفاعًا: المربع نفسه ١٨ بكسل بصريًا، والتسمية
+       تحمله فتصير هي منطقة اللمس. `-my-3` يلغي الارتفاع الزائد من تدفّق
+       التخطيط فلا يتغيّر شكل النموذج. */
     <label
       htmlFor={id}
-      className="group inline-flex items-center gap-2.5 cursor-pointer select-none"
+      className="group inline-flex min-h-touch -my-3 items-center gap-2.5
+        cursor-pointer select-none"
     >
       <span className="relative inline-flex shrink-0">
         <input

@@ -97,10 +97,13 @@ export function LoginForm() {
         {isSubmitting ? "جارٍ التحقق" : "دخول"}
       </Button>
 
-      <div className="flex items-center justify-between pt-3 text-xs">
+      <div className="flex items-center justify-between text-xs">
+        {/* الحد الأدنى ٤٤ بكسل للمس. الحشو يوسّع منطقة النقر، و`-ms-2`
+            يعيد النص إلى محاذاته الأصلية فلا يبدو مزاحًا عن الحافة. */}
         <Link
           href="/forgot-password"
-          className="text-accent-bright hover:text-paper transition-colors"
+          className="-ms-2 inline-flex min-h-touch items-center rounded-[10px] px-2
+            text-accent-bright transition-colors hover:text-paper"
         >
           نسيت كلمة المرور؟
         </Link>

@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authConfig } from "@/auth.config";
+import { buildCsp, generateNonce } from "@/lib/csp";
 
 const { auth } = NextAuth(authConfig);
 
@@ -12,6 +13,16 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = Boolean(req.auth);
   const isPublic = PUBLIC_ROUTES.includes(pathname);
+
+  /**
+   * سياسة أمان المحتوى: nonce جديد لكل طلب.
+   *
+   * يُمرَّر إلى Next عبر ترويسة **الطلب** ليضعه المصيِّر على نصوصه
+   * البرمجية المضمّنة، وتحمل **الاستجابة** السياسة التي ترفض ما عداه.
+   * أي تحويل (redirect) أدناه لا يحمل مستندًا فلا يحتاج السياسة.
+   */
+  const nonce = generateNonce();
+  const csp = buildCsp(nonce);
 
   // مسجّل دخول ويحاول فتح صفحة الدخول → إلى لوحة التحكم
   if (isLoggedIn && isPublic) {
@@ -36,7 +47,13 @@ export default auth((req) => {
     return NextResponse.redirect(target);
   }
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("content-security-policy", csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("content-security-policy", csp);
+  return response;
 });
 
 export const config = {

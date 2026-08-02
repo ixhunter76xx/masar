@@ -5,6 +5,15 @@ import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { SITE } from "@/lib/site";
 
+/**
+ * تصيير عند الطلب — مطلوب لسياسة أمان المحتوى.
+ *
+ * الـ nonce يُولَّد لكل طلب في middleware، وصفحة مولَّدة مسبقًا تُحفظ
+ * بنصوص بلا nonce فتحجبها السياسة كاملةً. باقي صفحات المنصة ديناميكية
+ * أصلًا لأنها تقرأ الجلسة؛ هاتان الصفحتان العامتان الاستثناء الوحيد.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "استعادة كلمة المرور" };
 
 export default function ForgotPasswordPage() {

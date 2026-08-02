@@ -9,7 +9,8 @@ export function SignOutButton() {
         await signOut({ redirectTo: "/login" });
       }}
     >
-      <Button type="submit" variant="secondary" size="sm">
+      {/* size="md" لا "sm": ٤٤ بكسل هو الحد الأدنى لمساحة اللمس */}
+      <Button type="submit" variant="secondary">
         تسجيل الخروج
       </Button>
     </form>
