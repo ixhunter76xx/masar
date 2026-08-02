@@ -18,7 +18,7 @@ export default function NotFound() {
           <FileQuestion size={22} strokeWidth={1.75} aria-hidden="true" />
         </span>
 
-        <p className="numeric mt-5 text-2xl font-bold text-disabled">404</p>
+        <p className="numeric mt-5 text-2xl font-bold text-subtle">404</p>
         <h1 className="mt-1 text-lg font-bold text-paper">الصفحة غير موجودة</h1>
         <p className="mt-2 text-[13px] leading-relaxed text-muted">
           الرابط غير صحيح، أو أن هذا المحتوى غير متاح لحسابك.

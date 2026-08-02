@@ -45,7 +45,7 @@ export function AdminForm({
 
   return (
     <Card className="mb-6 px-5 py-5">
-      <h3 className="mb-4 text-sm font-medium text-paper">{title}</h3>
+      <h2 className="mb-4 text-sm font-medium text-paper">{title}</h2>
 
       <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-3">
         {children}

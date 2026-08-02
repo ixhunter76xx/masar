@@ -75,7 +75,7 @@ export default async function ProfilePage() {
           />
         </dl>
 
-        <p className="mt-5 border-t border-line pt-4 text-[11px] leading-relaxed text-disabled">
+        <p className="mt-5 border-t border-line pt-4 text-[11px] leading-relaxed text-subtle">
           لتعديل الاسم أو البريد، تواصل مع إدارة المركز.
         </p>
       </Card>
@@ -96,7 +96,7 @@ function Row({
 }) {
   return (
     <div>
-      <dt className="text-[11px] text-disabled">{label}</dt>
+      <dt className="text-[11px] text-subtle">{label}</dt>
       <dd className={`mt-1 text-paper ${numeric ? "numeric" : ""}`}>{value}</dd>
     </div>
   );

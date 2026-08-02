@@ -45,7 +45,7 @@ export default async function TermsPage() {
             <Card className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-paper">{t.name}</p>
-                <p className="mt-1 text-[11px] text-disabled">
+                <p className="mt-1 text-[11px] text-subtle">
                   {formatDateRange(t.startsOn, t.endsOn)} ·{" "}
                   <span className="numeric">{t._count.courses}</span> مقررات
                 </p>
@@ -57,7 +57,7 @@ export default async function TermsPage() {
                     "rounded-full border px-2 py-0.5 text-[10px] " +
                     (t.status === TermStatus.ACTIVE
                       ? "border-success/40 text-success"
-                      : "border-line text-disabled")
+                      : "border-line text-subtle")
                   }
                 >
                   {t.status === TermStatus.ACTIVE ? "نشط" : "مؤرشف"}

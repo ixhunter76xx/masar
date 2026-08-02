@@ -31,7 +31,7 @@ export default async function NewQuizPage({ params }: Params) {
 
       <QuizSettingsForm courseId={courseId} />
 
-      <p className="text-[12px] leading-relaxed text-disabled">
+      <p className="text-[12px] leading-relaxed text-subtle">
         بعد الإنشاء ستنتقل إلى صفحة إضافة الأسئلة. الاختبار يبقى مسودة لا
         يراها الطلاب حتى تنشره.
       </p>

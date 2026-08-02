@@ -50,11 +50,11 @@ export default async function GradesPage() {
                       <span className="block truncate text-sm text-paper">
                         {c.title}
                       </span>
-                      <span className="mt-0.5 block text-[11px] text-disabled">
+                      <span className="mt-0.5 block text-[11px] text-subtle">
                         <span className="numeric">{c.code}</span> · {c.termName}
                       </span>
                     </span>
-                    <span className="shrink-0 text-[11px] text-disabled">
+                    <span className="shrink-0 text-[11px] text-subtle">
                       <span className="numeric">{c.studentCount}</span> طالب
                     </span>
                   </Link>
@@ -93,13 +93,13 @@ export default async function GradesPage() {
               <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-sm font-medium text-paper">
                   {c.courseTitle}{" "}
-                  <span className="numeric text-[11px] text-disabled">
+                  <span className="numeric text-[11px] text-subtle">
                     {c.courseCode}
                   </span>
                 </h2>
                 <p className="text-[12px]">
                   <span className="numeric text-paper">{c.earned}</span>
-                  <span className="text-disabled"> / </span>
+                  <span className="text-subtle"> / </span>
                   <span className="numeric text-muted">{c.total}</span>
                   {pct !== null && (
                     <span className="numeric ms-2 text-accent">{pct}%</span>
@@ -120,7 +120,7 @@ export default async function GradesPage() {
       )}
 
       {courses.length > 0 && (
-        <p className="mt-6 text-[11px] leading-relaxed text-disabled">
+        <p className="mt-6 text-[11px] leading-relaxed text-subtle">
           المجموع محسوب على العناصر المصحّحة فقط. درجة الاختبار المعتمدة هي
           أعلى محاولة.
         </p>

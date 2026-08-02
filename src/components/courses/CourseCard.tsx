@@ -24,7 +24,7 @@ export function CourseCard({
           <h3 className="truncate text-sm font-medium text-paper">
             {course.title}
           </h3>
-          <span className="numeric shrink-0 text-[11px] text-disabled">
+          <span className="numeric shrink-0 text-[11px] text-subtle">
             {course.code}
           </span>
         </div>
@@ -35,7 +35,7 @@ export function CourseCard({
           </p>
         )}
 
-        <div className="mt-3.5 flex items-center gap-4 border-t border-line pt-3 text-[11px] text-disabled">
+        <div className="mt-3.5 flex items-center gap-4 border-t border-line pt-3 text-[11px] text-subtle">
           <span className="inline-flex items-center gap-1.5">
             <UserRound size={13} strokeWidth={1.75} aria-hidden="true" />
             {course.instructorName}

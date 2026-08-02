@@ -119,7 +119,7 @@ function Row({
             {a.body}
           </p>
 
-          <p className="mt-3 text-[11px] text-disabled">
+          <p className="mt-3 text-[11px] text-subtle">
             {a.authorName} ·{" "}
             <time dateTime={(a.publishedAt ?? a.createdAt).toISOString()}>
               {relativeTime(a.publishedAt ?? a.createdAt)}

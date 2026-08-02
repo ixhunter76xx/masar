@@ -23,7 +23,7 @@ export function AdminTabs() {
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "inline-block whitespace-nowrap px-4 py-3",
-                  "border-b-2 text-[13px] transition-colors duration-150",
+                  "border-b-2 text-[13px] transition-[color,border-color] duration-200",
                   isActive
                     ? "border-accent-bright text-paper font-medium"
                     : "border-transparent text-muted hover:text-paper",

@@ -27,7 +27,7 @@ export function CourseHeaderCard({
         </div>
 
         {archived && (
-          <span className="mt-2 inline-block rounded-full border border-line px-2 py-0.5 text-[10px] text-disabled">
+          <span className="mt-2 inline-block rounded-full border border-line px-2 py-0.5 text-[10px] text-subtle">
             فصل مؤرشف
           </span>
         )}
@@ -70,7 +70,7 @@ function Meta({
 }) {
   return (
     <div>
-      <dt className="flex items-center gap-1.5 text-[11px] text-disabled">
+      <dt className="flex items-center gap-1.5 text-[11px] text-subtle">
         <Icon size={13} strokeWidth={1.75} aria-hidden="true" />
         {label}
       </dt>

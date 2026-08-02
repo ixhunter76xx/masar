@@ -36,7 +36,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                   >
                     {c.title}
                   </Link>
-                  <span className="numeric mt-0.5 block text-[10px] font-normal text-disabled">
+                  <span className="numeric mt-0.5 block text-[10px] font-normal text-subtle">
                     من {c.totalPoints} · {c.kind === "quiz" ? "اختبار" : "واجب"}
                   </span>
                 </th>
@@ -66,7 +66,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                     className="sticky start-0 z-10 bg-panel px-5 py-3 text-start font-normal"
                   >
                     <span className="block truncate text-paper">{r.name}</span>
-                    <span className="numeric block text-[11px] text-disabled">
+                    <span className="numeric block text-[11px] text-subtle">
                       {r.username}
                     </span>
                   </th>
@@ -77,7 +77,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                       <td key={c.id} className="px-4 py-3 text-center">
                         {v === null ? (
                           <span
-                            className="text-disabled"
+                            className="text-subtle"
                             title="لم يُصحَّح بعد"
                             aria-label="لم يُصحَّح بعد"
                           >
@@ -92,13 +92,13 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
 
                   <td className="px-4 py-3 text-center">
                     {r.total === 0 ? (
-                      <span className="text-disabled">—</span>
+                      <span className="text-subtle">—</span>
                     ) : (
                       <>
                         <span className="numeric text-paper">{r.earned}</span>
-                        <span className="text-disabled"> / </span>
+                        <span className="text-subtle"> / </span>
                         <span className="numeric text-muted">{r.total}</span>
-                        <span className="numeric block text-[10px] text-disabled">
+                        <span className="numeric block text-[10px] text-subtle">
                           {pct}%
                         </span>
                       </>

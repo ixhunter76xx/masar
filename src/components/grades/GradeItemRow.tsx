@@ -24,7 +24,7 @@ export function GradeItemRow({ item }: { item: GradeItem }) {
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] text-paper">{item.title}</p>
-          <p className="mt-0.5 text-[11px] text-disabled">
+          <p className="mt-0.5 text-[11px] text-subtle">
             {relativeTime(item.gradedAt)}
             {item.isLate && <span className="ms-2 text-warning">متأخر</span>}
           </p>
@@ -34,9 +34,9 @@ export function GradeItemRow({ item }: { item: GradeItem }) {
           <span className="numeric text-sm font-medium text-paper">
             {item.earnedPoints}
           </span>
-          <span className="text-disabled"> / </span>
+          <span className="text-subtle"> / </span>
           <span className="numeric text-sm text-muted">{item.totalPoints}</span>
-          <span className="numeric block text-[11px] text-disabled">
+          <span className="numeric block text-[11px] text-subtle">
             {pct}%
           </span>
         </p>

@@ -103,7 +103,7 @@ export function QuizToolbar({
         )}
 
         {attemptCount > 0 && (
-          <span className="text-[11px] text-disabled">
+          <span className="text-[11px] text-subtle">
             <span className="numeric">{attemptCount}</span> محاولة مسجَّلة —
             بنية الأسئلة مقفلة
           </span>

@@ -45,7 +45,7 @@ export default async function CourseGradesPage({ params }: Params) {
     return (
       <>
         <GradebookTable gradebook={gradebook} />
-        <p className="mt-4 text-[11px] leading-relaxed text-disabled">
+        <p className="mt-4 text-[11px] leading-relaxed text-subtle">
           الشرطة (—) تعني أن العنصر لم يُصحَّح لهذا الطالب بعد، ولا يدخل في
           مجموعه. درجة الاختبار المعتمدة هي أعلى محاولة.
         </p>
@@ -78,7 +78,7 @@ export default async function CourseGradesPage({ params }: Params) {
         <h3 className="text-sm font-medium text-paper">درجاتي في هذا المقرر</h3>
         <p className="text-[13px]">
           <span className="numeric text-paper">{mine.earned}</span>
-          <span className="text-disabled"> / </span>
+          <span className="text-subtle"> / </span>
           <span className="numeric text-muted">{mine.total}</span>
           {pct !== null && (
             <span className="numeric ms-2 text-accent">{pct}%</span>
@@ -94,7 +94,7 @@ export default async function CourseGradesPage({ params }: Params) {
         ))}
       </ul>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-disabled">
+      <p className="mt-4 text-[11px] leading-relaxed text-subtle">
         المجموع محسوب على العناصر المصحّحة فقط.
       </p>
     </>

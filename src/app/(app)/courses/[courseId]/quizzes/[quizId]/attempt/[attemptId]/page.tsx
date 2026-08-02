@@ -72,7 +72,7 @@ export default async function AttemptPage({ params }: Params) {
             <span className="numeric text-3xl font-bold text-paper">
               {earned}
             </span>
-            <span className="text-xl text-disabled"> / </span>
+            <span className="text-xl text-subtle"> / </span>
             <span className="numeric text-xl text-muted">{total}</span>
           </p>
           <p className="numeric mt-2 text-[13px] text-accent">{pct}%</p>
@@ -103,10 +103,10 @@ export default async function AttemptPage({ params }: Params) {
                     />
                   )}
                   <p className="flex-1 text-[13px] leading-relaxed text-paper">
-                    <span className="numeric text-disabled">{i + 1}. </span>
+                    <span className="numeric text-subtle">{i + 1}. </span>
                     {q.text}
                   </p>
-                  <span className="numeric shrink-0 text-[11px] text-disabled">
+                  <span className="numeric shrink-0 text-[11px] text-subtle">
                     {a?.earnedPoints ?? 0} / {q.points}
                   </span>
                 </Card>
@@ -132,7 +132,7 @@ export default async function AttemptPage({ params }: Params) {
       <h2 className="mb-1 text-lg font-bold text-paper">
         {attempt.quiz.title}
       </h2>
-      <p className="mb-6 text-[12px] text-disabled">
+      <p className="mb-6 text-[12px] text-subtle">
         المحاولة <span className="numeric">{attempt.attemptNumber}</span>
       </p>
 

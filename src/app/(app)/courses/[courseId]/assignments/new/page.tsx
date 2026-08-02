@@ -31,7 +31,7 @@ export default async function NewAssignmentPage({ params }: Params) {
 
       <AssignmentForm courseId={courseId} />
 
-      <p className="text-[12px] leading-relaxed text-disabled">
+      <p className="text-[12px] leading-relaxed text-subtle">
         الواجب يبقى مسودة لا يراها الطلاب حتى تنشره.
       </p>
     </AppPage>

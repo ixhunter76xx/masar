@@ -109,7 +109,7 @@ export default async function QuizEditorPage({ params }: Params) {
 
       <h3 className="mb-3 text-sm font-medium text-paper">
         الأسئلة{" "}
-        <span className="numeric text-[11px] text-disabled">
+        <span className="numeric text-[11px] text-subtle">
           {quiz.questions.length}
         </span>
       </h3>

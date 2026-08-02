@@ -59,10 +59,10 @@ export function AnnouncementForm({
 
   return (
     <Card className="mb-6 px-5 py-5">
-      <h3 className="mb-4 flex items-center gap-2 text-sm font-medium text-paper">
+      <h2 className="mb-4 flex items-center gap-2 text-sm font-medium text-paper">
         <Megaphone size={16} strokeWidth={1.75} aria-hidden="true" />
         {editing ? "تعديل الإعلان" : "إعلان جديد"}
-      </h3>
+      </h2>
 
       <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-3">
         <FormField
@@ -126,7 +126,7 @@ export function AnnouncementForm({
             </Button>
           )}
           {!editing && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-disabled">
+            <span className="inline-flex items-center gap-1 text-[11px] text-subtle">
               <Pin size={11} strokeWidth={1.75} aria-hidden="true" />
               بلا نشر يُحفظ كمسودة لا يراها الطلاب
             </span>

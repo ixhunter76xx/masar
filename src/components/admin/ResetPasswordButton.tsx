@@ -81,7 +81,7 @@ export function ResetPasswordButton({
           إلغاء
         </Button>
       </div>
-      <p className="mt-1 text-[11px] text-disabled">
+      <p className="mt-1 text-[11px] text-subtle">
         سيُجبَر المستخدم على تغييرها عند أول دخول.
       </p>
       {error && (

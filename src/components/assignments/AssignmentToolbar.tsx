@@ -74,7 +74,7 @@ export function AssignmentToolbar({
             حذف
           </Button>
         ) : (
-          <span className="text-[11px] text-disabled">
+          <span className="text-[11px] text-subtle">
             <span className="numeric">{submissionCount}</span> تسليم مسجَّل
           </span>
         )}

@@ -116,10 +116,10 @@ export function AttemptRunner({
             <Card className="px-5 py-5">
               <fieldset disabled={busy}>
                 <legend className="mb-3">
-                  <span className="numeric text-[11px] text-disabled">
+                  <span className="numeric text-[11px] text-subtle">
                     سؤال {i + 1} من {questions.length}
                   </span>
-                  <span className="numeric ms-3 text-[11px] text-disabled">
+                  <span className="numeric ms-3 text-[11px] text-subtle">
                     {q.points} درجة
                   </span>
                   <p className="mt-2 text-sm leading-relaxed text-paper">

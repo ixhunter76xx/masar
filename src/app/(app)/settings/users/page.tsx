@@ -66,12 +66,12 @@ export default async function UsersPage() {
                 <p className="truncate text-[13px] text-paper">
                   {u.name}
                   {!u.isActive && (
-                    <span className="ms-2 rounded-full border border-line px-2 py-0.5 text-[10px] text-disabled">
+                    <span className="ms-2 rounded-full border border-line px-2 py-0.5 text-[10px] text-subtle">
                       معطّل
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-[11px] text-disabled">
+                <p className="mt-0.5 text-[11px] text-subtle">
                   <span className="numeric">{u.username}</span> · {ROLE_LABELS[u.role]}
                   {u.role === Role.STUDENT && (
                     <> · <span className="numeric">{u._count.enrollments}</span> مقررات</>

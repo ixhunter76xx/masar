@@ -41,9 +41,9 @@ export default async function CourseEnrollmentPage({ params }: Params) {
       <Card className="mb-6 px-5 py-4">
         <p className="text-sm font-medium text-paper">
           {course.title}{" "}
-          <span className="numeric text-[11px] text-disabled">{course.code}</span>
+          <span className="numeric text-[11px] text-subtle">{course.code}</span>
         </p>
-        <p className="mt-1 text-[11px] text-disabled">
+        <p className="mt-1 text-[11px] text-subtle">
           {course.term.name} · {course.instructor.name}
         </p>
       </Card>

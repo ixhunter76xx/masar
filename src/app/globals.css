@@ -25,7 +25,15 @@
 
   /* --- النصوص والحالات --- */
   --color-muted: #9dafbd; /* نص ثانوي — الوصف والمساعدة */
-  --color-disabled: #5c6878; /* معطل — غير متاح */
+
+  /* نص معلوماتي خافت: تواريخ، تسميات حقول، أحجام ملفات.
+     أُضيف لأن `disabled` كان يُستخدم لهذا الغرض وهو يرسب في WCAG AA
+     (3.10 على البطاقات). هذا يحقق 5.52 على الخلفية و5.07 على البطاقة. */
+  --color-subtle: #7a8c9e;
+
+  /* معطل — حالة عدم الإتاحة فقط، لا نصوص معلوماتية.
+     تباينه المنخفض مقصود: العنصر المعطّل يجب أن يبدو غير متاح. */
+  --color-disabled: #5c6878;
   --color-danger: #a0524f; /* خطر — حذف أو خطأ */
   --color-warning: #c79a56; /* تحذير — موعد يقترب */
   --color-success: #4e8c6a; /* نجاح — تسليم ناجح */
@@ -70,6 +78,18 @@
     font-feature-settings: "tnum" 1;
     direction: ltr;
     unicode-bidi: embed;
+  }
+
+  /* احترام تفضيل تقليل الحركة — إلزامي لا تحسين */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* حلقة التركيز الموحّدة — بلا ظلال ملوّنة، فقط إطار واضح */

@@ -11,12 +11,12 @@ export function TermSection({ group }: { group: TermGroup }) {
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h2 className="text-sm font-medium text-paper">{group.termName}</h2>
 
-        <span className="text-[11px] text-disabled">
+        <span className="text-[11px] text-subtle">
           {formatDateRange(group.startsOn, group.endsOn)}
         </span>
 
         {archived && (
-          <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-disabled">
+          <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-subtle">
             مؤرشف
           </span>
         )}

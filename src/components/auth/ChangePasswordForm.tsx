@@ -52,11 +52,11 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
 
   return (
     <Card className="px-5 py-5">
-      <h3 className="mb-1 flex items-center gap-2 text-sm font-medium text-paper">
+      <h2 className="mb-1 flex items-center gap-2 text-sm font-medium text-paper">
         <KeyRound size={16} strokeWidth={1.75} aria-hidden="true" />
         تغيير كلمة المرور
-      </h3>
-      <p className="mb-4 text-[11px] text-disabled">
+      </h2>
+      <p className="mb-4 text-[11px] text-subtle">
         ستُنهى جلستك بعد التغيير وتحتاج لتسجيل الدخول من جديد.
       </p>
 

@@ -44,10 +44,11 @@ export function SidebarNav({
                   "text-sm transition-colors duration-150",
                   // الخط الرأسي عند الحدّ الفاصل بين القائمة والمحتوى
                   "before:absolute before:inset-y-2 before:end-0 before:w-[3px]",
-                  "before:rounded-full before:transition-colors",
+                  "before:rounded-full before:origin-center",
+                  "before:transition-[background-color,transform] before:duration-200",
                   isActive
-                    ? "bg-[#18222e] text-paper font-medium before:bg-accent-bright"
-                    : "text-muted hover:text-paper hover:bg-panel before:bg-transparent",
+                    ? "bg-[#18222e] text-paper font-medium before:bg-accent-bright before:scale-y-100"
+                    : "text-muted hover:text-paper hover:bg-panel before:bg-transparent before:scale-y-0",
                 )}
               >
                 <Icon
@@ -56,7 +57,7 @@ export function SidebarNav({
                   aria-hidden="true"
                   className={cn(
                     "shrink-0",
-                    isActive ? "text-accent-bright" : "text-disabled",
+                    isActive ? "text-accent-bright" : "text-subtle",
                   )}
                 />
                 <span className="flex-1 text-start">{label}</span>

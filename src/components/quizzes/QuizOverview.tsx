@@ -76,10 +76,10 @@ export function QuizOverview({
           <p className="flex-1 text-sm text-paper">
             أفضل نتيجة:{" "}
             <span className="numeric font-medium">{best.earnedPoints}</span>
-            <span className="text-disabled"> / </span>
+            <span className="text-subtle"> / </span>
             <span className="numeric text-muted">{best.totalPoints}</span>
           </p>
-          <span className="text-[11px] text-disabled">
+          <span className="text-[11px] text-subtle">
             الدرجة المعتمدة هي الأعلى
           </span>
         </Card>
@@ -114,12 +114,12 @@ export function QuizOverview({
                       المحاولة <span className="numeric">{a.attemptNumber}</span>
                     </span>
                     <span className="flex items-center gap-3">
-                      <span className="text-[11px] text-disabled">
+                      <span className="text-[11px] text-subtle">
                         {relativeTime(a.submittedAt!)}
                       </span>
                       <span className="numeric text-sm text-paper">
                         {a.earnedPoints}
-                        <span className="text-disabled"> / </span>
+                        <span className="text-subtle"> / </span>
                         <span className="text-muted">{a.totalPoints}</span>
                       </span>
                     </span>
@@ -145,7 +145,7 @@ function Meta({
 }) {
   return (
     <div>
-      <dt className="flex items-center gap-1.5 text-[11px] text-disabled">
+      <dt className="flex items-center gap-1.5 text-[11px] text-subtle">
         <Icon size={13} strokeWidth={1.75} aria-hidden="true" />
         {label}
       </dt>

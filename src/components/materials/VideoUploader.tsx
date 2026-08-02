@@ -109,7 +109,7 @@ export function VideoUploader({ courseId }: { courseId: string }) {
   return (
     <Card className="mb-6 px-5 py-5">
       <h3 className="text-sm font-medium text-paper">رفع محاضرة مسجّلة</h3>
-      <p className="mt-1 text-[11px] text-disabled">
+      <p className="mt-1 text-[11px] text-subtle">
         MP4 فقط · الحد الأقصى {formatBytes(MAX_VIDEO_BYTES)}
       </p>
 
@@ -164,7 +164,7 @@ export function VideoUploader({ courseId }: { courseId: string }) {
               style={{ width: `${percent}%` }}
             />
           </div>
-          <p className="mt-2 text-[11px] text-disabled">
+          <p className="mt-2 text-[11px] text-subtle">
             لا تُغلق الصفحة. يُرفع الملف على أجزاء، ويُعاد رفع الجزء الفاشل
             وحده عند تعثّر الاتصال.
           </p>

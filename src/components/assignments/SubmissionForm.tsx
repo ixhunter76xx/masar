@@ -129,7 +129,7 @@ export function SubmissionForm({
       <h3 className="mb-1 text-sm font-medium text-paper">
         {existingFileName || existingNote ? "إعادة التسليم" : "تسليم الواجب"}
       </h3>
-      <p className="mb-4 text-[11px] text-disabled">
+      <p className="mb-4 text-[11px] text-subtle">
         {allowedExtensions.join("، ")} · حتى{" "}
         <span className="numeric">{maxFileMb}</span> ميجابايت
         {existingFileName || existingNote

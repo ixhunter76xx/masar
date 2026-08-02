@@ -37,7 +37,7 @@ export default function Error({
         </p>
 
         {error.digest && (
-          <p className="mt-4 rounded-[10px] border border-line bg-ink px-3 py-2 text-[11px] text-disabled">
+          <p className="mt-4 rounded-[10px] border border-line bg-ink px-3 py-2 text-[11px] text-subtle">
             رقم الخطأ:{" "}
             <span className="numeric text-muted">{error.digest}</span>
           </p>

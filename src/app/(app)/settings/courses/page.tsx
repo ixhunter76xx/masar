@@ -82,9 +82,9 @@ export default async function AdminCoursesPage() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-paper">
                   {c.title}{" "}
-                  <span className="numeric text-[11px] text-disabled">{c.code}</span>
+                  <span className="numeric text-[11px] text-subtle">{c.code}</span>
                 </p>
-                <p className="mt-1 text-[11px] text-disabled">
+                <p className="mt-1 text-[11px] text-subtle">
                   {c.term.name}
                   {c.term.status === TermStatus.ARCHIVED && " · مؤرشف"} · {c.instructor.name}
                 </p>

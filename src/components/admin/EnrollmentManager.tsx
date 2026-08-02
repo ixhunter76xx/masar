@@ -58,7 +58,7 @@ export function EnrollmentManager({
   return (
     <>
       <Card className="mb-6 px-5 py-5">
-        <h3 className="mb-4 text-sm font-medium text-paper">تسجيل طالب</h3>
+        <h2 className="mb-4 text-sm font-medium text-paper">تسجيل طالب</h2>
 
         {candidates.length === 0 ? (
           <p className="text-[13px] text-muted">
@@ -100,7 +100,7 @@ export function EnrollmentManager({
 
       <h3 className="mb-3 text-sm font-medium text-paper">
         الطلاب المسجَّلون{" "}
-        <span className="numeric text-[11px] text-disabled">
+        <span className="numeric text-[11px] text-subtle">
           {enrollments.length}
         </span>
       </h3>
@@ -118,7 +118,7 @@ export function EnrollmentManager({
                   <p className="truncate text-[13px] text-paper">
                     {e.studentName}
                   </p>
-                  <p className="numeric mt-0.5 text-[11px] text-disabled">
+                  <p className="numeric mt-0.5 text-[11px] text-subtle">
                     {e.studentUsername}
                   </p>
                 </div>

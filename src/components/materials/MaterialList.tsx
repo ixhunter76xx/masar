@@ -53,7 +53,7 @@ export function MaterialList({
                     </p>
 
                     <div className="flex shrink-0 items-start gap-2">
-                      <time className="mt-1.5 text-[11px] text-disabled">
+                      <time className="mt-1.5 text-[11px] text-subtle">
                         {relativeTime(m.createdAt)}
                       </time>
                       {canManage && (
@@ -66,7 +66,7 @@ export function MaterialList({
                     </div>
                   </div>
 
-                  <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-disabled">
+                  <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-subtle">
                     {m.sizeBytes !== null && (
                       <span className="numeric">{formatBytes(m.sizeBytes)}</span>
                     )}

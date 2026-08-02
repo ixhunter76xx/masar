@@ -75,7 +75,7 @@ export function QuestionEditor({
     <Card className="px-5 py-5">
       <form onSubmit={save} noValidate className="space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <span className="numeric mt-2 text-[11px] text-disabled">
+          <span className="numeric mt-2 text-[11px] text-subtle">
             سؤال {index + 1}
           </span>
           <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-muted">

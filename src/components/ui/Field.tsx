@@ -74,7 +74,7 @@ export function HelpText({
     <p
       className={cn(
         "mt-2 text-xs leading-relaxed",
-        tone === "danger" ? "text-danger" : "text-disabled",
+        tone === "danger" ? "text-danger" : "text-subtle",
         className,
       )}
       {...props}

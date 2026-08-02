@@ -104,7 +104,7 @@ export function LoginForm() {
         >
           نسيت كلمة المرور؟
         </Link>
-        <span className="text-disabled">
+        <span className="text-subtle">
           الدعم الفني:{" "}
           <span className="numeric text-muted">{SITE.supportPhone}</span>
         </span>

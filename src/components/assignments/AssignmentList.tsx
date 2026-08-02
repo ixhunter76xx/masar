@@ -9,7 +9,7 @@ import type { AssignmentSummary } from "@/lib/data/assignments";
 const STATUS: Record<AssignmentStatus, { text: string; className: string }> = {
   DRAFT: { text: "مسودة", className: "border-line text-warning" },
   PUBLISHED: { text: "متاح", className: "border-success/40 text-success" },
-  CLOSED: { text: "مغلق", className: "border-line text-disabled" },
+  CLOSED: { text: "مغلق", className: "border-line text-subtle" },
 };
 
 export function AssignmentList({
@@ -59,7 +59,7 @@ export function AssignmentList({
                   </p>
                 )}
 
-                <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-disabled">
+                <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-subtle">
                   <span>
                     <span className="numeric">{a.totalPoints}</span> درجة
                   </span>

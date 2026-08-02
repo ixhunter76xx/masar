@@ -80,7 +80,7 @@ export default async function AssignmentPage({ params }: Params) {
 
         <h3 className="mb-3 text-sm font-medium text-paper">
           التسليمات{" "}
-          <span className="numeric text-[11px] text-disabled">
+          <span className="numeric text-[11px] text-subtle">
             {a.submissions.length}
           </span>
         </h3>
@@ -109,7 +109,7 @@ export default async function AssignmentPage({ params }: Params) {
                           </span>
                         )}
                       </p>
-                      <p className="numeric mt-0.5 text-[11px] text-disabled">
+                      <p className="numeric mt-0.5 text-[11px] text-subtle">
                         {s.student.username} · {relativeTime(s.submittedAt)}
                       </p>
                     </div>
@@ -117,7 +117,7 @@ export default async function AssignmentPage({ params }: Params) {
                     {s.earnedPoints !== null && (
                       <p className="numeric text-sm text-paper">
                         {s.earnedPoints}
-                        <span className="text-disabled"> / </span>
+                        <span className="text-subtle"> / </span>
                         <span className="text-muted">{a.totalPoints}</span>
                         {s.rawPoints !== null &&
                           s.rawPoints !== s.earnedPoints && (
@@ -143,7 +143,7 @@ export default async function AssignmentPage({ params }: Params) {
                       <Download size={14} strokeWidth={1.75} aria-hidden="true" />
                       {s.fileName}
                       {s.fileSizeBytes !== null && (
-                        <span className="numeric text-disabled">
+                        <span className="numeric text-subtle">
                           {formatBytes(Number(s.fileSizeBytes))}
                         </span>
                       )}
@@ -199,11 +199,11 @@ export default async function AssignmentPage({ params }: Params) {
 
         <dl className="mt-5 grid gap-4 border-t border-line pt-4 text-[13px] sm:grid-cols-2">
           <div>
-            <dt className="text-[11px] text-disabled">الدرجة الكاملة</dt>
+            <dt className="text-[11px] text-subtle">الدرجة الكاملة</dt>
             <dd className="numeric mt-1 text-paper">{a.totalPoints}</dd>
           </div>
           <div>
-            <dt className="flex items-center gap-1.5 text-[11px] text-disabled">
+            <dt className="flex items-center gap-1.5 text-[11px] text-subtle">
               <CalendarClock size={12} strokeWidth={1.75} aria-hidden="true" />
               موعد التسليم
             </dt>
@@ -242,11 +242,11 @@ export default async function AssignmentPage({ params }: Params) {
             {mine.earnedPoints !== null ? (
               <p className="numeric text-sm text-paper">
                 {mine.earnedPoints}
-                <span className="text-disabled"> / </span>
+                <span className="text-subtle"> / </span>
                 <span className="text-muted">{a.totalPoints}</span>
               </p>
             ) : (
-              <span className="text-[11px] text-disabled">بانتظار التصحيح</span>
+              <span className="text-[11px] text-subtle">بانتظار التصحيح</span>
             )}
           </div>
 
@@ -262,7 +262,7 @@ export default async function AssignmentPage({ params }: Params) {
 
           {mine.feedback && (
             <div className="mt-3 rounded-[10px] border border-line bg-ink px-4 py-3">
-              <p className="text-[11px] text-disabled">تعليق المدرب</p>
+              <p className="text-[11px] text-subtle">تعليق المدرب</p>
               <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-muted">
                 {mine.feedback}
               </p>

@@ -48,7 +48,7 @@ export default async function CourseContentPage({ params }: Params) {
             <section className="mb-8">
               <h3 className="mb-3 text-sm font-medium text-paper">
                 الاختبارات{" "}
-                <span className="numeric text-[11px] text-disabled">
+                <span className="numeric text-[11px] text-subtle">
                   {quizzes.length}
                 </span>
               </h3>
@@ -64,7 +64,7 @@ export default async function CourseContentPage({ params }: Params) {
             <section className="mb-8">
               <h3 className="mb-3 text-sm font-medium text-paper">
                 الواجبات{" "}
-                <span className="numeric text-[11px] text-disabled">
+                <span className="numeric text-[11px] text-subtle">
                   {assignments.length}
                 </span>
               </h3>
@@ -80,7 +80,7 @@ export default async function CourseContentPage({ params }: Params) {
             <section>
               <h3 className="mb-3 text-sm font-medium text-paper">
                 المحاضرات{" "}
-                <span className="numeric text-[11px] text-disabled">
+                <span className="numeric text-[11px] text-subtle">
                   {materials.length}
                 </span>
               </h3>

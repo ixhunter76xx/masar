@@ -44,7 +44,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
                     </p>
                     <time
                       dateTime={event.at.toISOString()}
-                      className="shrink-0 text-[11px] text-disabled"
+                      className="shrink-0 text-[11px] text-subtle"
                     >
                       {relativeTime(event.at)}
                     </time>

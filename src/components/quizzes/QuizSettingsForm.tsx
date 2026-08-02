@@ -61,9 +61,9 @@ export function QuizSettingsForm({
 
   return (
     <Card className="mb-6 px-5 py-5">
-      <h3 className="mb-4 text-sm font-medium text-paper">
+      <h2 className="mb-4 text-sm font-medium text-paper">
         {quiz ? "إعدادات الاختبار" : "اختبار جديد"}
-      </h3>
+      </h2>
 
       <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-3">
         <FormField
