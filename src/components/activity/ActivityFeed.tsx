@@ -18,9 +18,10 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
         const meta = ACTIVITY_META[event.kind];
         const Icon = meta.icon;
         const href =
-          event.kind === "announcement"
+          event.href ??
+          (event.kind === "announcement"
             ? `/courses/${event.courseId}/announcements`
-            : `/courses/${event.courseId}`;
+            : `/courses/${event.courseId}`);
 
         return (
           <li key={event.id}>

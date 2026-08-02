@@ -32,7 +32,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     // العدّاد = الإعلانات غير المقروءة عبر كل المقررات
     badgeTone: "neutral",
   },
-  { href: "/grades", label: "الدرجات", icon: ClipboardList, badgeTone: "neutral" },
+  {
+    href: "/grades",
+    label: "الدرجات",
+    icon: ClipboardList,
+    // للمدرب: تسليمات تنتظر التصحيح
+    badgeTone: "neutral",
+  },
   { href: "/messages", label: "الرسائل", icon: Mail, badgeTone: "danger" },
   { href: "/profile", label: "الملف الشخصي", icon: CircleUserRound },
   { href: "/settings", label: "الإعدادات", icon: Settings },

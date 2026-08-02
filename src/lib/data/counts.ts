@@ -2,6 +2,7 @@ import "server-only";
 
 import type { NavCounts } from "@/lib/navigation";
 import { countUnreadForUser } from "@/lib/data/announcements";
+import { countPendingGrading } from "@/lib/data/grades";
 import type { Role } from "@/generated/prisma/enums";
 
 /**
@@ -10,18 +11,22 @@ import type { Role } from "@/generated/prisma/enums";
  * قاعدة التصميم: العدّاد يظهر فقط عند وجود ما يتطلب إجراءً من المستخدم،
  * ومكوّن CountBadge لا يعرض شيئًا عند الصفر.
  *
- * "الدرجات" و"الرسائل" ليس لهما جداول بعد فيبقيان صفرًا — بلا شارات
- * وهمية. تُضاف قيمهما هنا فور بناء النظامين.
+ * عدّاد "الدرجات" للمدرب = التسليمات المنتظرة للتصحيح — وهو العنصر
+ * الوحيد القابل للإجراء لديه. أما درجة الطالب فمعلومة لا إجراء، فلا
+ * عدّاد لها. "الرسائل" بلا جدول بعد فيبقى صفرًا.
  */
 export async function getNavCounts(
   userId: string,
   role: Role,
 ): Promise<NavCounts> {
-  const unreadAnnouncements = await countUnreadForUser(userId, role);
+  const [unreadAnnouncements, pendingGrading] = await Promise.all([
+    countUnreadForUser(userId, role),
+    countPendingGrading(userId, role),
+  ]);
 
   return {
     "/courses": unreadAnnouncements,
-    "/grades": 0,
+    "/grades": pendingGrading,
     "/messages": 0,
   };
 }
