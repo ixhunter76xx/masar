@@ -4,6 +4,6 @@ export const SITE = {
   tagline: "منصة مركز حساب للتعليم والتدريب",
   shortDescription:
     "مساحة رقمية موحّدة للمحتوى والاختبارات والواجبات والدرجات.",
-  supportPhone: "1700",
+  supportPhone: "33060460",
   copyrightYear: "2026",
 } as const;

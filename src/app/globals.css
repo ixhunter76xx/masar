@@ -72,6 +72,10 @@
   }
 
   body {
+    /* المنطقة الآمنة: عند التثبيت على آيفون تمتدّ الصفحة تحت النتوء
+       وشريط الإيماءة السفلي. بلا هذا يختفي أعلى الرأسية وأسفل الأزرار. */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
     background-color: var(--color-ink);
     color: var(--color-paper);
     font-family: var(--font-sans);

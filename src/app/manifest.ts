@@ -1,0 +1,51 @@
+import type { MetadataRoute } from "next";
+
+import { SITE } from "@/lib/site";
+
+/**
+ * بيان التطبيق — يجعل المنصة قابلة للتثبيت على الشاشة الرئيسية.
+ *
+ * ── لماذا نسختان من كل أيقونة ───────────────────────────────────────
+ * `purpose: "any"` تُعرض كما هي. أما `"maskable"` فأندرويد يقتطعها
+ * بالشكل الذي يفرضه الجهاز — دائرة أو مربع مستدير أو معيّن — ويضمن فقط
+ * سلامة **٨٠٪ الوسطى**. لذلك أيقونة maskable هنا محتواها أصغر بهامش
+ * واسع: يُقتطع الهامش لا الشعار.
+ *
+ * بلا نسخة maskable يضع أندرويد الأيقونة داخل مربع أبيض ثم يقتطعه،
+ * فتظهر حافة بيضاء حول شعار داكن — وهو الخطأ الأشهر في هذه الميزة.
+ *
+ * `start_url: "/dashboard"` لا `/`: من ثبّت التطبيق يريد لوحته مباشرة،
+ * و middleware يحوّله إلى الدخول إن لم تكن جلسته قائمة.
+ */
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: SITE.tagline,
+    short_name: SITE.name,
+    description: SITE.shortDescription,
+    start_url: "/dashboard",
+    scope: "/",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#0d1013",
+    theme_color: "#0d1013",
+    lang: "ar",
+    dir: "rtl",
+    categories: ["education"],
+    icons: [
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      {
+        src: "/icon-maskable-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+  };
+}

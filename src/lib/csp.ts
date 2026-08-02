@@ -67,6 +67,12 @@ export function buildCsp(nonce: string): string {
     "media-src": ["'self'", "blob:", ...r2],
     "connect-src": ["'self'", ...r2],
 
+    /* عامل الخدمة والبيان: `default-src` وحده لا يغطّيهما في كل
+       المتصفحات، والتصريح بهما يجعل قابلية التثبيت لا تعتمد على
+       سلوك افتراضي قد يختلف. */
+    "worker-src": ["'self'"],
+    "manifest-src": ["'self'"],
+
     /* لا مكوّنات إضافية ولا إطارات: المنصة لا تستخدم أيًّا منها */
     "object-src": ["'none'"],
     "frame-src": ["'none'"],

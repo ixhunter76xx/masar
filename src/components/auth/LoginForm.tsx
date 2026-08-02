@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/Button";
+import { PasswordField } from "@/components/ui/PasswordField";
 import { Input, Label, HelpText, Checkbox } from "@/components/ui/Field";
 import { loginSchema, type LoginInput, type LoginValues } from "@/lib/validation";
 import { authenticate } from "@/app/(auth)/login/actions";
@@ -73,20 +74,15 @@ export function LoginForm() {
       </div>
 
       <div>
-        <Label htmlFor="password">كلمة المرور</Label>
-        <Input
+        {/* بلا مؤشّر قوة عند الدخول: الكلمة قائمة لا تُنشأ، وتقييمها
+            هنا لوم بلا فائدة — لا سبيل لتغييرها من هذه الشاشة. */}
+        <PasswordField
           id="password"
-          type="password"
+          label="كلمة المرور"
           autoComplete="current-password"
-          invalid={Boolean(errors.password)}
-          aria-describedby={errors.password ? "password-error" : undefined}
+          error={errors.password?.message}
           {...register("password")}
         />
-        {errors.password && (
-          <HelpText id="password-error" tone="danger" role="alert">
-            {errors.password.message}
-          </HelpText>
-        )}
       </div>
 
       <div className="pt-1">

@@ -12,6 +12,7 @@ import { requireAdmin, listUsers } from "@/lib/data/admin";
 import { createUser } from "@/app/(app)/settings/actions";
 import { ROLE_LABELS } from "@/lib/roles";
 import { Role } from "@/generated/prisma/enums";
+import { PasswordField } from "@/components/ui/PasswordField";
 
 export const metadata: Metadata = { title: "المستخدمون" };
 
@@ -47,12 +48,16 @@ export default async function UsersPage() {
             ]}
           />
         </div>
-        <FormField
+        {/* كانت `type="text"` مكشوفة دائمًا ليقرأها المسؤول ويسلّمها.
+            صارت مخفية بزرّ إظهار: نفس القدرة على القراءة، بلا بقائها
+            معروضة أمام كل من يمرّ خلف الشاشة في مكتب الإدارة. */}
+        <PasswordField
           id="u-password"
           name="password"
           label="كلمة المرور المبدئية"
-          type="text"
           placeholder="٨ خانات على الأقل"
+          autoComplete="new-password"
+          showStrength
           hint="سلّمها للمستخدم ليغيّرها لاحقًا. تُخزَّن مجزّأة ولا يمكن استرجاعها."
           required
         />

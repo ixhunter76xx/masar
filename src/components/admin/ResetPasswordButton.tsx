@@ -7,6 +7,7 @@ import { KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { resetUserPassword } from "@/app/(app)/settings/actions";
+import { PasswordField } from "@/components/ui/PasswordField";
 
 export function ResetPasswordButton({
   userId,
@@ -62,10 +63,13 @@ export function ResetPasswordButton({
   return (
     <form onSubmit={onSubmit} noValidate className="text-end">
       <div className="flex items-center gap-2">
-        <Input
+        <PasswordField
+          id="reset-password"
           name="password"
-          type="text"
+          label="كلمة مرور مبدئية جديدة"
+          hideLabel
           placeholder="كلمة مرور مبدئية جديدة"
+          autoComplete="new-password"
           className="h-9 w-52"
           required
         />

@@ -5,7 +5,7 @@ import { KeyRound, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FormField } from "@/components/ui/Field";
+import { PasswordField } from "@/components/ui/PasswordField";
 import {
   changePassword,
   signOutAfterChange,
@@ -61,28 +61,26 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       </p>
 
       <form onSubmit={onSubmit} noValidate className="space-y-3">
-        <FormField
+        <PasswordField
           id="cur-pw"
           name="currentPassword"
           label={forced ? "كلمة المرور المبدئية" : "كلمة المرور الحالية"}
-          type="password"
           autoComplete="current-password"
           required
         />
-        <FormField
+        <PasswordField
           id="new-pw"
           name="newPassword"
           label="كلمة المرور الجديدة"
-          type="password"
           autoComplete="new-password"
+          showStrength
           hint="٨ خانات على الأقل."
           required
         />
-        <FormField
+        <PasswordField
           id="cnf-pw"
           name="confirmPassword"
           label="تأكيد كلمة المرور الجديدة"
-          type="password"
           autoComplete="new-password"
           required
         />
