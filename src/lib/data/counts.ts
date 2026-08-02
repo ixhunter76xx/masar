@@ -3,6 +3,7 @@ import "server-only";
 import type { NavCounts } from "@/lib/navigation";
 import { countUnreadForUser } from "@/lib/data/announcements";
 import { countPendingGrading } from "@/lib/data/grades";
+import { countUnreadForUser as countUnreadMessages } from "@/lib/data/messages";
 import type { Role } from "@/generated/prisma/enums";
 
 /**
@@ -13,20 +14,25 @@ import type { Role } from "@/generated/prisma/enums";
  *
  * عدّاد "الدرجات" للمدرب = التسليمات المنتظرة للتصحيح — وهو العنصر
  * الوحيد القابل للإجراء لديه. أما درجة الطالب فمعلومة لا إجراء، فلا
- * عدّاد لها. "الرسائل" بلا جدول بعد فيبقى صفرًا.
+ * عدّاد لها.
+ *
+ * عدّاد "الرسائل" = الرسائل الواردة غير المقروءة، للطالب والمدرب معًا:
+ * كلاهما يستقبل ويردّ. الاستعلامات الثلاثة على التوازي لأنها مستقلة.
  */
 export async function getNavCounts(
   userId: string,
   role: Role,
 ): Promise<NavCounts> {
-  const [unreadAnnouncements, pendingGrading] = await Promise.all([
-    countUnreadForUser(userId, role),
-    countPendingGrading(userId, role),
-  ]);
+  const [unreadAnnouncements, pendingGrading, unreadMessages] =
+    await Promise.all([
+      countUnreadForUser(userId, role),
+      countPendingGrading(userId, role),
+      countUnreadMessages(userId, role),
+    ]);
 
   return {
     "/courses": unreadAnnouncements,
     "/grades": pendingGrading,
-    "/messages": 0,
+    "/messages": unreadMessages,
   };
 }

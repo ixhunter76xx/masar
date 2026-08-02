@@ -71,6 +71,12 @@ model User {
   /// التسليمات التي صحّحها
   gradedSubmissions Submission[] @relation("SubmissionGrader")
 
+  /// محادثاته كطالب — للمدرب تُشتق من مقرراته لا من هنا
+  conversations Conversation[] @relation("ConversationStudent")
+
+  /// الرسائل التي أرسلها في أي محادثة
+  sentMessages Message[] @relation("MessageSender")
+
   @@index([role])
   @@map("users")
 }
@@ -121,6 +127,7 @@ model Course {
   announcements Announcement[]
   quizzes       Quiz[]
   assignments   Assignment[]
+  conversations Conversation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -480,4 +487,65 @@ model Submission {
   @@unique([assignmentId, studentId])
   @@index([assignmentId, status])
   @@map("submissions")
+}
+
+/// محادثة ثنائية بين طالب ومدرب في سياق مقرر واحد.
+///
+/// ── لماذا لا يُخزَّن معرّف المدرب هنا ──────────────────────────────────
+/// للمقرر مدرب واحد، فـ(المقرر + الطالب) يحدّدان الطرفين تمامًا. تخزين
+/// `instructorId` كان سيسرّع استعلام صندوق وارد المدرب سطرًا واحدًا،
+/// لكنه يخلق حقيقتين للمعلومة نفسها: لو نُقل المقرر إلى مدرب آخر لبقيت
+/// المحادثات معلّقة بالمدرب القديم. الاشتقاق من `course.instructorId`
+/// يبقى صحيحًا دائمًا، والحقل مفهرس أصلًا.
+/// ──────────────────────────────────────────────────────────────────────
+model Conversation {
+  id        String @id @default(cuid())
+  courseId  String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation("ConversationStudent", fields: [studentId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  /// وقت آخر رسالة — للترتيب في صندوق الوارد بلا تجميع مكلف
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  /// محادثة واحدة لكل طالب في كل مقرر — لا تتفرّع الخيوط
+  @@unique([courseId, studentId])
+  @@index([courseId, lastMessageAt])
+  @@index([studentId, lastMessageAt])
+  @@map("conversations")
+}
+
+/// رسالة واحدة داخل محادثة.
+///
+/// ── تتبّع القراءة: لماذا حقل لا جدول وصل ─────────────────────────────
+/// الإعلان يقرؤه كثيرون، فاحتاج `AnnouncementRead` صفًّا لكل قارئ.
+/// أما الرسالة هنا فلها **مستلم واحد بالتعريف** — الطرف الآخر في محادثة
+/// ثنائية. جدول وصل كان سينتج صفًّا واحدًا لكل رسالة دائمًا: نفس
+/// المعلومة بجدول إضافي وضمّ إضافي في كل عدّ.
+///
+/// المبدأ المشترك مع الإعلانات محفوظ: حالة القراءة مخزّنة صراحةً على
+/// الخادم، والعدّاد يُحسب منها لا من تخمين في الواجهة.
+/// ──────────────────────────────────────────────────────────────────────
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  /// المرسل — والمستلم هو الطرف الآخر ضمنًا
+  senderId String
+  sender   User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  body String
+
+  /// متى قرأها المستلم. فارغ = غير مقروءة.
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([conversationId, createdAt])
+  /// يخدم عدّ غير المقروء: تصفية على القارئ ثم على الحالة
+  @@index([senderId, readAt])
+  @@map("messages")
 }

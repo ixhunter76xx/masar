@@ -6,6 +6,7 @@ import {
   FileVideo,
   ClipboardCheck,
   Inbox,
+  MessageSquare,
 } from "lucide-react";
 
 import { db } from "@/server/db";
@@ -21,7 +22,8 @@ export type ActivityKind =
   | "announcement"
   | "material"
   | "grade"
-  | "pending";
+  | "pending"
+  | "message";
 
 export type ActivityEvent = {
   id: string;
@@ -43,6 +45,7 @@ export const ACTIVITY_META: Record<
   material: { label: "محاضرة", icon: FileVideo, tone: "success" },
   grade: { label: "درجة", icon: ClipboardCheck, tone: "success" },
   pending: { label: "بانتظار التصحيح", icon: Inbox, tone: "warning" },
+  message: { label: "رسالة", icon: MessageSquare, tone: "warning" },
 };
 
 const FEED_LIMIT = 20;
@@ -73,7 +76,7 @@ export async function getActivityFeed(
   const scope = courseScope(userId, role);
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  const [announcements, materials, gradedSubs, gradedQuizzes, pending] =
+  const [announcements, materials, gradedSubs, gradedQuizzes, pending, messages] =
     await Promise.all([
     db.announcement.findMany({
       where: {
@@ -174,6 +177,37 @@ export async function getActivityFeed(
           },
         })
       : Promise.resolve([]),
+
+    /* الرسائل الواردة غير المقروءة.
+       نفس شرط عدّاد القائمة الجانبية حرفيًا (senderId ليس أنا + readAt
+       فارغ)، فما يظهر في السجل هو ما يعدّه الشريط لا أكثر ولا أقل.
+       الإدارة ليست طرفًا في المراسلة فلا رسائل لها. */
+    role === Role.ADMIN
+      ? Promise.resolve([])
+      : db.message.findMany({
+          where: {
+            readAt: null,
+            senderId: { not: userId },
+            conversation:
+              role === Role.STUDENT
+                ? { studentId: userId, course: scope }
+                : { course: { instructorId: userId } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: FEED_LIMIT,
+          select: {
+            id: true,
+            body: true,
+            createdAt: true,
+            sender: { select: { name: true } },
+            conversation: {
+              select: {
+                studentId: true,
+                course: { select: { id: true, title: true } },
+              },
+            },
+          },
+        }),
   ]);
 
   const events: ActivityEvent[] = [
@@ -223,6 +257,16 @@ export async function getActivityFeed(
       detail: s.student.name,
       at: s.submittedAt,
       href: `/courses/${s.assignment.course.id}/assignments/${s.assignment.id}`,
+    })),
+    ...messages.map((m) => ({
+      id: `msg-${m.id}`,
+      kind: "message" as const,
+      title: `رسالة من ${m.sender.name}`,
+      courseId: m.conversation.course.id,
+      course: m.conversation.course.title,
+      detail: m.body.length > 160 ? `${m.body.slice(0, 160)}…` : m.body,
+      at: m.createdAt,
+      href: `/courses/${m.conversation.course.id}/messages/${m.conversation.studentId}`,
     })),
   ];
 
