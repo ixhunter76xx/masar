@@ -16,6 +16,7 @@ export function LoginForm() {
   const [formError, setFormError] = React.useState<string | null>(null);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("next") ?? undefined;
+  const passwordChanged = searchParams.get("passwordChanged") === "1";
 
   const {
     register,
@@ -37,6 +38,12 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
       {/* رسالة خطأ عامة على مستوى النموذج */}
+      {passwordChanged && !formError && (
+        <div className="rounded-[10px] border border-success/50 bg-success/10 px-4 py-3 text-xs leading-relaxed text-success">
+          تم تغيير كلمة المرور. سجّل الدخول بها.
+        </div>
+      )}
+
       {formError && (
         <div
           role="alert"

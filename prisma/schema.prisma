@@ -33,6 +33,10 @@ model User {
   role     Role    @default(STUDENT)
   isActive Boolean @default(true)
 
+  /// يُجبَر المستخدم على تغيير كلمة مروره قبل استخدام المنصة.
+  /// يُفعَّل عند إنشاء الحساب وعند إعادة تعيين كلمة المرور من الإدارة.
+  mustChangePassword Boolean @default(true)
+
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

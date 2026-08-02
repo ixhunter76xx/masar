@@ -18,6 +18,17 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 
+  // حساب جديد لم يغيّر كلمته → محصور في الملف الشخصي.
+  // نقرأها من رمز الجلسة لا من قاعدة البيانات، لأن middleware يعمل
+  // على Edge حيث لا يعمل Prisma.
+  if (
+    isLoggedIn &&
+    req.auth?.user?.mustChangePassword &&
+    pathname !== "/profile"
+  ) {
+    return NextResponse.redirect(new URL("/profile", req.nextUrl));
+  }
+
   // غير مسجّل ويحاول فتح صفحة محمية → إلى الدخول مع حفظ الوجهة
   if (!isLoggedIn && !isPublic) {
     const target = new URL("/login", req.nextUrl);

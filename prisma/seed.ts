@@ -92,13 +92,21 @@ async function main() {
     const passwordHash = await bcrypt.hash(u.password, 12);
     const saved = await db.user.upsert({
       where: { username: u.username },
-      update: { name: u.name, role: u.role, passwordHash, isActive: true },
+      update: {
+        name: u.name,
+        role: u.role,
+        passwordHash,
+        isActive: true,
+        // الحسابات التجريبية معفاة من إجبار التغيير لتسهيل التجربة
+        mustChangePassword: false,
+      },
       create: {
         username: u.username,
         email: u.email,
         name: u.name,
         passwordHash,
         role: u.role,
+        mustChangePassword: false,
       },
     });
     users.set(u.username, saved.id);

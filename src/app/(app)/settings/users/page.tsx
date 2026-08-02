@@ -7,6 +7,7 @@ import { SelectField } from "@/components/admin/Select";
 import { FormField } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { UserActiveToggle } from "@/components/admin/UserActiveToggle";
+import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { requireAdmin, listUsers } from "@/lib/data/admin";
 import { createUser } from "@/app/(app)/settings/actions";
 import { ROLE_LABELS } from "@/lib/roles";
@@ -78,9 +79,15 @@ export default async function UsersPage() {
                   {u.role === Role.INSTRUCTOR && (
                     <> · <span className="numeric">{u._count.coursesTaught}</span> مقررات</>
                   )}
+                  {u.mustChangePassword && (
+                    <> · <span className="text-warning">لم يغيّر كلمته</span></>
+                  )}
                 </p>
               </div>
-              <UserActiveToggle userId={u.id} isActive={u.isActive} />
+              <div className="flex items-center gap-2">
+                <ResetPasswordButton userId={u.id} name={u.name} />
+                <UserActiveToggle userId={u.id} isActive={u.isActive} />
+              </div>
             </Card>
           </li>
         ))}

@@ -114,6 +114,7 @@ export async function listUsers() {
       role: true,
       isActive: true,
       lastLoginAt: true,
+      mustChangePassword: true,
       _count: { select: { enrollments: true, coursesTaught: true } },
     },
   });

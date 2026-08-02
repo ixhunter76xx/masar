@@ -220,6 +220,35 @@ export async function createUser(formData: FormData): Promise<ActionResult> {
   return ok;
 }
 
+const resetSchema = z.object({
+  password: z.string().min(8, "كلمة المرور المبدئية: ٨ خانات على الأقل."),
+});
+
+/**
+ * إعادة تعيين كلمة مرور مستخدم.
+ * تُفعّل الإجبار، فيُحصر المستخدم في صفحة الملف الشخصي حتى يغيّرها.
+ */
+export async function resetUserPassword(
+  userId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = resetSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      passwordHash: await bcrypt.hash(parsed.data.password, 12),
+      mustChangePassword: true,
+    },
+  });
+
+  revalidatePath("/settings/users");
+  return ok;
+}
+
 export async function setUserActive(
   userId: string,
   isActive: boolean,

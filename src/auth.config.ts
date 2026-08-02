@@ -33,6 +33,7 @@ export const authConfig = {
         token.role = user.role;
         token.username = user.username;
         token.name = user.name;
+        token.mustChangePassword = user.mustChangePassword;
       }
       return token;
     },
@@ -43,6 +44,7 @@ export const authConfig = {
         session.user.id = token.sub ?? "";
         session.user.role = token.role;
         session.user.username = token.username;
+        session.user.mustChangePassword = token.mustChangePassword;
       }
       return session;
     },
