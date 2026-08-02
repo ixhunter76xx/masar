@@ -4,12 +4,14 @@ import { PrismaClient } from "@/generated/prisma/client";
 /**
  * عميل Prisma مفرد (singleton).
  *
- * منذ Prisma 7 لا يقرأ العميل رابط الاتصال من schema.prisma، بل يُمرَّر
- * صراحةً عبر محوّل السائق (driver adapter). أما prisma.config.ts فيخدم
- * أوامر الـ CLI فقط (migrate / generate / db seed).
+ * ── رابطان لا رابط واحد ─────────────────────────────────────────────
+ * `DATABASE_URL` يجب أن يكون رابط **الـ pooler** (يحوي `-pooler` مع Neon).
+ * كل نسخة من الدالة الخادمية تفتح اتصالًا، وبلا مجمّع تُستنفد حصة
+ * الاتصالات بسرعة تحت الحمل.
  *
- * في التطوير يعيد Next.js تحميل الوحدات عند كل تعديل، فنحفظ العميل على
- * globalThis لتجنّب استنفاد اتصالات قاعدة البيانات.
+ * أما الهجرات فتحتاج اتصالًا **مباشرًا** (`DIRECT_URL`)، وتقرأه أدوات
+ * Prisma من prisma.config.ts لا من هنا.
+ * ────────────────────────────────────────────────────────────────────
  */
 function createClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -20,8 +22,21 @@ function createClient() {
     );
   }
 
+  /**
+   * حجم المجمّع لكل نسخة.
+   * في البيئات الخادمية (Vercel) تُشغَّل نسخ كثيرة متوازية، فيبقى
+   * نصيب كل نسخة صغيرًا ويتولّى pooler الخدمة تجميعها.
+   */
+  const max = Number(process.env.DB_POOL_MAX ?? 5);
+
   return new PrismaClient({
-    adapter: new PrismaPg({ connectionString }),
+    adapter: new PrismaPg({
+      connectionString,
+      max,
+      // إغلاق الاتصالات الخاملة بسرعة — النسخة الخادمية قصيرة العمر
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+    }),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 }

@@ -13,8 +13,10 @@ cp .env.example .env
 
 ثم افتح `.env` وعبّئ قيمتين:
 
-- `DATABASE_URL` — رابط Neon. اختر **Direct connection** لا Pooled،
-  لأن `prisma migrate` يحتاج اتصالاً مباشراً. يجب أن ينتهي بـ `?sslmode=require`.
+- `DATABASE_URL` — رابط Neon **Pooled** (يحوي `-pooler`). يستخدمه
+  التطبيق وقت التشغيل.
+- `DIRECT_URL` — رابط Neon **Direct** (بلا `-pooler`). تستخدمه الهجرات.
+  للتطوير المحلي يمكن وضع نفس الرابط في الاثنين.
 - `AUTH_SECRET` — ولّده بـ:
   `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 
@@ -385,6 +387,102 @@ src/
 > بما أن نظاميهما غير مبنيين، نُقلت الشارة إلى "مقرراتي" لتعرض غير
 > المقروء من الإعلانات — رقم حقيقي بدل رقمين ثابتين. لإعادتها لاحقًا
 > عدّل `badgeTone` في `src/lib/navigation.ts`.
+
+## النشر على الإنتاج
+
+### ١. قاعدة البيانات
+
+من لوحة Neon انسخ **رابطين** لا واحدًا:
+
+| المتغيّر | الرابط | يستخدمه |
+|---|---|---|
+| `DATABASE_URL` | Pooled (يحوي `-pooler`) | التطبيق وقت التشغيل |
+| `DIRECT_URL` | Direct (بلا `-pooler`) | `prisma migrate` فقط |
+
+**لماذا الفصل؟** كل نسخة من الدالة الخادمية تفتح اتصالًا بقاعدة
+البيانات. بلا pooler تُستنفد حصة الاتصالات تحت الحمل ويبدأ التطبيق
+بإرجاع أخطاء اتصال. وبالمقابل، الهجرات تحتاج جلسة مباشرة لأقفال DDL
+وقد تتعثّر عبر pooler يعمل بوضع transaction.
+
+اضبط أيضًا `DB_POOL_MAX="2"` أو `"3"` في البيئات الخادمية.
+
+### ٢. Cloudflare R2
+
+أضف نطاق الإنتاج إلى سياسة CORS — بدونه يفشل الرفع من الموقع المنشور:
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "https://lms.hisab.edu"
+    ],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+### ٣. متغيّرات البيئة في منصة الاستضافة
+
+| المتغيّر | مطلوب |
+|---|---|
+| `DATABASE_URL` | نعم — pooled |
+| `DIRECT_URL` | نعم — direct |
+| `AUTH_SECRET` | نعم — **مفتاح جديد غير المستخدم محليًا** |
+| `R2_ACCOUNT_ID` · `R2_ACCESS_KEY_ID` · `R2_SECRET_ACCESS_KEY` · `R2_BUCKET_NAME` | نعم |
+| `AUTH_URL` | مستحسن — عنوان الموقع |
+| `DB_POOL_MAX` | مستحسن — `2` |
+
+### ٤. البناء
+
+`npm run build` يشغّل `prisma generate && prisma migrate deploy && next build`.
+أي أن الهجرات تُطبَّق تلقائيًا عند كل نشر — لا خطوة يدوية.
+
+> `migrate deploy` يطبّق الهجرات الموجودة فقط ولا ينشئ جديدة ولا يمسح
+> بيانات، بخلاف `migrate dev` المخصّص للتطوير.
+
+للبناء المحلي بلا لمس قاعدة البيانات: `npm run build:local`.
+
+### ٥. أول مستخدم
+
+`db:seed` مخصّص للتطوير ويُنشئ حسابات بكلمات معروفة. **لا تشغّله على
+الإنتاج.** بدلًا من ذلك أنشئ حساب إدارة واحدًا:
+
+```bash
+DATABASE_URL="<الرابط المباشر>" npx tsx -e "
+import bcrypt from 'bcryptjs';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from './src/generated/prisma/client';
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+await db.user.create({ data: {
+  username: 'admin', name: 'إدارة مركز حساب', role: 'ADMIN',
+  passwordHash: await bcrypt.hash('كلمة-مرور-قوية-مؤقتة', 12),
+}});
+await db.\$disconnect();
+"
+```
+
+سيُطالَب بتغيير كلمة المرور عند أول دخول تلقائيًا.
+
+### قائمة تحقق قبل التسليم
+
+- [ ] `AUTH_SECRET` في الإنتاج **يختلف** عن المحلي
+- [ ] `DATABASE_URL` هو رابط الـ pooler فعلًا
+- [ ] نطاق الإنتاج مضاف في CORS على R2
+- [ ] الدلو `Public Access: Disabled`
+- [ ] لا يوجد `.env` ولا `.env.local` مرفوعًا إلى Git
+- [ ] مفاتيح R2 وNeon المستخدمة أثناء التطوير أُلغيت وأُنشئت غيرها
+- [ ] `db:seed` **لم** يُشغَّل على الإنتاج
+
+### الترويسات الأمنية
+
+`next.config.ts` يضيف على كل استجابة: `X-Frame-Options: DENY` (منع
+التضمين في إطار)، `X-Content-Type-Options: nosniff`،
+`Referrer-Policy`، `Permissions-Policy` تُغلق الكاميرا والميكروفون
+والموقع، و`Strict-Transport-Security`. و`poweredByHeader` معطّل.
 
 ## نموذج البيانات
 

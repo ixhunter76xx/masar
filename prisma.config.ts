@@ -8,6 +8,10 @@ import { defineConfig } from "prisma/config";
  * schema.prisma، وانتقل إلى هنا. أما وقت التشغيل فيمرَّر الاتصال عبر
  * محوّل @prisma/adapter-pg في src/server/db.ts.
  *
+ * **الرابط هنا يجب أن يكون المباشر لا المجمَّع**: أدوات الهجرة تحتاج
+ * جلسة مباشرة (advisory locks وDDL)، وقد تفشل أو تتصرّف بغرابة عبر
+ * pooler يعمل بوضع transaction. لذلك نفضّل DIRECT_URL إن وُجد.
+ *
  * نستخدم `process.env` مباشرة بدل المساعد `env()` عمدًا: المساعد يرمي
  * خطأً إذا كان المتغيّر مفقودًا، وكل أوامر Prisma تحمّل هذا الملف —
  * بما فيها `prisma generate` الذي يعمل ضمن postinstall ولا يحتاج
@@ -22,6 +26,6 @@ export default defineConfig({
   },
 
   datasource: {
-    url: process.env.DATABASE_URL ?? "",
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "",
   },
 });
