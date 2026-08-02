@@ -56,3 +56,13 @@ export function r2Bucket(): string {
 export function videoObjectKey(courseId: string, materialId: string): string {
   return `courses/${courseId}/videos/${materialId}.mp4`;
 }
+
+/** مفتاح ملف تسليم واجب */
+export function submissionObjectKey(
+  courseId: string,
+  assignmentId: string,
+  submissionId: string,
+  extension: string,
+): string {
+  return `courses/${courseId}/assignments/${assignmentId}/${submissionId}.${extension}`;
+}

@@ -58,6 +58,15 @@ model User {
   /// محاولاته في الاختبارات
   quizAttempts QuizAttempt[]
 
+  /// الواجبات التي أنشأها
+  authoredAssignments Assignment[] @relation("AssignmentAuthor")
+
+  /// تسليماته للواجبات
+  submissions Submission[] @relation("SubmissionStudent")
+
+  /// التسليمات التي صحّحها
+  gradedSubmissions Submission[] @relation("SubmissionGrader")
+
   @@index([role])
   @@map("users")
 }
@@ -107,6 +116,7 @@ model Course {
   materials     CourseMaterial[]
   announcements Announcement[]
   quizzes       Quiz[]
+  assignments   Assignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -374,4 +384,96 @@ model Answer {
   /// إجابة واحدة لكل سؤال في المحاولة الواحدة
   @@unique([attemptId, questionId])
   @@map("answers")
+}
+
+/// حالة الواجب
+enum AssignmentStatus {
+  DRAFT /// مسودة — المدرب وحده يراها
+  PUBLISHED /// متاح للطلاب
+  CLOSED /// مغلق — لا تُقبل تسليمات جديدة
+}
+
+/// حالة التسليم
+enum SubmissionStatus {
+  SUBMITTED /// سُلِّم وينتظر التصحيح
+  GRADED /// صُحِّح واعتُمدت درجته
+}
+
+model Assignment {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  status      AssignmentStatus @default(DRAFT)
+
+  /// الدرجة الكاملة — يقابل QuizAttempt.totalPoints في دفتر الدرجات
+  totalPoints Int @default(10)
+
+  dueAt DateTime?
+
+  /// سياسة التأخير
+  allowLate          Boolean @default(false)
+  /// نسبة الخصم من الدرجة عند التسليم المتأخر (٠ = بلا خصم)
+  latePenaltyPercent Int     @default(0)
+
+  /// الامتدادات المسموحة بلا نقطة، مثل ["pdf","docx"]
+  allowedExtensions String[] @default(["pdf", "docx", "zip", "png", "jpg"])
+  /// الحد الأقصى لحجم الملف بالميجابايت
+  maxFileMb         Int      @default(20)
+
+  authorId String
+  author   User   @relation("AssignmentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, status])
+  @@map("assignments")
+}
+
+/// تسليم طالب لواجب.
+/// يتبع نمط QuizAttempt عمدًا (earnedPoints/totalPoints/gradedAt)
+/// ليدمجهما دفتر الدرجات لاحقًا بلا تحويل.
+model Submission {
+  id String @id @default(cuid())
+
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   User   @relation("SubmissionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+
+  /// ملاحظة نصية اختيارية من الطالب
+  note String?
+
+  /// الملف على R2 — قد يكون التسليم ملاحظة بلا ملف
+  objectKey     String?
+  fileName      String?
+  fileSizeBytes BigInt?
+  contentType   String?
+
+  submittedAt DateTime @default(now())
+  isLate      Boolean  @default(false)
+
+  status SubmissionStatus @default(SUBMITTED)
+
+  /// الدرجة كما أدخلها المدرب قبل أي خصم
+  rawPoints Int?
+  /// الدرجة النهائية بعد خصم التأخير — هذه ما يقرأه دفتر الدرجات
+  earnedPoints Int?
+
+  feedback   String?
+  gradedAt   DateTime?
+  gradedById String?
+  gradedBy   User?     @relation("SubmissionGrader", fields: [gradedById], references: [id], onDelete: SetNull)
+
+  /// تسليم واحد لكل طالب لكل واجب — يُستبدل عند إعادة التسليم
+  @@unique([assignmentId, studentId])
+  @@index([assignmentId, status])
+  @@map("submissions")
 }
