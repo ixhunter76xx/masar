@@ -1,19 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
-import { SITE } from "@/lib/site";
 
 /**
  * صفحة "غير موجود".
  *
  * تُعرض أيضًا عند رفض الصلاحية — نُرجع 404 لا 403 عمدًا، فلا نكشف
  * وجود مورد لا يملك المستخدم حق رؤيته. لذلك النص محايد.
+ *
+ * العنوان يُصدَّر كـ `metadata` لا كوسم `<title>` داخل الشجرة: هذا هو
+ * الملف الجذري لـ not-found، والتصدير مدعوم فيه. جرّبنا وسم `<title>`
+ * معتمدين على رفع React 19 له، فلم يظهر — نظام metadata في Next يُصدر
+ * عنوانه هو ويفوز. النتيجة كانت عنوان تبويب عامًّا على كل صفحة ٤٠٤.
  */
+export const metadata: Metadata = { title: "الصفحة غير موجودة" };
 export default function NotFound() {
   return (
     <main className="grid min-h-dvh place-items-center bg-ink px-4">
-      {/* not-found.tsx لا يدعم تصدير metadata عند استدعاء notFound()
-          من مسار متفرّع، و React 19 يرفع <title> إلى <head> تلقائيًا */}
-      <title>الصفحة غير موجودة — {SITE.name}</title>
       <div className="w-full max-w-md rounded-[14px] border border-line bg-panel px-6 py-8 text-center">
         <span className="mx-auto grid size-12 place-items-center rounded-full border border-line bg-ink text-muted">
           <FileQuestion size={22} strokeWidth={1.75} aria-hidden="true" />

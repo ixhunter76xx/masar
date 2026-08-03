@@ -5,6 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 
 import { signIn } from "@/auth";
 import { loginSchema, type LoginValues } from "@/lib/validation";
+import { AFTER_LOGIN } from "@/lib/routes";
 
 export type AuthResult = { ok: false; message: string };
 
@@ -36,7 +37,7 @@ export async function authenticate(
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: callbackUrl || "/dashboard",
+      redirectTo: callbackUrl || AFTER_LOGIN,
     });
   } catch (error) {
     // خطأ التحويل بعد النجاح — أعِد رميه ليكمل Next.js عمله

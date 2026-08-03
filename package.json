@@ -3,19 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "prisma generate && prisma migrate deploy && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "db:up": "docker compose up -d",
-    "db:migrate": "prisma migrate dev",
+    "build:local": "next build",
+    "check:routes": "python3 scripts/check-routes.py src",
+    "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "db:up": "docker compose up -d",
+    "dev": "next dev",
+    "lint": "next lint",
     "postinstall": "prisma generate",
-    "build:local": "next build",
-    "db:deploy": "prisma migrate deploy"
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1101.0",

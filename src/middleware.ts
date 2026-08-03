@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { authConfig } from "@/auth.config";
 import { buildCsp, generateNonce } from "@/lib/csp";
+import { AFTER_LOGIN, AUTH_ROUTES } from "@/lib/routes";
 
 const { auth } = NextAuth(authConfig);
 
@@ -19,12 +20,10 @@ const { auth } = NextAuth(authConfig);
  */
 
 /** مسارات عامة بالمطابقة التامة */
-const PUBLIC_EXACT = new Set([
+const PUBLIC_EXACT = new Set<string>([
   "/", // الواجهة الرئيسية
   "/courses", // كتالوج المقررات
-  "/login",
-  "/signup",
-  "/forgot-password",
+  ...AUTH_ROUTES,
 ]);
 
 /**
@@ -46,18 +45,15 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = Boolean(req.auth);
   const publicRoute = isPublic(pathname);
-  const authScreen =
-    pathname === "/login" ||
-    pathname === "/signup" ||
-    pathname === "/forgot-password";
+  const authScreen = (AUTH_ROUTES as readonly string[]).includes(pathname);
 
   /* nonce جديد لكل طلب — يشمل الصفحات العامة بلا استثناء */
   const nonce = generateNonce();
   const csp = buildCsp(nonce);
 
-  // مسجّل دخول ويفتح شاشة دخول أو تسجيل → إلى بيئة التعلم
+  // مسجّل دخول ويفتح شاشة دخول أو تسجيل → إلى وجهته المعتادة
   if (isLoggedIn && authScreen) {
-    return NextResponse.redirect(new URL("/learn", req.nextUrl));
+    return NextResponse.redirect(new URL(AFTER_LOGIN, req.nextUrl));
   }
 
   /**
