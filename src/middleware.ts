@@ -6,44 +6,80 @@ import { buildCsp, generateNonce } from "@/lib/csp";
 
 const { auth } = NextAuth(authConfig);
 
-/** المسارات المتاحة بلا تسجيل دخول */
-const PUBLIC_ROUTES = ["/login", "/forgot-password"];
+/**
+ * ── نموذج الحماية في مسار ────────────────────────────────────────────
+ * المنصة ذات وجهين: متجر عام يتصفّحه أي زائر، وبيئة تعلّم خاصة بمن
+ * اشترى. لكن المبدأ الأمني لم يتغيّر: **الحماية هي الافتراض والاستثناء
+ * صريح**.
+ *
+ * لماذا قائمة عامة لا قائمة محمية: أي صفحة جديدة تُضاف لاحقًا تُحمى
+ * تلقائيًا. لو كانت القائمة "المحمية" هي المكتوبة، لكان نسيان سطر
+ * واحد يعني كشف صفحة كاملة — وهو خطأ صامت لا يظهر في أي اختبار.
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
+/** مسارات عامة بالمطابقة التامة */
+const PUBLIC_EXACT = new Set([
+  "/", // الواجهة الرئيسية
+  "/courses", // كتالوج المقررات
+  "/login",
+  "/signup",
+  "/forgot-password",
+]);
+
+/**
+ * بادئات عامة — صفحة كل مقرر وما تحتها.
+ *
+ * الشرطة المائلة في النهاية مقصودة: `"/courses/"` لا تطابق `/coursesXYZ`
+ * لو أُضيف مسار بهذا الاسم يومًا.
+ */
+const PUBLIC_PREFIXES = ["/courses/"];
+
+function isPublic(pathname: string): boolean {
+  return (
+    PUBLIC_EXACT.has(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
+}
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = Boolean(req.auth);
-  const isPublic = PUBLIC_ROUTES.includes(pathname);
+  const publicRoute = isPublic(pathname);
+  const authScreen =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password";
 
-  /**
-   * سياسة أمان المحتوى: nonce جديد لكل طلب.
-   *
-   * يُمرَّر إلى Next عبر ترويسة **الطلب** ليضعه المصيِّر على نصوصه
-   * البرمجية المضمّنة، وتحمل **الاستجابة** السياسة التي ترفض ما عداه.
-   * أي تحويل (redirect) أدناه لا يحمل مستندًا فلا يحتاج السياسة.
-   */
+  /* nonce جديد لكل طلب — يشمل الصفحات العامة بلا استثناء */
   const nonce = generateNonce();
   const csp = buildCsp(nonce);
 
-  // مسجّل دخول ويحاول فتح صفحة الدخول → إلى لوحة التحكم
-  if (isLoggedIn && isPublic) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+  // مسجّل دخول ويفتح شاشة دخول أو تسجيل → إلى بيئة التعلم
+  if (isLoggedIn && authScreen) {
+    return NextResponse.redirect(new URL("/learn", req.nextUrl));
   }
 
-  // حساب جديد لم يغيّر كلمته → محصور في الملف الشخصي.
-  // نقرأها من رمز الجلسة لا من قاعدة البيانات، لأن middleware يعمل
-  // على Edge حيث لا يعمل Prisma.
+  /**
+   * حساب أنشأته الإدارة بكلمة مبدئية → محصور في الملف الشخصي.
+   *
+   * الحصر على المسارات المحمية وحدها: لا معنى لطرد المستخدم من صفحة
+   * كتالوج يراها الزائر المجهول أصلًا. ولا يمسّ من سجّل بنفسه لأن
+   * `mustChangePassword` افتراضه false.
+   */
   if (
     isLoggedIn &&
+    !publicRoute &&
     req.auth?.user?.mustChangePassword &&
     pathname !== "/profile"
   ) {
     return NextResponse.redirect(new URL("/profile", req.nextUrl));
   }
 
-  // غير مسجّل ويحاول فتح صفحة محمية → إلى الدخول مع حفظ الوجهة
-  if (!isLoggedIn && !isPublic) {
+  // غير مسجّل ويفتح صفحة محمية → إلى الدخول مع حفظ الوجهة
+  if (!isLoggedIn && !publicRoute) {
     const target = new URL("/login", req.nextUrl);
-    if (pathname !== "/") target.searchParams.set("next", pathname);
+    target.searchParams.set("next", pathname);
     return NextResponse.redirect(target);
   }
 
@@ -59,15 +95,12 @@ export default auth((req) => {
 export const config = {
   /**
    * كل المسارات عدا:
-   *   • `/api/*` — نقاط الواجهة البرمجية تتحقق من الجلسة بنفسها وتُرجع
-   *     401/403 بصيغة JSON. لو مرّت من هنا لأعادت تحويلًا 307 إلى صفحة
-   *     الدخول، فيتلقّى العميل صفحة HTML بدل رسالة خطأ مفهومة.
+   *   • `/api/*` — نقاط الواجهة تتحقق بنفسها وتُرجع JSON. و`webhook`
+   *     الدفع تحديدًا لا جلسة له أصلًا: المُرسِل خادم البوابة لا متصفّح،
+   *     وحمايته **توقيع** الحمولة لا المصادقة.
+   *   • `manifest.webmanifest` و`sw.js` — أصول التثبيت، ولو مرّا من هنا
+   *     لأُعيد الزائر إلى الدخول بدلهما فاختفى خيار التثبيت.
    *   • ملفات Next الداخلية والأصول الثابتة
-   *   • `manifest.webmanifest` و`sw.js` — أصول التثبيت. لو مرّا من هنا
-   *     لأعاد middleware الزائر غير المسجّل إلى صفحة الدخول بدلهما،
-   *     فيفشل قراءة البيان وتسجيل عامل الخدمة، ويختفي خيار التثبيت
-   *     قبل الدخول أصلًا. وليس فيهما ما يُحمى: البيان أسماء وأيقونات،
-   *     والعامل يمرّر إلى الشبكة بلا تخزين.
    */
   matcher: [
     "/((?!api/|_next/static|_next/image|favicon.ico|icon.png|manifest.webmanifest|sw.js|.*\\.png$).*)",

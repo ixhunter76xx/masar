@@ -5,7 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { db } from "@/server/db";
 import { r2, r2Bucket } from "@/server/r2";
-import { Role, MaterialStatus, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role, MaterialStatus } from "@/generated/prisma/enums";
 
 /** مدة صلاحية رابط المشاهدة */
 const PLAYBACK_TTL = 2 * 60 * 60; // ساعتان
@@ -31,13 +31,11 @@ export async function getPlaybackUrl(
       ...(role === Role.ADMIN
         ? {}
         : role === Role.INSTRUCTOR
-          ? { course: { instructorId: userId } }
+          ? { course: { presenterId: userId } }
           : {
               publishedAt: { not: null },
               course: {
-                enrollments: {
-                  some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-                },
+                products: { some: { enrollments: { some: { userId: userId } } } },
               },
             }),
     },

@@ -1,41 +1,41 @@
 import type { Metadata } from "next";
 import { LibraryBig } from "lucide-react";
 
-import { auth } from "@/auth";
 import { AppPage } from "@/components/shell/AppPage";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { TermSection } from "@/components/courses/TermSection";
-import { getCoursesByTerm } from "@/lib/data/courses";
-import { Role } from "@/generated/prisma/enums";
+import { CourseCard } from "@/components/courses/CourseCard";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
+import { getMyCourses } from "@/lib/data/courses";
 
 export const metadata: Metadata = { title: "مقرراتي" };
 
-const DESCRIPTIONS: Record<Role, string> = {
-  STUDENT: "المقررات المسجَّل بها، مرتّبة حسب الفصل الدراسي.",
-  INSTRUCTOR: "المقررات التي تُدرّسها، مرتّبة حسب الفصل الدراسي.",
-  ADMIN: "جميع مقررات المركز، مرتّبة حسب الفصل الدراسي.",
-};
-
-export default async function CoursesPage() {
-  const session = await auth();
-  const { id, role } = session!.user;
-
-  const groups = await getCoursesByTerm(id, role);
+/**
+ * مقررات المستخدم — قائمة مسطّحة.
+ *
+ * كانت مجمَّعة حسب الفصل الدراسي في مركز حساب. مسار لا فصول فيه:
+ * المقرر متاح دائمًا، وما يحدّد الترتيب هو `sortOrder` الذي تضبطه
+ * الإدارة لا تقويم الجامعة.
+ */
+export default async function Page() {
+  const courses = await getMyCourses();
 
   return (
-    <AppPage title="مقرراتي" description={DESCRIPTIONS[role]}>
-      {groups.length > 0 ? (
-        groups.map((group) => <TermSection key={group.termId} group={group} />)
-      ) : (
+    <AppPage title="مقرراتي" description="ما تملك وصولًا إليه.">
+      {courses.length === 0 ? (
         <EmptyState
           icon={LibraryBig}
-          title="لا توجد مقررات بعد"
-          description={
-            role === Role.INSTRUCTOR
-              ? "ستظهر هنا المقررات فور إسنادها إليك من إدارة المركز."
-              : "ستظهر هنا المقررات فور تسجيلك بها من إدارة المركز."
-          }
+          title="لا مقررات بعد"
+          description="تصفّح الكتالوج واختر ما يناسبك من الدورات."
+          action={{ href: "/courses", label: "تصفّح المقررات" }}
         />
+      ) : (
+        <StaggerList as="ul" className="space-y-3">
+          {courses.map((course) => (
+            <StaggerItem key={course.id}>
+              <CourseCard course={course} />
+            </StaggerItem>
+          ))}
+        </StaggerList>
       )}
     </AppPage>
   );

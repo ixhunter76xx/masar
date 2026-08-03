@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { TriangleAlert, RotateCcw } from "lucide-react";
+import { SITE } from "@/lib/site";
 
 /**
  * صفحة الخطأ العامة.
@@ -24,7 +25,7 @@ export default function Error({
 
   return (
     <main className="grid min-h-dvh place-items-center bg-ink px-4">
-      <title>حدث خطأ — مركز حساب</title>
+      <title>حدث خطأ — {SITE.name}</title>
       <div className="w-full max-w-md rounded-[14px] border border-line bg-panel px-6 py-8 text-center">
         <span className="mx-auto grid size-12 place-items-center rounded-full border border-danger/40 bg-ink text-danger">
           <TriangleAlert size={22} strokeWidth={1.75} aria-hidden="true" />

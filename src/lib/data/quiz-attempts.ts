@@ -4,7 +4,6 @@ import { db } from "@/server/db";
 import {
   Role,
   QuizStatus,
-  EnrollmentStatus,
 } from "@/generated/prisma/enums";
 
 /**
@@ -35,9 +34,7 @@ export async function getQuizForStudent(
       courseId,
       status: { in: [QuizStatus.PUBLISHED, QuizStatus.CLOSED] },
       course: {
-        enrollments: {
-          some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-        },
+        products: { some: { enrollments: { some: { userId: userId } } } },
       },
     },
     select: {
@@ -134,9 +131,7 @@ export async function getAttemptForTaking(
       quiz: {
         courseId,
         course: {
-          enrollments: {
-            some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-          },
+          products: { some: { enrollments: { some: { userId: userId } } } },
         },
       },
     },

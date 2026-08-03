@@ -42,7 +42,7 @@ model User {
   updatedAt   DateTime  @updatedAt
 
   /// المقررات التي يُدرّسها (للمدرب)
-  coursesTaught Course[] @relation("CourseInstructor")
+  coursesPresented Course[] @relation("CoursePresenter")
 
   /// المقررات المسجَّل بها (للطالب)
   enrollments Enrollment[]
@@ -71,6 +71,10 @@ model User {
   /// التسليمات التي صحّحها
   gradedSubmissions Submission[] @relation("SubmissionGrader")
 
+  /// طلبات الشراء وتقدّم المشاهدة
+  orders         Order[]
+  lessonProgress LessonProgress[]
+
   /// محادثاته كطالب — للمدرب تُشتق من مقرراته لا من هنا
   conversations Conversation[] @relation("ConversationStudent")
 
@@ -81,48 +85,36 @@ model User {
   @@map("users")
 }
 
-/// حالة الفصل الدراسي
-enum TermStatus {
-  ACTIVE /// نشط — الفصل الجاري
-  ARCHIVED /// مؤرشف — فصل منتهٍ
-}
 
-/// الفصل الدراسي — كيان مستقل يسمح بتنظيم المقررات وأرشفة المنتهية منها
-model Term {
-  id String @id @default(cuid())
-
-  /// مثال: "2025/2026 — الفصل الثاني"
-  name String @unique
-
-  startsOn DateTime   @db.Date
-  endsOn   DateTime   @db.Date
-  status   TermStatus @default(ACTIVE)
-
-  courses Course[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status, startsOn])
-  @@map("terms")
-}
 
 model Course {
   id String @id @default(cuid())
 
-  /// رمز المقرر، مثال: "MATH101"
-  code        String
-  title       String
+  /// رمز المقرر الجامعي — ARAB110
+  code String @unique
+  /// المسار العام: /courses/arab110
+  slug String @unique
+
+  title String
+  /// نبذة قصيرة تظهر في بطاقة الكتالوج
+  summary     String?
   description String?
+  /// مفتاح صورة الغلاف في R2
+  coverKey String?
 
-  /// كل مقرر يخصّ فصلًا دراسيًا واحدًا — لا نص حر
-  termId String
-  term   Term   @relation(fields: [termId], references: [id], onDelete: Restrict)
+  /// لا يظهر في الكتالوج العام قبل نشره
+  isPublished Boolean @default(false)
+  sortOrder   Int     @default(0)
 
-  instructorId String
-  instructor   User   @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: Restrict)
+  /// الأستاذ المقدّم — للعرض فقط.
+  ///
+  /// في مسار لا يدير الأستاذ المقرر ولا يسعّره؛ دوره إنتاج المحتوى.
+  /// لذلك الحقل اختياري، والصلاحية الوحيدة المبنية عليه هي معاينة
+  /// محتوى مقرراته قبل نشره — لا إدارة ولا وصول لبيانات الطلاب.
+  presenterId String?
+  presenter   User?   @relation("CoursePresenter", fields: [presenterId], references: [id], onDelete: SetNull)
 
-  enrollments   Enrollment[]
+  products      Product[]
   materials     CourseMaterial[]
   announcements Announcement[]
   quizzes       Quiz[]
@@ -132,36 +124,12 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// الرمز نفسه قد يتكرر عبر الفصول، لكنه فريد داخل الفصل الواحد
-  @@unique([termId, code])
-  @@index([instructorId])
+  @@index([isPublished, sortOrder])
+  @@index([presenterId])
   @@map("courses")
 }
 
-/// حالة تسجيل الطالب في المقرر
-enum EnrollmentStatus {
-  ACTIVE /// مسجَّل ومتابع
-  COMPLETED /// أنهى المقرر
-  DROPPED /// انسحب
-}
 
-model Enrollment {
-  id String @id @default(cuid())
-
-  studentId String
-  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  status     EnrollmentStatus @default(ACTIVE)
-  enrolledAt DateTime         @default(now())
-
-  /// لا يُسجَّل الطالب في المقرر نفسه مرتين
-  @@unique([studentId, courseId])
-  @@index([courseId])
-  @@map("enrollments")
-}
 
 /// نوع المادة التعليمية — يبدأ بالفيديو ويتوسّع لاحقًا
 enum MaterialKind {
@@ -202,8 +170,15 @@ model CourseMaterial {
   /// ترتيب العرض داخل المقرر
   position Int @default(0)
 
+  /// الدرس المجاني على الصفحة العامة — يراه الزائر قبل الشراء.
+  /// يُبثّ برابط موقّع كغيره، لكن بلا فحص حقّ وصول.
+  isFreePreview Boolean @default(false)
+
   /// null يعني مسودة لا يراها الطلاب
   publishedAt DateTime?
+
+  productItems ProductItem[]
+  progress     LessonProgress[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -303,6 +278,8 @@ model Quiz {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  productItems ProductItem[]
 
   @@index([courseId, status])
   @@map("quizzes")
@@ -548,4 +525,201 @@ model Message {
   /// يخدم عدّ غير المقروء: تصفية على القارئ ثم على الحالة
   @@index([senderId, readAt])
   @@map("messages")
+}
+
+/// ═══════════════════════════════════════════════════════════════════
+///  طبقة المنتج والشراء
+/// ═══════════════════════════════════════════════════════════════════
+
+/// ما يُباع فعلًا: "دورة المنتصف"، "دورة النهائي"، "الدورة الكاملة".
+///
+/// المقرر وعاء أكاديمي لا يُشترى؛ المنتج هو وحدة البيع والوصول معًا.
+model Product {
+  id          String  @id @default(cuid())
+  courseId    String
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  slug        String
+  title       String
+  description String?
+
+  /// السعر بالفلس لا بالدينار.
+  ///
+  /// الدينار البحريني ثلاث خانات عشرية (١ د.ب = ١٠٠٠ فلس)، وبوابات
+  /// الدفع تستقبل المبلغ بأصغر وحدة. تخزينه عددًا صحيحًا يمنع أخطاء
+  /// التقريب التي يجرّها العدد العشري في المال.
+  priceFils Int
+  currency  String @default("BHD")
+
+  isPublished Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  items       ProductItem[]
+  enrollments Enrollment[]
+  orderItems  OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, slug])
+  @@index([courseId, sortOrder])
+  @@index([isPublished])
+  @@map("products")
+}
+
+enum ProductItemKind {
+  LESSON /// درس فيديو
+  QUIZ   /// اختبار
+}
+
+/// منهج المنتج: قائمة مرتّبة تشير إلى دروس واختبارات المقرر.
+///
+/// ── لماذا إشارة لا ملكية ─────────────────────────────────────────────
+/// المنتجات متداخلة بطبيعتها: "الدورة الكاملة" تضمّ ما في دورتَي
+/// المنتصف والنهائي. لو ملك المنتجُ الدرسَ لوجب رفع الفيديو نفسه مرتين
+/// أو ثلاثًا إلى R2 — تكلفة تخزين مضاعفة وتحديثٌ في ثلاثة مواضع.
+///
+/// ── ولماذا جدول واحد لا جدولا وصل ────────────────────────────────────
+/// ترتيب المنهج يخلط الفيديو والاختبار، ويختلف من منتج لآخر. جدولان
+/// منفصلان يفقدان الترتيب الموحّد ويحتاجان دمجًا في كل قراءة.
+/// ─────────────────────────────────────────────────────────────────────
+model ProductItem {
+  id        String          @id @default(cuid())
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  kind      ProductItemKind
+
+  /// أحدهما بالضبط غير فارغ — يفرضه قيد CHECK في ملف الهجرة
+  lessonId String?
+  lesson   CourseMaterial? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  quizId   String?
+  quiz     Quiz?           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  position Int @default(0)
+
+  @@unique([productId, lessonId])
+  @@unique([productId, quizId])
+  @@index([productId, position])
+  @@map("product_items")
+}
+
+enum GrantSource {
+  PURCHASE    /// شراء مكتمل
+  ADMIN_GRANT /// منحته الإدارة يدويًا
+}
+
+/// حق الوصول إلى منتج. الاسم موروث، والمعنى تغيّر من "تسجيل في مقرر"
+/// إلى "امتلاك منتج".
+model Enrollment {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  source    GrantSource @default(PURCHASE)
+
+  /// الطلب الذي منح الوصول — فارغ في المنح الإداري
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  grantedAt DateTime  @default(now())
+  /// فارغ = وصول دائم. الحقل موجود ليدعم اشتراكًا مؤقتًا لاحقًا بلا هجرة.
+  expiresAt DateTime?
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("enrollments")
+}
+
+enum OrderStatus {
+  PENDING   /// أُنشئ وينتظر الدفع
+  PAID      /// اكتمل الدفع ومُنح الوصول
+  FAILED    /// رفضته البوابة
+  CANCELLED /// تركه المشتري
+  REFUNDED  /// أُعيد المبلغ
+}
+
+model Order {
+  id     String      @id @default(cuid())
+  /// رقم مقروء للعميل والدعم — MSR-2026-0001
+  number String      @unique
+  userId String
+  user   User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  status OrderStatus @default(PENDING)
+
+  totalFils Int
+  currency  String @default("BHD")
+
+  items       OrderItem[]
+  payments    Payment[]
+  enrollments Enrollment[]
+
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("orders")
+}
+
+/// سطر في الطلب — بلقطة من السعر والاسم وقت الشراء.
+///
+/// بلا اللقطة يتغيّر تاريخ المبيعات كلّه مع كل تعديل تسعير، ويرى العميل
+/// في فاتورته القديمة سعرًا لم يدفعه.
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Restrict لا Cascade: حذف منتج يجب ألّا يمحو سجلًّا ماليًا
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  unitPriceFils Int
+  titleSnapshot String
+
+  @@unique([orderId, productId])
+  @@map("order_items")
+}
+
+/// محاولة دفع لدى البوابة.
+///
+/// `@@unique([provider, providerPaymentId])` ليس تحسينًا: البوابات تعيد
+/// إرسال الـ webhook عند الشك في الوصول. بدون هذا القيد قد يُحتسب الدفع
+/// مرتين ويُمنح الوصول مرتين.
+model Payment {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  provider          String
+  providerPaymentId String
+  status            String
+  amountFils        Int
+  /// الحمولة الخام كما وصلت — مرجع النزاعات والتدقيق
+  rawPayload Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+  @@map("payments")
+}
+
+/// موضع المشاهدة الأخير — يستأنف الطالب من حيث توقّف.
+model LessonProgress {
+  id       String         @id @default(cuid())
+  userId   String
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   CourseMaterial @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  positionSec Int       @default(0)
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId, updatedAt])
+  @@map("lesson_progress")
 }

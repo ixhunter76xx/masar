@@ -26,7 +26,7 @@ export default async function ProfilePage() {
       createdAt: true,
       lastLoginAt: true,
       mustChangePassword: true,
-      _count: { select: { enrollments: true, coursesTaught: true } },
+      _count: { select: { enrollments: true, coursesPresented: true } },
     },
   });
 
@@ -64,7 +64,7 @@ export default async function ProfilePage() {
             label={role === Role.INSTRUCTOR ? "مقررات أُدرّسها" : "مقررات مسجَّلة"}
             value={String(
               role === Role.INSTRUCTOR
-                ? user._count.coursesTaught
+                ? user._count.coursesPresented
                 : user._count.enrollments,
             )}
             numeric

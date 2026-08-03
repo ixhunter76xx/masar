@@ -6,7 +6,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { canManageCourse } from "@/lib/data/materials";
-import { Role, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -144,9 +144,7 @@ export async function markAnnouncementsRead(
       courseId,
       publishedAt: { not: null },
       course: {
-        enrollments: {
-          some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-        },
+        products: { some: { enrollments: { some: { userId: userId } } } },
       },
     },
     select: { id: true },

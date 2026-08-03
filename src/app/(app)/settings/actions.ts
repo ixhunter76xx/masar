@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/server/db";
 import { requireAdmin } from "@/lib/data/admin";
-import { Role, TermStatus, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -19,145 +19,8 @@ function firstIssue(error: z.ZodError): string {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  الفصول الدراسية                                                            */
-/* -------------------------------------------------------------------------- */
-
-const termSchema = z
-  .object({
-    name: z.string().trim().min(3, "اسم الفصل قصير جدًا.").max(120),
-    startsOn: z.string().min(1, "تاريخ البداية مطلوب."),
-    endsOn: z.string().min(1, "تاريخ النهاية مطلوب."),
-  })
-  .refine((v) => new Date(v.endsOn) > new Date(v.startsOn), {
-    message: "تاريخ النهاية يجب أن يكون بعد تاريخ البداية.",
-    path: ["endsOn"],
-  });
-
-export async function createTerm(formData: FormData): Promise<ActionResult> {
-  await requireAdmin();
-
-  const parsed = termSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return fail(firstIssue(parsed.error));
-
-  const { name, startsOn, endsOn } = parsed.data;
-
-  const exists = await db.term.findUnique({ where: { name } });
-  if (exists) return fail("يوجد فصل دراسي بهذا الاسم.");
-
-  await db.term.create({
-    data: { name, startsOn: new Date(startsOn), endsOn: new Date(endsOn) },
-  });
-
-  revalidatePath("/settings/terms");
-  return ok;
-}
-
-export async function setTermStatus(
-  termId: string,
-  status: TermStatus,
-): Promise<ActionResult> {
-  await requireAdmin();
-
-  await db.term.update({ where: { id: termId }, data: { status } });
-
-  revalidatePath("/settings/terms");
-  revalidatePath("/courses");
-  return ok;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  المقررات                                                                   */
-/* -------------------------------------------------------------------------- */
-
-const courseSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .min(2, "رمز المقرر قصير جدًا.")
-    .max(20)
-    .regex(/^[A-Za-z0-9-]+$/, "رمز المقرر: حروف لاتينية وأرقام وشرطة فقط."),
-  title: z.string().trim().min(3, "اسم المقرر قصير جدًا.").max(200),
-  description: z.string().trim().max(2000).optional(),
-  termId: z.string().min(1, "اختر الفصل الدراسي."),
-  instructorId: z.string().min(1, "اختر المدرب."),
-});
-
-export async function createCourse(formData: FormData): Promise<ActionResult> {
-  await requireAdmin();
-
-  const parsed = courseSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return fail(firstIssue(parsed.error));
-
-  const { code, title, description, termId, instructorId } = parsed.data;
-
-  // نتحقق أن المدرب فعلًا مدرب — لا نثق بقيمة قائمة منسدلة
-  const instructor = await db.user.findFirst({
-    where: { id: instructorId, role: Role.INSTRUCTOR, isActive: true },
-    select: { id: true },
-  });
-  if (!instructor) return fail("المدرب المختار غير صالح.");
-
-  const term = await db.term.findUnique({
-    where: { id: termId },
-    select: { id: true },
-  });
-  if (!term) return fail("الفصل الدراسي المختار غير موجود.");
-
-  const duplicate = await db.course.findUnique({
-    where: { termId_code: { termId, code: code.toUpperCase() } },
-  });
-  if (duplicate) return fail("يوجد مقرر بهذا الرمز في الفصل نفسه.");
-
-  await db.course.create({
-    data: {
-      code: code.toUpperCase(),
-      title,
-      description: description || null,
-      termId,
-      instructorId,
-    },
-  });
-
-  revalidatePath("/settings/courses");
-  revalidatePath("/courses");
-  return ok;
-}
-
-/* -------------------------------------------------------------------------- */
 /*  التسجيل                                                                    */
 /* -------------------------------------------------------------------------- */
-
-export async function enrollStudent(
-  courseId: string,
-  studentId: string,
-): Promise<ActionResult> {
-  await requireAdmin();
-
-  const student = await db.user.findFirst({
-    where: { id: studentId, role: Role.STUDENT, isActive: true },
-    select: { id: true },
-  });
-  if (!student) return fail("الطالب المختار غير صالح.");
-
-  const existing = await db.enrollment.findUnique({
-    where: { studentId_courseId: { studentId, courseId } },
-    select: { id: true },
-  });
-
-  if (existing) {
-    // كان منسحبًا سابقًا — نعيد تفعيله بدل رفض العملية
-    await db.enrollment.update({
-      where: { id: existing.id },
-      data: { status: EnrollmentStatus.ACTIVE },
-    });
-  } else {
-    await db.enrollment.create({ data: { courseId, studentId } });
-  }
-
-  revalidatePath(`/settings/courses/${courseId}`);
-  revalidatePath("/courses");
-  return ok;
-}
 
 export async function removeEnrollment(
   enrollmentId: string,

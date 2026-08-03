@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GradeItemRow } from "@/components/grades/GradeItemRow";
 import { getStudentGrades } from "@/lib/data/grades";
-import { getCoursesByTerm } from "@/lib/data/courses";
+import { getMyCourses } from "@/lib/data/courses";
 import { Role } from "@/generated/prisma/enums";
 
 export const metadata: Metadata = { title: "الدرجات" };
@@ -21,10 +21,8 @@ export default async function GradesPage() {
   /*  المدرب والإدارة: مدخل إلى دفاتر درجات مقرراتهم                   */
   /* ---------------------------------------------------------------- */
   if (role !== Role.STUDENT) {
-    const groups = await getCoursesByTerm(id, role);
-    const courses = groups.flatMap((g) =>
-      g.courses.map((c) => ({ ...c, termName: g.termName })),
-    );
+    // قائمة مسطّحة: لا فصول دراسية في مسار
+    const courses = await getMyCourses();
 
     return (
       <AppPage
@@ -51,11 +49,11 @@ export default async function GradesPage() {
                         {c.title}
                       </span>
                       <span className="mt-0.5 block text-[11px] text-subtle">
-                        <span className="numeric">{c.code}</span> · {c.termName}
+                        <span className="numeric">{c.code}</span>
                       </span>
                     </span>
                     <span className="shrink-0 text-[11px] text-subtle">
-                      <span className="numeric">{c.studentCount}</span> طالب
+                      <span className="numeric">{c.products.length}</span> دورات
                     </span>
                   </Link>
                 </Card>

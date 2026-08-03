@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/server/db";
 import { auth } from "@/auth";
-import { Role, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 import {
   MESSAGE_MAX_LENGTH,
   type ThreadMessage,
@@ -60,27 +60,29 @@ export const resolveThreadAccess = cache(async function resolveThreadAccess(
       id: courseId,
       // المدرب: المقرر مقرره. الطالب: مسجّل فيه بحالة نشطة.
       ...(role === Role.INSTRUCTOR
-        ? { instructorId: viewerId }
+        ? { presenterId: viewerId }
         : {
-            enrollments: {
-              some: { studentId: viewerId, status: EnrollmentStatus.ACTIVE },
-            },
+            products: { some: { enrollments: { some: { userId: viewerId } } } },
           }),
     },
     select: {
       id: true,
       title: true,
-      instructor: { select: { name: true } },
+      presenter: { select: { name: true } },
     },
   });
   if (!course) return null;
 
   // المدرب يفتح محادثة طالب: تحقّق أن الطالب مسجّل في هذا المقرر تحديدًا
-  const enrollment = await db.enrollment.findFirst({
-    where: { courseId, studentId, status: EnrollmentStatus.ACTIVE },
-    select: { student: { select: { name: true } } },
+  /* الطالب طرفٌ إن كان يملك منتجًا في هذا المقرر — لا "تسجيلًا" فيه */
+  const student = await db.user.findFirst({
+    where: {
+      id: studentId,
+      enrollments: { some: { product: { courseId } } },
+    },
+    select: { name: true },
   });
-  if (!enrollment) return null;
+  if (!student) return null;
 
   return {
     viewerId,
@@ -88,8 +90,8 @@ export const resolveThreadAccess = cache(async function resolveThreadAccess(
     courseId: course.id,
     courseTitle: course.title,
     studentId,
-    studentName: enrollment.student.name,
-    instructorName: course.instructor.name,
+    studentName: student.name,
+    instructorName: course.presenter?.name ?? "",
   };
 });
 
@@ -219,13 +221,9 @@ function inboundUnreadWhere(userId: string, role: Role) {
       ? {
           studentId: userId,
           // انسحاب الطالب يُسكت العدّاد كما يُغلق المحادثة
-          course: {
-            enrollments: {
-              some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-            },
-          },
+          course: { products: { some: { enrollments: { some: { userId } } } } },
         }
-      : { course: { instructorId: userId } };
+      : { course: { presenterId: userId } };
 
   return {
     readAt: null,
@@ -264,7 +262,7 @@ export async function countUnreadInCourse(
 type ConversationRow = {
   courseId: string;
   studentId: string;
-  course: { title: string; code: string; instructor: { name: string } };
+  course: { title: string; code: string; presenter: { name: string } | null };
   student: { name: string };
   messages: { body: string; createdAt: Date }[];
   _count: { messages: number };
@@ -276,7 +274,7 @@ function toSummary(row: ConversationRow, side: "student" | "instructor") {
     courseId: row.courseId,
     courseTitle: row.course.title,
     courseCode: row.course.code,
-    peerName: side === "student" ? row.course.instructor.name : row.student.name,
+    peerName: side === "student" ? row.course.presenter?.name ?? "" : row.student.name,
     studentId: row.studentId,
     lastBody: last?.body ?? null,
     lastAt: last?.createdAt ?? null,
@@ -288,7 +286,7 @@ const summarySelect = (userId: string) => ({
   courseId: true,
   studentId: true,
   course: {
-    select: { title: true, code: true, instructor: { select: { name: true } } },
+    select: { title: true, code: true, presenter: { select: { name: true } } },
   },
   student: { select: { name: true } },
   // آخر رسالة فقط — مقتطف صندوق الوارد
@@ -318,12 +316,10 @@ export async function getInbox(
         ? {
             studentId: userId,
             course: {
-              enrollments: {
-                some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-              },
+              products: { some: { enrollments: { some: { userId: userId } } } },
             },
           }
-        : { course: { instructorId: userId } },
+        : { course: { presenterId: userId } },
     orderBy: { lastMessageAt: "desc" },
     select: summarySelect(userId),
   });
@@ -338,19 +334,22 @@ export async function getInbox(
  */
 export async function getCourseRoster(
   courseId: string,
-  instructorId: string,
+  presenterId: string,
 ): Promise<ConversationSummary[]> {
   const course = await db.course.findFirst({
-    where: { id: courseId, instructorId },
+    where: { id: courseId, presenterId },
     select: { title: true, code: true },
   });
   if (!course) return [];
 
   const [enrollments, conversations] = await Promise.all([
+    /* طلاب المقرر = من يملك أي منتج فيه. `distinct` لأن الطالب قد
+       يملك أكثر من منتج في المقرر نفسه فيتكرر بلا هذا القيد. */
     db.enrollment.findMany({
-      where: { courseId, status: EnrollmentStatus.ACTIVE },
-      orderBy: { student: { name: "asc" } },
-      select: { studentId: true, student: { select: { name: true } } },
+      where: { product: { courseId } },
+      distinct: ["userId"],
+      orderBy: { user: { name: "asc" } },
+      select: { userId: true, user: { select: { name: true } } },
     }),
     db.conversation.findMany({
       where: { courseId },
@@ -364,7 +363,7 @@ export async function getCourseRoster(
         _count: {
           select: {
             messages: {
-              where: { readAt: null, senderId: { not: instructorId } },
+              where: { readAt: null, senderId: { not: presenterId } },
             },
           },
         },
@@ -374,7 +373,7 @@ export async function getCourseRoster(
 
   const byStudent = new Map(conversations.map((c) => [c.studentId, c]));
 
-  return enrollments.map(({ studentId, student }) => {
+  return enrollments.map(({ userId: studentId, user: student }) => {
     const conversation = byStudent.get(studentId);
     const last = conversation?.messages[0];
     return {

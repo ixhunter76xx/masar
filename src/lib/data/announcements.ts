@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
-import { Role, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 
 export type AnnouncementItem = {
   id: string;
@@ -19,9 +19,7 @@ export type AnnouncementItem = {
 /** المقررات التي يتابعها الطالب فعلًا */
 function studentCourseFilter(userId: string) {
   return {
-    enrollments: {
-      some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-    },
+    products: { some: { enrollments: { some: { userId: userId } } } },
   };
 }
 

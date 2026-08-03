@@ -3,7 +3,6 @@ import "server-only";
 import { db } from "@/server/db";
 import {
   Role,
-  EnrollmentStatus,
   SubmissionStatus,
   QuizStatus,
   AssignmentStatus,
@@ -53,7 +52,6 @@ export type CourseGrades = {
   courseId: string;
   courseTitle: string;
   courseCode: string;
-  termName: string;
   items: GradeItem[];
   earned: number;
   total: number;
@@ -69,16 +67,13 @@ export async function getStudentGrades(
 ): Promise<CourseGrades[]> {
   const courses = await db.course.findMany({
     where: {
-      enrollments: {
-        some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-      },
+      products: { some: { enrollments: { some: { userId: userId } } } },
     },
-    orderBy: [{ term: { startsOn: "desc" } }, { code: "asc" }],
+    orderBy: [ { code: "asc" }],
     select: {
       id: true,
       code: true,
       title: true,
-      term: { select: { name: true } },
       quizzes: {
         where: { status: { in: [QuizStatus.PUBLISHED, QuizStatus.CLOSED] } },
         select: {
@@ -164,7 +159,6 @@ export async function getStudentGrades(
         courseId: c.id,
         courseTitle: c.title,
         courseCode: c.code,
-        termName: c.term.name,
         items,
         earned: items.reduce((s, i) => s + i.earnedPoints, 0),
         total: items.reduce((s, i) => s + i.totalPoints, 0),
@@ -188,7 +182,8 @@ export type GradebookColumn = {
 export type GradebookRow = {
   studentId: string;
   name: string;
-  username: string;
+  /** البريد صار معرّف الطالب الظاهر بدل الرقم الأكاديمي */
+  email: string | null;
   /** null = لم يُصحَّح أو لم يُسلَّم */
   cells: Record<string, number | null>;
   earned: number;
@@ -243,11 +238,14 @@ export async function getCourseGradebook(
         },
       },
     }),
+    /* طلاب المقرر = من يملك أي منتج فيه. قد يملك الطالب منتجين في
+       المقرر نفسه، فـ `distinct` يمنع تكراره في صفوف الدفتر. */
     db.enrollment.findMany({
-      where: { courseId, status: EnrollmentStatus.ACTIVE },
-      orderBy: { enrolledAt: "asc" },
+      where: { product: { courseId } },
+      distinct: ["userId"],
+      orderBy: { grantedAt: "asc" },
       select: {
-        student: { select: { id: true, name: true, username: true } },
+        user: { select: { id: true, name: true, email: true } },
       },
     }),
   ]);
@@ -290,7 +288,7 @@ export async function getCourseGradebook(
     }
   }
 
-  const rows: GradebookRow[] = enrollments.map(({ student }) => {
+  const rows: GradebookRow[] = enrollments.map(({ user: student }) => {
     const cells: Record<string, number | null> = {};
     let earned = 0;
     let total = 0;
@@ -312,7 +310,7 @@ export async function getCourseGradebook(
     return {
       studentId: student.id,
       name: student.name,
-      username: student.username,
+      email: student.email,
       cells,
       earned,
       total,
@@ -332,7 +330,7 @@ export async function countPendingGrading(
   return db.submission.count({
     where: {
       status: SubmissionStatus.SUBMITTED,
-      assignment: { course: { instructorId: userId } },
+      assignment: { course: { presenterId: userId } },
     },
   });
 }

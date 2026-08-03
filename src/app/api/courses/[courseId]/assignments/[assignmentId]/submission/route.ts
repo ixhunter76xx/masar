@@ -14,7 +14,6 @@ import { submissionBlocker } from "@/lib/data/assignments";
 import {
   Role,
   AssignmentStatus,
-  EnrollmentStatus,
   SubmissionStatus,
 } from "@/generated/prisma/enums";
 
@@ -52,9 +51,7 @@ async function loadForStudent(
       courseId,
       status: { in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED] },
       course: {
-        enrollments: {
-          some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-        },
+        products: { some: { enrollments: { some: { userId: userId } } } },
       },
     },
     select: {

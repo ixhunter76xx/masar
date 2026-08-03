@@ -1,9 +1,16 @@
-import { UserRound, Users, CalendarRange } from "lucide-react";
+import { UserRound, Hash } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
 import { CourseTabs } from "@/components/courses/CourseTabs";
-import { TermStatus } from "@/generated/prisma/enums";
-import type { CourseDetail } from "@/lib/data/courses";
+/** يُمرَّر من `requireCourseAccess` — لا فصل دراسي في مسار */
+type CourseHeader = {
+  id: string;
+  code: string;
+  title: string;
+  summary: string | null;
+  description: string | null;
+  presenter: { name: string } | null;
+};
 import type { CourseTabCounts } from "@/lib/course-tabs";
 
 /** رأس المقرر: الرمز، العنوان، الوصف، البيانات، ثم شريط التبويبات */
@@ -11,10 +18,9 @@ export function CourseHeaderCard({
   course,
   counts,
 }: {
-  course: CourseDetail;
+  course: CourseHeader;
   counts: CourseTabCounts;
 }) {
-  const archived = course.term.status === TermStatus.ARCHIVED;
 
   return (
     <Card className="mb-6 overflow-hidden">
@@ -26,12 +32,6 @@ export function CourseHeaderCard({
           </span>
         </div>
 
-        {archived && (
-          <span className="mt-2 inline-block rounded-full border border-line px-2 py-0.5 text-[10px] text-subtle">
-            فصل مؤرشف
-          </span>
-        )}
-
         {course.description && (
           <p className="mt-3 text-[13px] leading-relaxed text-muted">
             {course.description}
@@ -39,14 +39,10 @@ export function CourseHeaderCard({
         )}
 
         <dl className="mt-5 grid gap-4 text-[13px] sm:grid-cols-3">
-          <Meta icon={CalendarRange} label="الفصل" value={course.term.name} />
-          <Meta icon={UserRound} label="المدرب" value={course.instructor.name} />
-          <Meta
-            icon={Users}
-            label="عدد الطلاب"
-            value={String(course._count.enrollments)}
-            numeric
-          />
+          <Meta icon={UserRound} label="المقدّم" value={course.presenter?.name ?? ""} />
+          {/* عدد الطلاب أُزيل: في مسار المقرر ليس صفًّا دراسيًا بل
+              مجموعة دورات تُباع، وحجم "الصف" ليس معلومة يحتاجها أحد. */}
+          <Meta icon={Hash} label="رمز المقرر" value={course.code} numeric />
         </dl>
       </div>
 

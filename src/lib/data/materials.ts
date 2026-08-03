@@ -20,7 +20,7 @@ export const canManageCourse = cache(async function canManageCourse(
   if (role === Role.INSTRUCTOR) {
     return (
       (await db.course.count({
-        where: { id: courseId, instructorId: userId },
+        where: { id: courseId, presenterId: userId },
       })) > 0
     );
   }

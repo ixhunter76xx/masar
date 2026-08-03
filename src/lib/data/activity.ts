@@ -12,7 +12,6 @@ import {
 import { db } from "@/server/db";
 import {
   Role,
-  EnrollmentStatus,
   MaterialStatus,
   SubmissionStatus,
 } from "@/generated/prisma/enums";
@@ -52,12 +51,10 @@ const FEED_LIMIT = 20;
 
 /** نطاق المقررات المرئية للمستخدم حسب دوره */
 function courseScope(userId: string, role: Role) {
-  if (role === Role.INSTRUCTOR) return { instructorId: userId };
+  if (role === Role.INSTRUCTOR) return { presenterId: userId };
   if (role === Role.STUDENT) {
     return {
-      enrollments: {
-        some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-      },
+      products: { some: { enrollments: { some: { userId: userId } } } },
     };
   }
   return {};
@@ -159,7 +156,7 @@ export async function getActivityFeed(
       ? db.submission.findMany({
           where: {
             status: SubmissionStatus.SUBMITTED,
-            assignment: { course: { instructorId: userId } },
+            assignment: { course: { presenterId: userId } },
           },
           orderBy: { submittedAt: "desc" },
           take: FEED_LIMIT,
@@ -191,7 +188,7 @@ export async function getActivityFeed(
             conversation:
               role === Role.STUDENT
                 ? { studentId: userId, course: scope }
-                : { course: { instructorId: userId } },
+                : { course: { presenterId: userId } },
           },
           orderBy: { createdAt: "desc" },
           take: FEED_LIMIT,

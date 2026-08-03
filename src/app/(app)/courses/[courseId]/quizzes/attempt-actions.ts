@@ -12,7 +12,6 @@ import {
   deadlineOf,
   SUBMIT_GRACE_MS,
 } from "@/lib/data/quiz-attempts";
-import { EnrollmentStatus } from "@/generated/prisma/enums";
 
 export type StartResult =
   | { ok: true; attemptId: string }
@@ -101,9 +100,7 @@ export async function submitAttempt(
       quiz: {
         courseId,
         course: {
-          enrollments: {
-            some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-          },
+          products: { some: { enrollments: { some: { userId: userId } } } },
         },
       },
     },

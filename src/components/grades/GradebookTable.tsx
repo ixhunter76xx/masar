@@ -67,7 +67,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                   >
                     <span className="block truncate text-paper">{r.name}</span>
                     <span className="numeric block text-[11px] text-subtle">
-                      {r.username}
+                      {r.email}
                     </span>
                   </th>
 

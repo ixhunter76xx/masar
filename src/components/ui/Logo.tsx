@@ -1,4 +1,6 @@
 import Image from "next/image";
+
+import { SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /** شكل مربّع الهوية المحيط بالشعار */
@@ -6,32 +8,42 @@ type LogoShape = "square" | "circle";
 
 /**
  * أي نسخة من الشعار تُعرض:
- * - `full` الشعار الكامل: الرمز + كتابة "مركز حساب للتعليم والتدريب"
- * - `mark` الرمز وحده بلا كتابة
- * - `auto` (الافتراضي) يختار حسب المقاس
+ * - `full` الشعار الكامل: الرمز + كلمة MASAR تحته
+ * - `mark`  الرمز وحده بلا كتابة لاتينية
+ * - `auto`  (الافتراضي) يختار حسب المقاس
  */
 type LogoVariant = "auto" | "full" | "mark";
 
 /**
- * الحد الذي تصبح تحته كتابة الشعار غير مقروءة، فنكتفي بالرمز.
- * الشعار الكامل مخصّص لشاشة الدخول والأحجام الكبيرة فقط.
+ * الحد الذي تصبح تحته الكتابة اللاتينية غير مقروءة، فنكتفي بالرمز.
  */
 const FULL_LOGO_MIN_SIZE = 64;
 
+/**
+ * ── نقطة الاستبدال الوحيدة ───────────────────────────────────────────
+ * الشعار الحالي صورة نقطية مستخرجة من نسخة أولية. عند وصول الشعار
+ * النهائي: استبدل الملفّين هنا فقط — أو حوّل هذا المكوّن إلى SVG مضمّن
+ * إن وصل بصيغة متجهية، وهو الأفضل لأنه يبقى حادًّا في كل مقاس ويأخذ
+ * لونه من `currentColor` فلا يحتاج نسخة لكل خلفية.
+ * ─────────────────────────────────────────────────────────────────────
+ */
 const SOURCES: Record<Exclude<LogoVariant, "auto">, string> = {
-  full: "/logo-hisab.png",
-  mark: "/logo-hisab-mark.png",
+  full: "/logo-masar.png",
+  mark: "/logo-masar-mark.png",
 };
 
 export function Logo({
   size = 80,
   shape = "square",
   variant = "auto",
+  /** يعرض الشعار بلا مربّع الهوية خلفه */
+  bare = false,
   className,
 }: {
   size?: number;
   shape?: LogoShape;
   variant?: LogoVariant;
+  bare?: boolean;
   className?: string;
 }) {
   const resolved =
@@ -41,30 +53,46 @@ export function Logo({
         : "mark"
       : variant;
 
-  // الرمز وحده أعرض من الشعار الكامل نسبيًا، فيأخذ نسبة أصغر من المربّع
-  const ratio = resolved === "mark" ? 0.68 : 0.8;
+  // الرمز وحده أعرض نسبيًا من الشعار الكامل، فيأخذ نسبة أصغر من المربّع
+  const ratio = resolved === "mark" ? 0.7 : 0.86;
   const inner = Math.round(size * ratio);
+
+  const image = (
+    <Image
+      src={SOURCES[resolved]}
+      alt={`شعار ${SITE.name}`}
+      width={inner}
+      height={inner}
+      priority
+      className="object-contain"
+      style={{ width: inner, height: inner }}
+    />
+  );
+
+  /* بلا مربّع: الشعار أزرق فاتح على خلفية داكنة مباشرةً. مناسب للرأسية
+     والصفحات العامة حيث المربّع المتدرّج يثقل الواجهة. */
+  if (bare) {
+    return (
+      <span
+        className={cn("inline-flex shrink-0 items-center justify-center", className)}
+        style={{ width: size, height: size }}
+      >
+        {image}
+      </span>
+    );
+  }
 
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center shrink-0",
         shape === "circle" ? "rounded-full" : "rounded-[14px]",
-        "bg-gradient-to-b from-accent-bright to-accent",
-        "border border-accent-bright/25",
+        "border border-line bg-panel",
         className,
       )}
       style={{ width: size, height: size }}
     >
-      <Image
-        src={SOURCES[resolved]}
-        alt="شعار مركز حساب للتعليم والتدريب"
-        width={inner}
-        height={inner}
-        priority
-        className="object-contain"
-        style={{ width: inner, height: inner }}
-      />
+      {image}
     </span>
   );
 }

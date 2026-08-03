@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
+import { SITE } from "@/lib/site";
 
 /**
  * صفحة "غير موجود".
@@ -12,7 +13,7 @@ export default function NotFound() {
     <main className="grid min-h-dvh place-items-center bg-ink px-4">
       {/* not-found.tsx لا يدعم تصدير metadata عند استدعاء notFound()
           من مسار متفرّع، و React 19 يرفع <title> إلى <head> تلقائيًا */}
-      <title>الصفحة غير موجودة — مركز حساب</title>
+      <title>الصفحة غير موجودة — {SITE.name}</title>
       <div className="w-full max-w-md rounded-[14px] border border-line bg-panel px-6 py-8 text-center">
         <span className="mx-auto grid size-12 place-items-center rounded-full border border-line bg-ink text-muted">
           <FileQuestion size={22} strokeWidth={1.75} aria-hidden="true" />

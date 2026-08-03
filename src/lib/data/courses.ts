@@ -1,145 +1,164 @@
+import "server-only";
+
 import { cache } from "react";
 import { notFound } from "next/navigation";
 
-import { auth } from "@/auth";
 import { db } from "@/server/db";
-import { Role, TermStatus, EnrollmentStatus } from "@/generated/prisma/enums";
+import { auth } from "@/auth";
+import { hasCourseAccess } from "@/lib/data/access";
+import { Role } from "@/generated/prisma/enums";
 
-/** مقرر كما يُعرض في الواجهة */
-export type CourseSummary = {
+export type CourseCard = {
   id: string;
   code: string;
+  slug: string;
   title: string;
-  description: string | null;
-  instructorName: string;
-  studentCount: number;
+  summary: string | null;
+  presenterName: string | null;
+  /** عدد المنتجات المنشورة — يُعرض في الكتالوج */
+  productCount: number;
+  /** أرخص سعر متاح، بالفلس — «يبدأ من» */
+  fromPriceFils: number | null;
 };
 
-/** مجموعة مقررات تخصّ فصلًا دراسيًا واحدًا */
-export type TermGroup = {
-  termId: string;
-  termName: string;
-  status: TermStatus;
-  startsOn: Date;
-  endsOn: Date;
-  courses: CourseSummary[];
-};
-
-/** شرط الاختيار حسب الدور: الطالب يرى ما سُجِّل فيه، والمدرب ما يُدرّسه */
-function courseScope(userId: string, role: Role) {
-  if (role === Role.INSTRUCTOR) return { instructorId: userId };
-  if (role === Role.STUDENT) {
-    return {
-      enrollments: {
-        some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-      },
-    };
-  }
-  // الإدارة ترى كل المقررات
-  return {};
-}
+/* -------------------------------------------------------------------------- */
+/*  الكتالوج العام — بلا جلسة                                                  */
+/* -------------------------------------------------------------------------- */
 
 /**
- * مقررات المستخدم مجمّعة حسب الفصل الدراسي.
- * الفصول النشطة أولًا، ثم المؤرشفة من الأحدث إلى الأقدم.
+ * المقررات المنشورة لكل زائر.
+ *
+ * لا تقرأ الجلسة إطلاقًا: هذه أول صفحة يراها من لا حساب له، وأي استدعاء
+ * لـ `auth()` هنا يجعلها ديناميكية بلا سبب ويخلط العام بالخاص.
  */
-export async function getCoursesByTerm(
-  userId: string,
-  role: Role,
-): Promise<TermGroup[]> {
-  const courses = await db.course.findMany({
-    where: courseScope(userId, role),
-    orderBy: [{ term: { startsOn: "desc" } }, { code: "asc" }],
+export async function listPublishedCourses(): Promise<CourseCard[]> {
+  const rows = await db.course.findMany({
+    where: { isPublished: true },
+    orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
     select: {
       id: true,
       code: true,
+      slug: true,
       title: true,
-      description: true,
-      instructor: { select: { name: true } },
-      term: {
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          startsOn: true,
-          endsOn: true,
-        },
+      summary: true,
+      presenter: { select: { name: true } },
+      products: {
+        where: { isPublished: true },
+        select: { priceFils: true },
+        orderBy: { priceFils: "asc" },
       },
-      _count: { select: { enrollments: true } },
     },
   });
 
-  const groups = new Map<string, TermGroup>();
-
-  for (const c of courses) {
-    let group = groups.get(c.term.id);
-
-    if (!group) {
-      group = {
-        termId: c.term.id,
-        termName: c.term.name,
-        status: c.term.status,
-        startsOn: c.term.startsOn,
-        endsOn: c.term.endsOn,
-        courses: [],
-      };
-      groups.set(c.term.id, group);
-    }
-
-    group.courses.push({
-      id: c.id,
-      code: c.code,
-      title: c.title,
-      description: c.description,
-      instructorName: c.instructor.name,
-      studentCount: c._count.enrollments,
-    });
-  }
-
-  // النشط قبل المؤرشف، ثم الأحدث بداية أولًا
-  return [...groups.values()].sort((a, b) => {
-    if (a.status !== b.status) return a.status === TermStatus.ACTIVE ? -1 : 1;
-    return b.startsOn.getTime() - a.startsOn.getTime();
-  });
+  return rows.map((course) => ({
+    id: course.id,
+    code: course.code,
+    slug: course.slug,
+    title: course.title,
+    summary: course.summary,
+    presenterName: course.presenter?.name ?? null,
+    productCount: course.products.length,
+    fromPriceFils: course.products[0]?.priceFils ?? null,
+  }));
 }
 
 /**
- * تفاصيل مقرر واحد — يُرجع null إن لم يكن المستخدم مخوّلًا بالوصول.
+ * صفحة المقرر العامة بالمسار النصّي (slug).
  *
- * مخزّنة لكل طلب: `requireCourseAccess` تُستدعى في تخطيط المقرر وفي كل
- * صفحة تبويب (وهو مطلوب أمنيًا لأن Next ينفّذهما على التوازي)، لكن
- * الاستعلام لا يُنفَّذ إلا مرة واحدة.
+ * تُرجع المنتجات المنشورة بأسعارها وعدد دروسها، ودرس المعاينة المجاني
+ * إن وُجد. `notFound()` للمقرر غير المنشور: الزائر لا يعرف أنه موجود.
  */
-export const getCourseForUser = cache(async function getCourseForUser(
-  courseId: string,
-  userId: string,
-  role: Role,
+export const getPublicCourse = cache(async function getPublicCourse(
+  slug: string,
 ) {
-  return db.course.findFirst({
-    where: { id: courseId, ...courseScope(userId, role) },
+  const course = await db.course.findFirst({
+    where: { slug, isPublished: true },
     select: {
       id: true,
       code: true,
+      slug: true,
       title: true,
+      summary: true,
       description: true,
-      instructor: { select: { name: true } },
-      term: { select: { name: true, status: true, endsOn: true } },
-      _count: { select: { enrollments: true } },
+      presenter: { select: { name: true } },
+      products: {
+        where: { isPublished: true },
+        orderBy: [{ sortOrder: "asc" }, { priceFils: "asc" }],
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          priceFils: true,
+          currency: true,
+          _count: { select: { items: true } },
+        },
+      },
+      materials: {
+        where: { isFreePreview: true },
+        orderBy: { position: "asc" },
+        take: 1,
+        select: { id: true, title: true, durationSec: true },
+      },
+    },
+  });
+
+  if (!course) notFound();
+  return { ...course, freePreview: course.materials[0] ?? null };
+});
+
+/* -------------------------------------------------------------------------- */
+/*  بيئة التعلم — تتطلّب حقّ وصول                                              */
+/* -------------------------------------------------------------------------- */
+
+/** المقررات التي يملك المستخدم فيها منتجًا واحدًا على الأقل */
+export const getMyCourses = cache(async function getMyCourses() {
+  const session = await auth();
+  if (!session?.user) return [];
+
+  const { id: userId, role } = session.user;
+
+  /* الإدارة ترى كل شيء لتعاينه، والأستاذ يرى مقرراته، والطالب يرى
+     ما اشتراه. ثلاثة مرشّحات على نفس الاستعلام لا ثلاثة استعلامات. */
+  const where =
+    role === Role.ADMIN
+      ? {}
+      : role === Role.INSTRUCTOR
+        ? { presenterId: userId }
+        : { products: { some: { enrollments: { some: { userId } } } } };
+
+  return db.course.findMany({
+    where,
+    orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
+    select: {
+      id: true,
+      code: true,
+      slug: true,
+      title: true,
+      summary: true,
+      presenter: { select: { name: true } },
+      products: {
+        where:
+          role === Role.STUDENT
+            ? { enrollments: { some: { userId } } }
+            : undefined,
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          _count: { select: { items: true } },
+        },
+      },
     },
   });
 });
 
-/** نوع مقرر مع بياناته المعروضة في رأس الصفحة */
-export type CourseDetail = NonNullable<
-  Awaited<ReturnType<typeof getCourseForUser>>
->;
-
 /**
- * يجلب المقرر ويتحقق من صلاحية الوصول، أو يرمي 404.
+ * مقرر واحد داخل بيئة التعلم، بعد التحقّق من حقّ الوصول.
  *
- * يُستدعى في تخطيط المقرر **وفي كل صفحة تبويب** — لأن Next.js ينفّذ
- * التخطيط والصفحة على التوازي، فلا يكفي التحقق في التخطيط وحده لمنع
- * الصفحة من قراءة بيانات ليست للمستخدم.
+ * التحقّق عبر `hasCourseAccess` لا عبر استعلام تسجيل: في مسار الوصول
+ * يأتي من امتلاك منتج، والدالة هي البوّابة الوحيدة لهذا السؤال.
  */
 export const requireCourseAccess = cache(async function requireCourseAccess(
   courseId: string,
@@ -147,12 +166,25 @@ export const requireCourseAccess = cache(async function requireCourseAccess(
   const session = await auth();
   if (!session?.user) notFound();
 
-  const course = await getCourseForUser(
-    courseId,
-    session.user.id,
-    session.user.role,
-  );
+  const allowed = await hasCourseAccess(courseId);
+  if (!allowed) notFound();
+
+  const course = await db.course.findUnique({
+    where: { id: courseId },
+    select: {
+      id: true,
+      code: true,
+      slug: true,
+      title: true,
+      summary: true,
+      description: true,
+      presenter: { select: { name: true } },
+    },
+  });
   if (!course) notFound();
 
   return { course, user: session.user };
 });
+
+/** يُبقي الاسم القديم عاملًا في الصفحات التي لم تُحدَّث بعد */
+export const getCourseForUser = requireCourseAccess;

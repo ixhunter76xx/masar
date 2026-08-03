@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { db } from "@/server/db";
-import { Role, TermStatus, EnrollmentStatus } from "@/generated/prisma/enums";
+import { Role } from "@/generated/prisma/enums";
 
 /**
  * حارس المنطقة الإدارية.
@@ -20,46 +20,18 @@ export async function requireAdmin() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  الفصول الدراسية                                                            */
-/* -------------------------------------------------------------------------- */
-
-export async function listTerms() {
-  return db.term.findMany({
-    orderBy: [{ status: "asc" }, { startsOn: "desc" }],
-    select: {
-      id: true,
-      name: true,
-      startsOn: true,
-      endsOn: true,
-      status: true,
-      _count: { select: { courses: true } },
-    },
-  });
-}
-
-/** الفصول النشطة فقط — لقوائم اختيار الفصل عند إنشاء مقرر */
-export async function listActiveTerms() {
-  return db.term.findMany({
-    where: { status: TermStatus.ACTIVE },
-    orderBy: { startsOn: "desc" },
-    select: { id: true, name: true },
-  });
-}
-
-/* -------------------------------------------------------------------------- */
 /*  المقررات                                                                   */
 /* -------------------------------------------------------------------------- */
 
 export async function listCoursesForAdmin() {
   return db.course.findMany({
-    orderBy: [{ term: { startsOn: "desc" } }, { code: "asc" }],
+    orderBy: [ { code: "asc" }],
     select: {
       id: true,
       code: true,
       title: true,
-      term: { select: { name: true, status: true } },
-      instructor: { select: { name: true } },
-      _count: { select: { enrollments: true } },
+      presenter: { select: { name: true } },
+      _count: { select: { products: true } },
     },
   });
 }
@@ -71,31 +43,46 @@ export async function getCourseForAdmin(courseId: string) {
       id: true,
       code: true,
       title: true,
-      term: { select: { name: true } },
-      instructor: { select: { name: true } },
-      enrollments: {
-        orderBy: { enrolledAt: "asc" },
+      presenter: { select: { name: true } },
+      /* التسجيل صار على المنتج لا المقرر: نعرض منتجات المقرر ومن
+         يملك كلًّا منها. */
+      products: {
+        orderBy: { sortOrder: "asc" },
         select: {
           id: true,
-          status: true,
-          enrolledAt: true,
-          student: { select: { id: true, name: true, username: true } },
+          title: true,
+          priceFils: true,
+          isPublished: true,
+          enrollments: {
+            orderBy: { grantedAt: "asc" },
+            select: {
+              id: true,
+              grantedAt: true,
+              source: true,
+              user: { select: { id: true, name: true, email: true } },
+            },
+          },
         },
       },
     },
   });
 }
 
-/** الطلاب النشطون غير المسجَّلين في هذا المقرر */
-export async function listEnrollableStudents(courseId: string) {
+/**
+ * الطلاب النشطون الذين لا يملكون هذا المنتج — لمنح إداري يدوي.
+ *
+ * المنح صار على مستوى المنتج لا المقرر: قد يملك الطالب "دورة المنتصف"
+ * ويحتاج منحه "دورة النهائي" في المقرر نفسه.
+ */
+export async function listGrantableStudents(productId: string) {
   return db.user.findMany({
     where: {
       role: Role.STUDENT,
       isActive: true,
-      enrollments: { none: { courseId } },
+      enrollments: { none: { productId } },
     },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, username: true },
+    select: { id: true, name: true, email: true },
   });
 }
 
@@ -115,12 +102,12 @@ export async function listUsers() {
       isActive: true,
       lastLoginAt: true,
       mustChangePassword: true,
-      _count: { select: { enrollments: true, coursesTaught: true } },
+      _count: { select: { enrollments: true, coursesPresented: true } },
     },
   });
 }
 
-/** المدربون النشطون — لقائمة إسناد المقرر */
+/** الأساتذة النشطون — لقائمة اختيار مقدّم المقرر */
 export async function listInstructors() {
   return db.user.findMany({
     where: { role: Role.INSTRUCTOR, isActive: true },
@@ -129,4 +116,4 @@ export async function listInstructors() {
   });
 }
 
-export { TermStatus, EnrollmentStatus, Role };
+export { Role };

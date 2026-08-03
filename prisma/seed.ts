@@ -1,212 +1,156 @@
-import "dotenv/config";
-import bcrypt from "bcryptjs";
+/**
+ * بيانات أولية لمنصة مسار.
+ *
+ * ليست بيانات اختبار كالسابق: حساب إدارة واحد، وأستاذ واحد، ومقرر
+ * ARAB110 بمنتجاته الثلاثة كما وصفته وثيقة المشروع. الطلاب يسجّلون
+ * أنفسهم بأنفسهم — لا حسابات طلاب مبذورة.
+ *
+ * ⚠ لا يُشغَّل على الإنتاج: كلمات المرور هنا معروفة.
+ */
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
-import { Role, TermStatus } from "../src/generated/prisma/enums";
+import { Role, ProductItemKind, MaterialStatus } from "../src/generated/prisma/enums";
+import { hash as bcryptHash } from "bcryptjs";
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL مفقود — تأكد من وجود ملف .env.");
-}
-
+/* Prisma 7 يعمل بمحوّل سائق (driver adapter) لا برابط في المخطط —
+   نفس ما يفعله `src/server/db.ts` وقت التشغيل. */
 const db = new PrismaClient({
-  adapter: new PrismaPg({ connectionString }),
+  adapter: new PrismaPg({
+    connectionString: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "",
+  }),
 });
 
-/** حسابات تجريبية للتطوير — لا تُستخدم في الإنتاج */
-const SEED_USERS = [
-  {
-    username: "20231045",
-    email: "20231045@hisab.edu",
-    name: "سالم أحمد الدوسري",
-    password: "Student@123",
-    role: Role.STUDENT,
-  },
-  {
-    username: "instructor",
-    email: "instructor@hisab.edu",
-    name: "د. منى عبدالله",
-    password: "Teacher@123",
-    role: Role.INSTRUCTOR,
-  },
-  {
-    username: "admin",
-    email: "admin@hisab.edu",
-    name: "إدارة مركز حساب",
-    password: "Admin@123",
-    role: Role.ADMIN,
-  },
-];
-
-const SEED_TERMS = [
-  {
-    name: "2025/2026 — الفصل الثاني",
-    startsOn: new Date("2026-02-01"),
-    endsOn: new Date("2026-06-15"),
-    status: TermStatus.ACTIVE,
-  },
-  {
-    name: "2025/2026 — الفصل الأول",
-    startsOn: new Date("2025-09-01"),
-    endsOn: new Date("2026-01-15"),
-    status: TermStatus.ARCHIVED,
-  },
-];
-
-/** المقررات مرتبطة بالفصل عبر اسمه، ويُحوَّل إلى مفتاح أجنبي أدناه */
-const SEED_COURSES = [
-  {
-    code: "MATH101",
-    title: "التفاضل والتكامل",
-    description:
-      "أساسيات النهايات والاشتقاق والتكامل وتطبيقاتها في حل المسائل الهندسية والفيزيائية.",
-    term: "2025/2026 — الفصل الثاني",
-  },
-  {
-    code: "CS102",
-    title: "مقدمة في البرمجة",
-    description:
-      "المفاهيم الأساسية للبرمجة: المتغيّرات، التحكم في المسار، الدوال، وهياكل البيانات البسيطة.",
-    term: "2025/2026 — الفصل الثاني",
-  },
-  {
-    code: "STAT110",
-    title: "الإحصاء التطبيقي",
-    description: "مقاييس النزعة المركزية والتشتّت، والاحتمالات، واختبار الفرضيات.",
-    term: "2025/2026 — الفصل الثاني",
-  },
-  {
-    code: "MATH100",
-    title: "الرياضيات التمهيدية",
-    description: "الجبر والمثلثات كتحضير لمقرر التفاضل والتكامل.",
-    term: "2025/2026 — الفصل الأول",
-  },
-];
+/** ١ دينار = ١٠٠٠ فلس */
+const dinar = (amount: number) => Math.round(amount * 1000);
 
 async function main() {
-  // ١) المستخدمون
-  const users = new Map<string, string>();
-  for (const u of SEED_USERS) {
-    const passwordHash = await bcrypt.hash(u.password, 12);
-    const saved = await db.user.upsert({
-      where: { username: u.username },
-      update: {
-        name: u.name,
-        role: u.role,
-        passwordHash,
-        isActive: true,
-        // الحسابات التجريبية معفاة من إجبار التغيير لتسهيل التجربة
-        mustChangePassword: false,
-      },
-      create: {
-        username: u.username,
-        email: u.email,
-        name: u.name,
-        passwordHash,
-        role: u.role,
-        mustChangePassword: false,
-      },
-    });
-    users.set(u.username, saved.id);
-    console.log(`✓ مستخدم  ${u.role.padEnd(10)} ${u.username}  /  ${u.password}`);
-  }
+  const hash = (plain: string) => bcryptHash(plain, 12);
 
-  // ٢) الفصول الدراسية
-  const terms = new Map<string, string>();
-  for (const t of SEED_TERMS) {
-    const saved = await db.term.upsert({
-      where: { name: t.name },
-      update: { startsOn: t.startsOn, endsOn: t.endsOn, status: t.status },
-      create: t,
-    });
-    terms.set(t.name, saved.id);
-    console.log(`✓ فصل     ${t.status.padEnd(10)} ${t.name}`);
-  }
-
-  // ٣) المقررات
-  const instructorId = users.get("instructor")!;
-  const courses: { id: string; code: string }[] = [];
-
-  for (const c of SEED_COURSES) {
-    const termId = terms.get(c.term)!;
-    const saved = await db.course.upsert({
-      where: { termId_code: { termId, code: c.code } },
-      update: { title: c.title, description: c.description, instructorId },
-      create: {
-        code: c.code,
-        title: c.title,
-        description: c.description,
-        termId,
-        instructorId,
-      },
-    });
-    courses.push({ id: saved.id, code: c.code });
-    console.log(`✓ مقرر    ${c.code.padEnd(10)} ${c.title}`);
-  }
-
-  // ٤) إعلانات على أول مقررين
-  const ANNOUNCEMENTS = [
-    {
-      code: "MATH101",
-      title: "تأجيل محاضرة الأربعاء إلى الخميس",
-      body: "لظرف طارئ، ستُعقد محاضرة هذا الأسبوع يوم الخميس في نفس التوقيت والقاعة. اعتذر عن الإزعاج.",
-      isPinned: true,
+  const admin = await db.user.upsert({
+    where: { email: "admin@masar.bh" },
+    update: {},
+    create: {
+      email: "admin@masar.bh",
+      username: "admin",
+      name: "إدارة مسار",
+      passwordHash: await hash("Admin@123"),
+      role: Role.ADMIN,
+      mustChangePassword: false,
     },
-    {
-      code: "MATH101",
-      title: "توزيع ملزمة الوحدة الثالثة",
-      body: "رُفعت ملزمة الوحدة الثالثة في تبويب المحتوى. راجعوها قبل محاضرة الأحد.",
-      isPinned: false,
+  });
+
+  const presenter = await db.user.upsert({
+    where: { email: "ustath@masar.bh" },
+    update: {},
+    create: {
+      email: "ustath@masar.bh",
+      username: "ustath",
+      name: "د. منى عبدالله",
+      passwordHash: await hash("Teacher@123"),
+      role: Role.INSTRUCTOR,
+      mustChangePassword: false,
     },
-    {
-      code: "CS102",
-      title: "موعد تسليم الواجب الرابع",
-      body: "آخر موعد لتسليم الواجب الرابع هو الأحد الساعة ١١:٥٩ مساءً. لا تُقبل التسليمات المتأخرة.",
-      isPinned: false,
+  });
+  console.log(`✓ حساب   ADMIN       ${admin.email}`);
+  console.log(`✓ حساب   INSTRUCTOR  ${presenter.email}`);
+
+  const course = await db.course.upsert({
+    where: { code: "ARAB110" },
+    update: {},
+    create: {
+      code: "ARAB110",
+      slug: "arab110",
+      title: "مهارات الاتصال باللغة العربية",
+      summary: "شرح مركّز لمقرر ARAB110 كما يُدرَّس في جامعة البحرين.",
+      description:
+        "يغطّي المقرر الاستفهام والصرف والنحو والبلاغة، بدروس مسجّلة " +
+        "لكل موضوع واختبارات قصيرة تقيس الفهم بعد كل وحدة.",
+      isPublished: true,
+      sortOrder: 1,
+      presenterId: presenter.id,
     },
+  });
+  console.log(`✓ مقرر   ${course.code}  ${course.title}`);
+
+  /* الدروس مملوكة للمقرر لا للمنتج — المنتجات تشير إليها.
+     `PENDING` لأن الفيديو لم يُرفع بعد؛ الرفع من لوحة الإدارة يجعلها READY. */
+  const lessonSeed = [
+    { title: "الاستفهام", free: true },
+    { title: "الصرف", free: false },
+    { title: "النحو", free: false },
+    { title: "البلاغة", free: false },
   ];
 
-  for (const a of ANNOUNCEMENTS) {
-    const course = courses.find((c) => c.code === a.code)!;
+  const lessons = [];
+  for (const [index, item] of lessonSeed.entries()) {
+    const lesson = await db.courseMaterial.upsert({
+      where: { objectKey: `seed/${course.code}/${index + 1}` },
+      update: {},
+      create: {
+        courseId: course.id,
+        title: item.title,
+        objectKey: `seed/${course.code}/${index + 1}`,
+        status: MaterialStatus.PENDING,
+        position: index,
+        isFreePreview: item.free,
+        uploadedById: presenter.id,
+      },
+    });
+    lessons.push(lesson);
+    console.log(`  درس   ${item.free ? "مجاني" : "     "}  ${item.title}`);
+  }
 
-    // upsert يدوي: البذر قابل لإعادة التشغيل بلا تكرار
-    const existing = await db.announcement.findFirst({
-      where: { courseId: course.id, title: a.title },
-      select: { id: true },
+  /* المنتجات الثلاثة متداخلة عمدًا: "الكاملة" تشير إلى الدروس نفسها التي
+     تشير إليها الدورتان الأخريان — لا نسخة ثانية من أي فيديو. */
+  const catalogue = [
+    { slug: "midterm", title: "دورة المنتصف", price: dinar(8), lessons: [0, 1] },
+    { slug: "final", title: "دورة النهائي", price: dinar(8), lessons: [2, 3] },
+    { slug: "full", title: "الدورة الكاملة", price: dinar(14), lessons: [0, 1, 2, 3] },
+  ];
+
+  for (const [order, entry] of catalogue.entries()) {
+    const product = await db.product.upsert({
+      where: { courseId_slug: { courseId: course.id, slug: entry.slug } },
+      update: { priceFils: entry.price },
+      create: {
+        courseId: course.id,
+        slug: entry.slug,
+        title: entry.title,
+        priceFils: entry.price,
+        isPublished: true,
+        sortOrder: order,
+      },
     });
 
-    if (!existing) {
-      await db.announcement.create({
-        data: {
-          courseId: course.id,
-          title: a.title,
-          body: a.body,
-          isPinned: a.isPinned,
-          authorId: instructorId,
-          publishedAt: new Date(),
+    for (const [position, lessonIndex] of entry.lessons.entries()) {
+      await db.productItem.upsert({
+        where: {
+          productId_lessonId: {
+            productId: product.id,
+            lessonId: lessons[lessonIndex].id,
+          },
+        },
+        update: { position },
+        create: {
+          productId: product.id,
+          kind: ProductItemKind.LESSON,
+          lessonId: lessons[lessonIndex].id,
+          position,
         },
       });
     }
-    console.log(`✓ إعلان   ${a.code.padEnd(10)} ${a.title}`);
-  }
 
-  // ٥) تسجيل الطالب في كل المقررات
-  const studentId = users.get("20231045")!;
-  for (const c of courses) {
-    await db.enrollment.upsert({
-      where: { studentId_courseId: { studentId, courseId: c.id } },
-      update: {},
-      create: { studentId, courseId: c.id },
-    });
+    console.log(
+      `✓ منتج   ${entry.title.padEnd(16)} ${(entry.price / 1000).toFixed(3)} د.ب  (${entry.lessons.length} دروس)`,
+    );
   }
-  console.log(`✓ تسجيل   الطالب 20231045 في ${courses.length} مقررات`);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .then(() => db.$disconnect())
+  .catch(async (error) => {
+    console.error(error);
+    await db.$disconnect();
     process.exit(1);
-  })
-  .finally(() => db.$disconnect());
+  });

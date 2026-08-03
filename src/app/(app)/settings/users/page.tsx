@@ -82,7 +82,7 @@ export default async function UsersPage() {
                     <> · <span className="numeric">{u._count.enrollments}</span> مقررات</>
                   )}
                   {u.role === Role.INSTRUCTOR && (
-                    <> · <span className="numeric">{u._count.coursesTaught}</span> مقررات</>
+                    <> · <span className="numeric">{u._count.coursesPresented}</span> مقررات</>
                   )}
                   {u.mustChangePassword && (
                     <> · <span className="text-warning">لم يغيّر كلمته</span></>

@@ -5,7 +5,6 @@ import {
   Role,
   AssignmentStatus,
   SubmissionStatus,
-  EnrollmentStatus,
 } from "@/generated/prisma/enums";
 
 /** بطاقة واجب في قائمة المحتوى */
@@ -131,9 +130,7 @@ export async function getAssignmentForStudent(
       courseId,
       status: { in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED] },
       course: {
-        enrollments: {
-          some: { studentId: userId, status: EnrollmentStatus.ACTIVE },
-        },
+        products: { some: { enrollments: { some: { userId: userId } } } },
       },
     },
     select: {
