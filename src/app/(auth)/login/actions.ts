@@ -8,7 +8,7 @@ import { loginSchema, type LoginValues } from "@/lib/validation";
 
 export type AuthResult = { ok: false; message: string };
 
-const INVALID = "اسم المستخدم أو كلمة المرور غير صحيحة.";
+const INVALID = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
 const DISABLED = "هذا الحساب معطّل. تواصل مع إدارة المركز لإعادة تفعيله.";
 
 /** يستخرج كود الخطأ المخصّص من طبقات AuthError المختلفة */
@@ -34,7 +34,7 @@ export async function authenticate(
 
   try {
     await signIn("credentials", {
-      username: parsed.data.username,
+      email: parsed.data.email,
       password: parsed.data.password,
       redirectTo: callbackUrl || "/dashboard",
     });

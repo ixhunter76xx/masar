@@ -57,8 +57,8 @@ export default async function ProfilePage() {
 
         <dl className="grid gap-4 text-[13px] sm:grid-cols-2">
           <Row label="الاسم" value={user.name} />
-          <Row label="اسم المستخدم" value={user.username} numeric />
-          <Row label="البريد الإلكتروني" value={user.email ?? "غير مسجَّل"} />
+          <Row label="البريد الإلكتروني" value={user.email} />
+          <Row label="اسم المستخدم" value={user.username ?? "—"} />
           <Row label="الدور" value={ROLE_LABELS[user.role]} />
           <Row
             label={role === Role.INSTRUCTOR ? "مقررات أُدرّسها" : "مقررات مسجَّلة"}

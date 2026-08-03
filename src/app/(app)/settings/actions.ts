@@ -41,14 +41,27 @@ export async function removeEnrollment(
 
 const userSchema = z.object({
   name: z.string().trim().min(3, "الاسم قصير جدًا.").max(120),
-  username: z
+  /* انقلب الإلزام: البريد صار معرّف الدخول فهو مطلوب، واسم المستخدم
+     صار تسمية داخلية اختيارية للإدارة والأساتذة. */
+  email: z
     .string()
     .trim()
     .toLowerCase()
-    .min(4, "اسم المستخدم قصير جدًا.")
-    .max(64)
-    .regex(/^[a-z0-9._@-]+$/, "اسم المستخدم: حروف لاتينية وأرقام و . _ - @ فقط."),
-  email: z.union([z.email("البريد غير صالح."), z.literal("")]).optional(),
+    .min(1, "البريد مطلوب — هو معرّف الدخول.")
+    .email("البريد غير صالح.")
+    .max(120),
+  username: z
+    .union([
+      z
+        .string()
+        .trim()
+        .toLowerCase()
+        .min(4, "اسم المستخدم قصير جدًا.")
+        .max(64)
+        .regex(/^[a-z0-9._-]+$/, "اسم المستخدم: حروف لاتينية وأرقام و . _ - فقط."),
+      z.literal(""),
+    ])
+    .optional(),
   role: z.enum(Role, { message: "الدور غير صالح." }),
   password: z.string().min(8, "كلمة المرور المبدئية: ٨ خانات على الأقل."),
 });
@@ -61,19 +74,22 @@ export async function createUser(formData: FormData): Promise<ActionResult> {
 
   const { name, username, email, role, password } = parsed.data;
 
-  const taken = await db.user.findUnique({ where: { username } });
-  if (taken) return fail("اسم المستخدم مستخدَم بالفعل.");
+  /* التكرار يُفحص على البريد: هو الحقل الإلزامي الفريد. فحصه على اسم
+     مستخدم اختياري كان سيمرّ دائمًا حين يُترك فارغًا. */
+  const taken = await db.user.findUnique({ where: { email } });
+  if (taken) return fail("البريد مستخدَم بالفعل.");
 
-  if (email) {
-    const emailTaken = await db.user.findUnique({ where: { email } });
-    if (emailTaken) return fail("البريد الإلكتروني مستخدَم بالفعل.");
+  /* واسم المستخدم — إن أُدخل — يبقى فريدًا أيضًا */
+  if (username) {
+    const usernameTaken = await db.user.findUnique({ where: { username } });
+    if (usernameTaken) return fail("اسم المستخدم مستخدَم بالفعل.");
   }
 
   await db.user.create({
     data: {
       name,
-      username,
-      email: email || null,
+      username: username || null,
+      email,
       role,
       passwordHash: await bcrypt.hash(password, 12),
     },

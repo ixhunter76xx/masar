@@ -21,25 +21,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        username: { label: "اسم المستخدم", type: "text" },
+        email: { label: "البريد الإلكتروني", type: "email" },
         password: { label: "كلمة المرور", type: "password" },
       },
 
       async authorize(raw) {
         const parsed = loginSchema
-          .pick({ username: true, password: true })
+          .pick({ email: true, password: true })
           .safeParse(raw);
 
         if (!parsed.success) return null;
 
-        const { username, password } = parsed.data;
+        const { email, password } = parsed.data;
 
-        const user = await db.user.findUnique({
-          where: { username: username.toLowerCase() },
-        });
+        /* البحث بالبريد لا باسم المستخدم: `username` صار اختياريًا في
+           مخطط مسار، فحساب الطالب المسجَّل ذاتيًا لا يملكه أصلًا. */
+        const user = await db.user.findUnique({ where: { email } });
 
         // نقارن دائمًا — حتى لو لم يوجد المستخدم — حتى لا يكشف زمن
-        // الاستجابة أي أسماء المستخدمين موجودة فعلًا.
+        // الاستجابة أي البُرد مسجَّلة فعلًا.
         const matches = await bcrypt.compare(
           password,
           user?.passwordHash ?? DUMMY_HASH,

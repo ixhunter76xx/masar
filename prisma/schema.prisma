@@ -22,9 +22,13 @@ enum Role {
 model User {
   id String @id @default(cuid())
 
-  /// اسم الدخول: الرقم الأكاديمي أو البريد المؤسسي
-  username String  @unique
-  email    String? @unique
+  /// البريد هو المعرّف الأساسي: التسجيل ذاتي والشراء يبدأ به،
+  /// فهو الحقل الوحيد المضمون وجوده لكل حساب.
+  email String @unique
+
+  /// اسم مستخدم اختياري — تسمية داخلية لحسابات الإدارة والأساتذة.
+  /// لا يصلح مفتاح دخول لأن حساب الطالب المسجَّل ذاتيًا لا يملكه.
+  username String? @unique
   name     String
 
   /// تجزئة bcrypt — لا تُخزَّن كلمة المرور الأصلية إطلاقًا
@@ -35,7 +39,9 @@ model User {
 
   /// يُجبَر المستخدم على تغيير كلمة مروره قبل استخدام المنصة.
   /// يُفعَّل عند إنشاء الحساب وعند إعادة تعيين كلمة المرور من الإدارة.
-  mustChangePassword Boolean @default(true)
+  /// افتراضه false: من يسجّل بنفسه اختار كلمته. تُرفع يدويًا للحسابات
+  /// التي تنشئها الإدارة بكلمة مبدئية.
+  mustChangePassword Boolean @default(false)
 
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())

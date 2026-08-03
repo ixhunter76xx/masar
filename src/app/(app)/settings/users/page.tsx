@@ -31,10 +31,10 @@ export default async function UsersPage() {
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <FormField id="u-name" name="name" label="الاسم" placeholder="سالم أحمد الدوسري" required />
-          <FormField id="u-username" name="username" label="اسم المستخدم" placeholder="20231046" required />
+          <FormField id="u-email" name="email" type="email" label="البريد الإلكتروني" placeholder="name@masar.bh" required />
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <FormField id="u-email" name="email" label="البريد (اختياري)" type="email" placeholder="name@hisab.edu" />
+          <FormField id="u-username" name="username" label="اسم مستخدم (اختياري)" placeholder="ustath" />
           <SelectField
             id="u-role"
             name="role"

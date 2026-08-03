@@ -25,7 +25,7 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput, unknown, LoginValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "", remember: false },
+    defaultValues: { email: "", password: "", remember: false },
     mode: "onSubmit",
   });
 
@@ -57,18 +57,20 @@ export function LoginForm() {
       <div>
         {/* تسمية حقيقية لا placeholder: النص النائب يختفي عند الكتابة
             فيفقد المستخدم مرجعه، ولا يُعدّ تسمية في معايير الوصولية. */}
-        <Label htmlFor="username">اسم المستخدم</Label>
+        <Label htmlFor="email">البريد الإلكتروني</Label>
         <Input
-          id="username"
-          autoComplete="username"
-          placeholder="الرقم الأكاديمي أو البريد المؤسسي"
-          invalid={Boolean(errors.username)}
-          aria-describedby={errors.username ? "username-error" : undefined}
-          {...register("username")}
+          id="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="name@example.com"
+          invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          {...register("email")}
         />
-        {errors.username && (
-          <HelpText id="username-error" tone="danger" role="alert">
-            {errors.username.message}
+        {errors.email && (
+          <HelpText id="email-error" tone="danger" role="alert">
+            {errors.email.message}
           </HelpText>
         )}
       </div>

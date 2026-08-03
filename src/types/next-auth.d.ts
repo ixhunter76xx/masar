@@ -4,7 +4,7 @@ import type { Role } from "@/generated/prisma/enums";
 declare module "next-auth" {
   interface User {
     role: Role;
-    username: string;
+    username: string | null;
     mustChangePassword: boolean;
   }
 
@@ -12,7 +12,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
-      username: string;
+      username: string | null;
       mustChangePassword: boolean;
     } & DefaultSession["user"];
   }
@@ -23,7 +23,7 @@ declare module "next-auth" {
 declare module "@auth/core/jwt" {
   interface JWT {
     role: Role;
-    username: string;
+    username: string | null;
     mustChangePassword: boolean;
   }
 }
