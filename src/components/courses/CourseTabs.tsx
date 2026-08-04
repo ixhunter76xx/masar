@@ -30,7 +30,7 @@ export function CourseTabs({
   counts: CourseTabCounts;
 }) {
   const pathname = usePathname();
-  const base = `/courses/${courseId}`;
+  const base = `/learn/${courseId}`;
 
   return (
     <nav aria-label="أقسام المقرر" className="-mb-px">

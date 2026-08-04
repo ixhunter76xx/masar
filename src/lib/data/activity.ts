@@ -233,7 +233,7 @@ export async function getActivityFeed(
       course: s.assignment.course.title,
       detail: `${s.earnedPoints} من ${s.assignment.totalPoints}`,
       at: s.gradedAt!,
-      href: `/courses/${s.assignment.course.id}/assignments/${s.assignment.id}`,
+      href: `/learn/${s.assignment.course.id}/assignments/${s.assignment.id}`,
     })),
     ...gradedQuizzes.map((a) => ({
       id: `gq-${a.id}`,
@@ -243,7 +243,7 @@ export async function getActivityFeed(
       course: a.quiz.course.title,
       detail: `${a.earnedPoints} من ${a.totalPoints}`,
       at: a.submittedAt!,
-      href: `/courses/${a.quiz.course.id}/quizzes/${a.quiz.id}`,
+      href: `/learn/${a.quiz.course.id}/quizzes/${a.quiz.id}`,
     })),
     ...pending.map((s) => ({
       id: `ps-${s.id}`,
@@ -253,7 +253,7 @@ export async function getActivityFeed(
       course: s.assignment.course.title,
       detail: s.student.name,
       at: s.submittedAt,
-      href: `/courses/${s.assignment.course.id}/assignments/${s.assignment.id}`,
+      href: `/learn/${s.assignment.course.id}/assignments/${s.assignment.id}`,
     })),
     ...messages.map((m) => ({
       id: `msg-${m.id}`,
@@ -263,7 +263,7 @@ export async function getActivityFeed(
       course: m.conversation.course.title,
       detail: m.body.length > 160 ? `${m.body.slice(0, 160)}…` : m.body,
       at: m.createdAt,
-      href: `/courses/${m.conversation.course.id}/messages/${m.conversation.studentId}`,
+      href: `/learn/${m.conversation.course.id}/messages/${m.conversation.studentId}`,
     })),
   ];
 

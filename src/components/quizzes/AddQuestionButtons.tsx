@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ListChecks, ToggleLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { addQuestion } from "@/app/(app)/courses/[courseId]/quizzes/actions";
+import { addQuestion } from "@/app/(app)/learn/[courseId]/quizzes/actions";
 import { QuestionKind } from "@/generated/prisma/enums";
 
 export function AddQuestionButtons({

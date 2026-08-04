@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { NAV_ITEMS, type NavCounts } from "@/lib/navigation";
 import { CountBadge } from "@/components/ui/Badge";
+import type { Role } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,17 +20,25 @@ import { cn } from "@/lib/utils";
  */
 export function SidebarNav({
   counts = {},
+  role,
   onNavigate,
 }: {
   counts?: NavCounts;
+  role?: Role;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
 
+  /* الترشيح بالدور إخفاءٌ بصري لا حماية — الصفحات نفسها تتحقّق من
+     الجلسة. الغرض هنا ألّا يرى المستخدم بابًا لا يخصّه. */
+  const items = NAV_ITEMS.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  );
+
   return (
     <nav aria-label="التنقّل الرئيسي">
       <ul className="space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, badgeTone }) => {
+        {items.map(({ href, label, icon: Icon, badgeTone }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           const count = counts[href] ?? 0;
 

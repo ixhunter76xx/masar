@@ -23,7 +23,7 @@ export function CourseCard({
 }) {
   return (
     <Card className="lift hover:border-accent-deep">
-      <Link href={`/courses/${course.id}`} className="block px-5 py-4">
+      <Link href={`/learn/${course.id}`} className="block px-5 py-4">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="truncate text-sm font-medium text-paper">
             {course.title}

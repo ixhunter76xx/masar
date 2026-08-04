@@ -9,7 +9,7 @@ import { FormField, Label, Checkbox } from "@/components/ui/Field";
 import {
   createAssignment,
   updateAssignment,
-} from "@/app/(app)/courses/[courseId]/assignments/actions";
+} from "@/app/(app)/learn/[courseId]/assignments/actions";
 
 export type AssignmentSettings = {
   id: string;
@@ -66,7 +66,7 @@ export function AssignmentForm({
         setTimeout(() => setSaved(false), 2000);
       } else {
         formRef.current?.reset();
-        router.push(`/courses/${courseId}/assignments/${result.id}`);
+        router.push(`/learn/${courseId}/assignments/${result.id}`);
       }
     } else {
       setError(result.message);

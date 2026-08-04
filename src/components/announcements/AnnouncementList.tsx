@@ -7,7 +7,7 @@ import { Pin, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { AnnouncementForm } from "@/components/announcements/AnnouncementForm";
-import { deleteAnnouncement } from "@/app/(app)/courses/[courseId]/announcements/actions";
+import { deleteAnnouncement } from "@/app/(app)/learn/[courseId]/announcements/actions";
 import { relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AnnouncementItem } from "@/lib/data/announcements";

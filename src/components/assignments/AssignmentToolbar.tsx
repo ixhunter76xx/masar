@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import {
   setAssignmentStatus,
   deleteAssignment,
-} from "@/app/(app)/courses/[courseId]/assignments/actions";
+} from "@/app/(app)/learn/[courseId]/assignments/actions";
 import { AssignmentStatus } from "@/generated/prisma/enums";
 
 export function AssignmentToolbar({
@@ -40,7 +40,7 @@ export function AssignmentToolbar({
     setBusy(true);
     setError(null);
     const r = await deleteAssignment(courseId, assignmentId);
-    if (r.ok) router.push(`/courses/${courseId}`);
+    if (r.ok) router.push(`/learn/${courseId}`);
     else {
       setError(r.message);
       setBusy(false);

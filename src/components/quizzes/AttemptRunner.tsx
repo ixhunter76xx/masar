@@ -6,7 +6,7 @@ import { Timer, Send, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { submitAttempt } from "@/app/(app)/courses/[courseId]/quizzes/attempt-actions";
+import { submitAttempt } from "@/app/(app)/learn/[courseId]/quizzes/attempt-actions";
 import { cn } from "@/lib/utils";
 import type { AttemptQuestion } from "@/lib/data/quiz-attempts";
 
@@ -74,7 +74,7 @@ export function AttemptRunner({
     // في الحالتين تُغلق المحاولة، فننتقل إلى النتيجة
     if (!result.ok) setError(result.message);
     router.replace(
-      `/courses/${courseId}/quizzes/${quizId}/attempt/${attemptId}`,
+      `/learn/${courseId}/quizzes/${quizId}/attempt/${attemptId}`,
     );
     router.refresh();
   }, [answers, attemptId, courseId, quizId, router]);
@@ -116,11 +116,14 @@ export function AttemptRunner({
             <Card className="px-5 py-5">
               <fieldset disabled={busy}>
                 <legend className="mb-3">
-                  <span className="numeric text-[11px] text-subtle">
-                    سؤال {i + 1} من {questions.length}
+                  {/* `numeric` على الأرقام وحدها: وضعه على العبارة كلها
+                      يقلب اتجاهها (والعبارة عربية)، ويقلب `ms-3` معها. */}
+                  <span className="text-[11px] text-subtle">
+                    سؤال <span className="numeric">{i + 1}</span> من{" "}
+                    <span className="numeric">{questions.length}</span>
                   </span>
-                  <span className="numeric ms-3 text-[11px] text-subtle">
-                    {q.points} درجة
+                  <span className="ms-3 text-[11px] text-subtle">
+                    <span className="numeric">{q.points}</span> درجة
                   </span>
                   <p className="mt-2 text-sm leading-relaxed text-paper">
                     {q.text}

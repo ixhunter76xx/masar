@@ -71,7 +71,7 @@ export function CourseSwipeArea({
 
   /** ترتيب التبويب الحالي داخل COURSE_TABS */
   const currentIndex = React.useMemo(() => {
-    const base = `/courses/${courseId}`;
+    const base = `/learn/${courseId}`;
     // الأطول أولًا حتى لا يلتقط التبويب الافتراضي مسارات التبويبات الأخرى
     const matched = [...COURSE_TABS]
       .map((tab, index) => ({ index, href: tabHref(courseId, tab.segment) }))

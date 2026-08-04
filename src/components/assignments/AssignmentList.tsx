@@ -28,7 +28,7 @@ export function AssignmentList({
         <StaggerItem key={a.id}>
           <Card className="lift hover:border-accent-deep">
             <Link
-              href={`/courses/${courseId}/assignments/${a.id}`}
+              href={`/learn/${courseId}/assignments/${a.id}`}
               className="flex gap-4 px-5 py-4"
             >
               <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-ink text-accent">

@@ -31,7 +31,7 @@ export function SidebarContent({
 
       {/* التنقّل */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav counts={counts} onNavigate={onNavigate} />
+        <SidebarNav counts={counts} role={user.role} onNavigate={onNavigate} />
       </div>
 
       <div className="mx-5 border-t border-line" />

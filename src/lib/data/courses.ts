@@ -17,6 +17,10 @@ export type CourseCard = {
   presenterName: string | null;
   /** عدد المنتجات المنشورة — يُعرض في الكتالوج */
   productCount: number;
+  /** عدد الدروس في المقرر كله */
+  lessonCount: number;
+  /** هل فيه درس معاينة مجاني؟ — أقوى إشارة في بطاقة الكتالوج */
+  hasFreePreview: boolean;
   /** أرخص سعر متاح، بالفلس — «يبدأ من» */
   fromPriceFils: number | null;
 };
@@ -47,6 +51,12 @@ export async function listPublishedCourses(): Promise<CourseCard[]> {
         select: { priceFils: true },
         orderBy: { priceFils: "asc" },
       },
+      _count: { select: { materials: true } },
+      materials: {
+        where: { isFreePreview: true },
+        select: { id: true },
+        take: 1,
+      },
     },
   });
 
@@ -58,6 +68,8 @@ export async function listPublishedCourses(): Promise<CourseCard[]> {
     summary: course.summary,
     presenterName: course.presenter?.name ?? null,
     productCount: course.products.length,
+    lessonCount: course._count.materials,
+    hasFreePreview: course.materials.length > 0,
     fromPriceFils: course.products[0]?.priceFils ?? null,
   }));
 }
@@ -94,17 +106,36 @@ export const getPublicCourse = cache(async function getPublicCourse(
           _count: { select: { items: true } },
         },
       },
+      /* كل الدروس لا المعاينة وحدها: إخفاء ما لم يُشترَ يجعل القيمة
+         مجهولة، وإظهاره مقفلًا يجعلها ملموسة. */
       materials: {
-        where: { isFreePreview: true },
         orderBy: { position: "asc" },
-        take: 1,
-        select: { id: true, title: true, durationSec: true },
+        select: {
+          id: true,
+          title: true,
+          durationSec: true,
+          isFreePreview: true,
+        },
       },
     },
   });
 
   if (!course) notFound();
-  return { ...course, freePreview: course.materials[0] ?? null };
+
+  return {
+    ...course,
+    lessons: course.materials,
+    freePreview: course.materials.find((m) => m.isFreePreview) ?? null,
+    products: course.products.map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      description: p.description,
+      priceFils: p.priceFils,
+      currency: p.currency,
+      itemCount: p._count.items,
+    })),
+  };
 });
 
 /* -------------------------------------------------------------------------- */

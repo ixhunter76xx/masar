@@ -107,7 +107,7 @@ export function QuizOverview({
               <li key={a.id}>
                 <Card className="lift hover:border-accent-deep">
                   <Link
-                    href={`/courses/${courseId}/quizzes/${quiz.id}/attempt/${a.id}`}
+                    href={`/learn/${courseId}/quizzes/${quiz.id}/attempt/${a.id}`}
                     className="flex items-center justify-between gap-3 px-5 py-3"
                   >
                     <span className="text-[13px] text-paper">

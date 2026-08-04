@@ -10,7 +10,12 @@
  * ⚠ كل `segment` هنا **يجب** أن يقابله مجلد `app/(app)/settings/<segment>`.
  * التبويب بلا صفحة يعطي 404، والصفحة بلا تبويب لا يصلها أحد.
  */
-export const ADMIN_TABS = [{ segment: "users", label: "المستخدمون" }] as const;
+export const ADMIN_TABS = [
+  /* الطلبات أولًا: هي الشاشة الوحيدة التي تحمل عملًا يوميًا ينتظرك،
+     وبقية التبويبات مرجعية تُفتح عند الحاجة. */
+  { segment: "orders", label: "الطلبات" },
+  { segment: "users", label: "المستخدمون" },
+] as const;
 
 /**
  * مسار أول قسم إداري.

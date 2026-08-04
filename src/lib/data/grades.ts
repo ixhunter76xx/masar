@@ -130,7 +130,7 @@ export async function getStudentGrades(
           earnedPoints: best.earnedPoints,
           totalPoints: best.totalPoints ?? 0,
           gradedAt: best.submittedAt!,
-          href: `/courses/${c.id}/quizzes/${q.id}`,
+          href: `/learn/${c.id}/quizzes/${q.id}`,
         });
       }
 
@@ -148,7 +148,7 @@ export async function getStudentGrades(
           earnedPoints: s.earnedPoints,
           totalPoints: a.totalPoints,
           gradedAt: s.gradedAt!,
-          href: `/courses/${c.id}/assignments/${a.id}`,
+          href: `/learn/${c.id}/assignments/${a.id}`,
           isLate: s.isLate,
         });
       }
@@ -256,14 +256,14 @@ export async function getCourseGradebook(
       kind: "quiz" as const,
       title: q.title,
       totalPoints: q.questions.reduce((s, x) => s + x.points, 0),
-      href: `/courses/${courseId}/quizzes/${q.id}`,
+      href: `/learn/${courseId}/quizzes/${q.id}`,
     })),
     ...assignments.map((a) => ({
       id: `a-${a.id}`,
       kind: "assignment" as const,
       title: a.title,
       totalPoints: a.totalPoints,
-      href: `/courses/${courseId}/assignments/${a.id}`,
+      href: `/learn/${courseId}/assignments/${a.id}`,
     })),
   ];
 

@@ -41,7 +41,7 @@ export default async function GradesPage() {
               <li key={c.id}>
                 <Card className="lift hover:border-accent-deep">
                   <Link
-                    href={`/courses/${c.id}/grades`}
+                    href={`/learn/${c.id}/grades`}
                     className="flex items-center justify-between gap-3 px-5 py-4"
                   >
                     <span className="min-w-0">
@@ -100,7 +100,9 @@ export default async function GradesPage() {
                   <span className="text-subtle"> / </span>
                   <span className="numeric text-muted">{c.total}</span>
                   {pct !== null && (
-                    <span className="numeric ms-2 text-accent">{pct}%</span>
+                    <span className="ms-2 text-accent">
+                      <span className="numeric">{pct}%</span>
+                    </span>
                   )}
                 </p>
               </div>

@@ -9,7 +9,7 @@ import { FormField, Label, Checkbox } from "@/components/ui/Field";
 import {
   createQuiz,
   updateQuiz,
-} from "@/app/(app)/courses/[courseId]/quizzes/actions";
+} from "@/app/(app)/learn/[courseId]/quizzes/actions";
 
 export type QuizSettings = {
   id: string;
@@ -51,7 +51,7 @@ export function QuizSettingsForm({
         setTimeout(() => setSaved(false), 2000);
       } else {
         formRef.current?.reset();
-        router.push(`/courses/${courseId}/quizzes/${result.id}`);
+        router.push(`/learn/${courseId}/quizzes/${result.id}`);
       }
     } else {
       setError(result.message);

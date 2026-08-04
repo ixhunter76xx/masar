@@ -21,8 +21,8 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
         const href =
           event.href ??
           (event.kind === "announcement"
-            ? `/courses/${event.courseId}/announcements`
-            : `/courses/${event.courseId}`);
+            ? `/learn/${event.courseId}/announcements`
+            : `/learn/${event.courseId}`);
 
         return (
           <StaggerItem key={event.id}>

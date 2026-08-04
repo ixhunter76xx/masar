@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
-import { gradeSubmission } from "@/app/(app)/courses/[courseId]/assignments/actions";
+import { gradeSubmission } from "@/app/(app)/learn/[courseId]/assignments/actions";
 
 export function GradeForm({
   courseId,

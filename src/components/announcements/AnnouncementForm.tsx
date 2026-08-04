@@ -11,7 +11,7 @@ import {
   createAnnouncement,
   updateAnnouncement,
   type ActionResult,
-} from "@/app/(app)/courses/[courseId]/announcements/actions";
+} from "@/app/(app)/learn/[courseId]/announcements/actions";
 
 export type EditableAnnouncement = {
   id: string;

@@ -110,6 +110,17 @@ export function LoginForm() {
           <span className="numeric text-muted">{SITE.supportPhone}</span>
         </span>
       </div>
+
+      <p className="border-t border-line pt-3 text-center text-xs text-subtle">
+        ليس لديك حساب؟{" "}
+        <Link
+          href="/signup"
+          className="inline-flex min-h-touch items-center rounded-[10px] px-2
+            text-accent-bright transition-colors hover:text-paper"
+        >
+          أنشئ واحدًا
+        </Link>
+      </p>
     </form>
   );
 }

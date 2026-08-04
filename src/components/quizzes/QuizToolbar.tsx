@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import {
   setQuizStatus,
   deleteQuiz,
-} from "@/app/(app)/courses/[courseId]/quizzes/actions";
+} from "@/app/(app)/learn/[courseId]/quizzes/actions";
 import { QuizStatus } from "@/generated/prisma/enums";
 
 export function QuizToolbar({
@@ -42,7 +42,7 @@ export function QuizToolbar({
     setBusy(true);
     setError(null);
     const result = await deleteQuiz(courseId, quizId);
-    if (result.ok) router.push(`/courses/${courseId}`);
+    if (result.ok) router.push(`/learn/${courseId}`);
     else {
       setError(result.message);
       setBusy(false);

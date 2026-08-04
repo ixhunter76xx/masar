@@ -26,5 +26,5 @@ export const COURSE_TABS: readonly CourseTab[] = [
 
 /** المسار الكامل لتبويب معيّن */
 export function tabHref(courseId: string, segment: string) {
-  return segment ? `/courses/${courseId}/${segment}` : `/courses/${courseId}`;
+  return segment ? `/learn/${courseId}/${segment}` : `/learn/${courseId}`;
 }

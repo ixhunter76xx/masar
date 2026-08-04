@@ -26,7 +26,7 @@ export function QuizList({
       {quizzes.map((q) => {
         const status = STATUS_LABEL[q.status];
         // الطالب يفتح صفحة الأداء (المرحلة القادمة)؛ المدرب يفتح التحرير
-        const href = `/courses/${courseId}/quizzes/${q.id}`;
+        const href = `/learn/${courseId}/quizzes/${q.id}`;
 
         return (
           <StaggerItem key={q.id}>

@@ -30,7 +30,7 @@ export async function removeEnrollment(
 
   await db.enrollment.delete({ where: { id: enrollmentId } });
 
-  revalidatePath("/courses");
+  revalidatePath("/learn");
   return ok;
 }
 

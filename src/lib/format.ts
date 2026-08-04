@@ -19,6 +19,15 @@ export function relativeTime(date: Date, now: Date = new Date()): string {
   }).format(date);
 }
 
+/** تاريخ كامل: "٤ أغسطس ٢٠٢٦" — للسجلات المالية حيث "قبل ٣ أيام" لا يكفي */
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("ar", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 /** مدى تاريخي مختصر: "١ فبراير – ١٥ يونيو ٢٠٢٦" */
 export function formatDateRange(from: Date, to: Date): string {
   const day = new Intl.DateTimeFormat("ar", { day: "numeric", month: "long" });

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Play } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { startAttempt } from "@/app/(app)/courses/[courseId]/quizzes/attempt-actions";
+import { startAttempt } from "@/app/(app)/learn/[courseId]/quizzes/attempt-actions";
 
 export function StartAttemptButton({
   courseId,
@@ -27,7 +27,7 @@ export function StartAttemptButton({
     const result = await startAttempt(courseId, quizId);
     if (result.ok) {
       router.push(
-        `/courses/${courseId}/quizzes/${quizId}/attempt/${result.attemptId}`,
+        `/learn/${courseId}/quizzes/${quizId}/attempt/${result.attemptId}`,
       );
     } else {
       setError(result.message);

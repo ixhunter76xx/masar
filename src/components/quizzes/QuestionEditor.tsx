@@ -10,7 +10,7 @@ import { Input, Label } from "@/components/ui/Field";
 import {
   updateQuestion,
   deleteQuestion,
-} from "@/app/(app)/courses/[courseId]/quizzes/actions";
+} from "@/app/(app)/learn/[courseId]/quizzes/actions";
 import { QuestionKind } from "@/generated/prisma/enums";
 import type { QuestionForEditing } from "@/lib/data/quizzes";
 import { cn } from "@/lib/utils";
