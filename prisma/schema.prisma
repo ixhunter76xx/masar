@@ -31,6 +31,14 @@ model User {
   username String? @unique
   name     String
 
+  /// رقم واتساب — قناة إتمام الدفع اليدوي والتواصل حول الطلب.
+  ///
+  /// يُخزَّن بصيغة دولية بلا رموز: 97333060460. بدونه لا تستطيع
+  /// لوحة الإدارة توليد رابط المحادثة لكل طلب، فتتحوّل مطابقة
+  /// التحويلات إلى بحث يدوي. اختياري في المخطط لأن حسابات الإدارة
+  /// والأساتذة القديمة لا تملكه — ومطلوب في نموذج التسجيل الذاتي.
+  phone String?
+
   /// تجزئة bcrypt — لا تُخزَّن كلمة المرور الأصلية إطلاقًا
   passwordHash String
 
@@ -80,6 +88,9 @@ model User {
   /// طلبات الشراء وتقدّم المشاهدة
   orders         Order[]
   lessonProgress LessonProgress[]
+
+  /// الدفعات التي أكّدها بنفسه (للإدارة)
+  reviewedPayments Payment[] @relation("PaymentReviewer")
 
   /// محادثاته كطالب — للمدرب تُشتق من مقرراته لا من هنا
   conversations Conversation[] @relation("ConversationStudent")
@@ -699,12 +710,29 @@ model Payment {
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  provider          String
+  /// قناة الدفع. اليوم `manual_benefit` (تحويل خارج المنصة يؤكّده
+  /// إنسان)، وغدًا `tap` حين يُربط حساب تاجر. هذا الحقل هو المفصل
+  /// الذي يجعل التبديل إضافةَ مسار webhook لا إعادةَ هيكلة: كلا
+  /// القناتين تنتهيان إلى نفس دالة منح الوصول.
+  provider String
+
+  /// معرّف العملية عند المزوّد. في القناة اليدوية نضع رقم الطلب —
+  /// فيبقى قيد التفرّد أدناه حارسًا ضد تسجيل الدفعة نفسها مرتين،
+  /// تمامًا كما كان سيحرس تكرار الـ webhook.
   providerPaymentId String
   status            String
   amountFils        Int
   /// الحمولة الخام كما وصلت — مرجع النزاعات والتدقيق
   rawPayload Json?
+
+  /// ── أثر المراجعة البشرية ────────────────────────────────────────
+  /// نقل مالٍ بموافقة إنسان بلا تسجيل مَن وافق ومتى هو ما يؤلم بعد
+  /// أشهر لا اليوم. تبقى هذه الحقول فارغة في الدفع الآلي.
+  reviewedById String?
+  reviewedBy   User?     @relation("PaymentReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  /// ملاحظة المراجع — مرجع التحويل أو سبب الرفض
+  reviewNote String?
 
   createdAt DateTime @default(now())
 
