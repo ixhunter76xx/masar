@@ -17,6 +17,22 @@ import { defineConfig } from "prisma/config";
  * بما فيها `prisma generate` الذي يعمل ضمن postinstall ولا يحتاج
  * اتصالاً بقاعدة البيانات. هذا يجعل `npm install` ينجح حتى بلا .env.
  */
+/**
+ * الرابط المباشر إن وُجد، وإلا رابط التطبيق.
+ *
+ * `??` وحده لا يكفي: فهو يتراجع عند null/undefined فقط، بينما القيمة
+ * الشائعة هنا سلسلة **فارغة** — `.env.example` يشحن `DIRECT_URL=""`،
+ * وبيئة بناء Netlify تحقن المتغيّرات المعلَنة ولو بلا قيمة. النتيجة
+ * كانت `url: ""` وخطأ P1013 غامضًا («المخطط غير معروف») مع سطر
+ * `Datasource "db": PostgreSQL database` بلا مضيف. نتعامل مع الفارغ
+ * كغائب.
+ */
+function databaseUrl(): string {
+  const direct = process.env.DIRECT_URL?.trim();
+  if (direct) return direct;
+  return process.env.DATABASE_URL?.trim() ?? "";
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
 
@@ -26,6 +42,6 @@ export default defineConfig({
   },
 
   datasource: {
-    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "",
+    url: databaseUrl(),
   },
 });

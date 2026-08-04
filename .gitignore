@@ -12,3 +12,9 @@ tsconfig.tsbuildinfo
 
 # Prisma
 /src/generated
+
+# Netlify — build output and local site link, not source.
+# Was tracked by mistake (296 files, incl. a 23MB function bundle that
+# churned on every deploy). The site id lives in CLAUDE.md if the link
+# ever needs recreating with `netlify link`.
+.netlify
