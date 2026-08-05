@@ -122,7 +122,10 @@ export function AttemptRunner({
                     سؤال <span className="numeric">{i + 1}</span> من{" "}
                     <span className="numeric">{questions.length}</span>
                   </span>
-                  <span className="ms-3 text-[11px] text-subtle">
+                  <span aria-hidden="true" className="mx-2 text-[11px] text-disabled">
+                    ·
+                  </span>
+                  <span className="text-[11px] text-subtle">
                     <span className="numeric">{q.points}</span> درجة
                   </span>
                   <p className="mt-2 text-sm leading-relaxed text-paper">
