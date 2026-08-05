@@ -1,13 +1,52 @@
 import type { Metadata } from "next";
 import { LibraryBig } from "lucide-react";
 
+import { auth } from "@/auth";
 import { AppPage } from "@/components/shell/AppPage";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 import { getMyCourses } from "@/lib/data/courses";
+import { Role } from "@/generated/prisma/enums";
 
 export const metadata: Metadata = { title: "مقرراتي" };
+
+/**
+ * نصّ الصفحة حسب الدور.
+ *
+ * «مقرراتي» تعني ثلاثة أشياء مختلفة: ما اشتراه الطالب، وما يُقدّمه
+ * المدرب، وكل شيء للإدارة كي تعاينه — وهو التفريع نفسه الذي يجريه
+ * `getMyCourses()` على الاستعلام. كان النصّ واحدًا بصيغة الشراء
+ * («ما تملك وصولًا إليه») فيُقرأ خطأً في وجه المدرب: هو لا يملك
+ * المقرر بل يُدرّسه. والحالة الفارغة كانت تدعوه لتصفّح الكتالوج،
+ * وهو ليس مشتريًا. لذا يتبع النصّ الدور كما يتبعه الاستعلام.
+ */
+const COPY = {
+  [Role.STUDENT]: {
+    description: "ما تملك وصولًا إليه.",
+    empty: {
+      title: "لا مقررات بعد",
+      description: "تصفّح الكتالوج واختر ما يناسبك من الدورات.",
+      action: { href: "/courses", label: "تصفّح المقررات" },
+    },
+  },
+  [Role.INSTRUCTOR]: {
+    description: "المقررات التي تُقدّمها.",
+    empty: {
+      title: "لا مقررات مُسنَدة إليك",
+      description: "لم يُسنَد إليك أي مقرر بعد. تواصل مع الإدارة لإسناد مقرر.",
+      action: undefined,
+    },
+  },
+  [Role.ADMIN]: {
+    description: "كل مقررات المنصة — للمعاينة.",
+    empty: {
+      title: "لا مقررات في المنصة",
+      description: "لم يُنشأ أي مقرر بعد.",
+      action: undefined,
+    },
+  },
+} as const;
 
 /**
  * مقررات المستخدم — قائمة مسطّحة.
@@ -17,16 +56,19 @@ export const metadata: Metadata = { title: "مقرراتي" };
  * الإدارة لا تقويم الجامعة.
  */
 export default async function Page() {
-  const courses = await getMyCourses();
+  const [session, courses] = await Promise.all([auth(), getMyCourses()]);
+
+  // الجلسة مضمونة هنا: تخطيط (app) يحرس المنطقة قبل تصيير الصفحة
+  const copy = COPY[session!.user.role] ?? COPY[Role.STUDENT];
 
   return (
-    <AppPage title="مقرراتي" description="ما تملك وصولًا إليه.">
+    <AppPage title="مقرراتي" description={copy.description}>
       {courses.length === 0 ? (
         <EmptyState
           icon={LibraryBig}
-          title="لا مقررات بعد"
-          description="تصفّح الكتالوج واختر ما يناسبك من الدورات."
-          action={{ href: "/courses", label: "تصفّح المقررات" }}
+          title={copy.empty.title}
+          description={copy.empty.description}
+          action={copy.empty.action}
         />
       ) : (
         <StaggerList as="ul" className="space-y-3">
