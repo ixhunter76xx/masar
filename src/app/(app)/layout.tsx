@@ -19,7 +19,7 @@ export default async function AppLayout({
   if (!shell) redirect("/login");
 
   return (
-    <div className="min-h-dvh bg-ink">
+    <div className="ambient min-h-dvh bg-ink">
       {/* أول عنصر قابل للتركيز: يقفز فوق الشريط الجانبي إلى المحتوى */}
       <a
         href="#main"

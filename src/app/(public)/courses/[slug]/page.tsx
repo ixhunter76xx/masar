@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Lock, Play, ShieldCheck } from "lucide-react";
 
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
+import { Reveal } from "@/components/motion/Reveal";
 import { BuyButton } from "@/components/public/BuyButton";
 import { Price } from "@/components/public/Price";
 import { getPublicCourse } from "@/lib/data/courses";
@@ -108,15 +109,17 @@ export default async function PublicCoursePage({ params }: Params) {
           )}
 
           {course.description && (
-            <>
+            <Reveal>
               <SectionTitle className="mb-4 mt-11">عن المقرر</SectionTitle>
               <p className="max-w-[62ch] text-[0.9375rem] font-light leading-[2] text-muted">
                 {course.description}
               </p>
-            </>
+            </Reveal>
           )}
 
-          <SectionTitle className="mb-4 mt-11">مسار المقرر</SectionTitle>
+          <Reveal>
+            <SectionTitle className="mb-4 mt-11">مسار المقرر</SectionTitle>
+          </Reveal>
           <LessonPath lessons={course.lessons} />
         </div>
 
@@ -354,11 +357,15 @@ function ProductCard({
   return (
     <div
       className={cn(
-        "rounded-[14px] border p-5 transition-[transform,border-color,box-shadow] duration-200 ease-out",
-        "hover:-translate-y-[3px] hover:border-accent-deep/80",
+        "glow-edge rounded-[14px] border p-5",
+        "transition-[transform,border-color,box-shadow] duration-[320ms] ease-out",
+        "hover:-translate-y-[5px] hover:border-accent-deep/80",
         best
-          ? "border-action/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_8px_24px_-8px_rgba(0,0,0,0.55)] [background:radial-gradient(120%_80%_at_50%_0%,color-mix(in_srgb,var(--color-action)_10%,transparent),transparent_70%),var(--color-panel)]"
-          : "border-line bg-panel shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_1px_2px_rgba(0,0,0,0.35)]",
+          ? /* الباقة الأوفر تحمل ضوءًا أعلى منها — لا حدًّا أعرض ولا
+               لونًا آخر. الترجيح بالإضاءة يبقى مقروءًا لمن لا يميّز
+               الألوان، والباقات الثلاث تبقى متساوية الوزن البنيوي. */
+            "border-action/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_10px_30px_-10px_rgba(0,0,0,0.6)] [background:radial-gradient(130%_88%_at_50%_-8%,color-mix(in_srgb,var(--color-action)_14%,transparent),transparent_72%),linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_60%)]"
+          : "border-line shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_1px_2px_rgba(0,0,0,0.35)] [background:linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_62%)]",
       )}
     >
       <div className="flex items-start justify-between gap-2.5">

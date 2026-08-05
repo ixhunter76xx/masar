@@ -56,6 +56,22 @@
 
   /* --- الحد الأدنى لمساحة اللمس --- */
   --spacing-touch: 44px;
+
+  /* ==========================================================================
+     طبقة العمق — إضافة على اللوحة لا تبديل لها
+
+     اللوحة بقيت كما هي: نفس السبعة ألوان بنفس القيم. ما أُضيف هنا
+     مشتقّ منها حصرًا — درجتان بين `ink` و`panel` لتدرّج السطح، ودرجة
+     `glow` هي `accent-bright` نفسه بشفافية. لا لون جديد دخل النظام.
+
+     السبب: `#0d1013` مسطّح تمامًا، فكل سطح فوقه يبدو ملصقًا لا قائمًا.
+     العمق يأتي من تدرّج خفيف جدًا ومن ضوء واحد له مصدر واحد أعلى
+     الصفحة — لا من ظلال معلّقة بلا مصدر.
+     ========================================================================== */
+  --color-ink-lift: #10151b; /* سطح أعلى بدرجة من الخلفية */
+  --color-panel-lift: #16212d; /* اللوحة عند التصويب */
+  --glow: color-mix(in srgb, var(--color-accent-bright) 12%, transparent);
+  --glow-soft: color-mix(in srgb, var(--color-accent-bright) 6%, transparent);
 }
 
 /* ==========================================================================
@@ -154,6 +170,101 @@
 
   .lift:active {
     transform: translateY(0) scale(0.995);
+  }
+
+  /* ==========================================================================
+     الغلاف الضوئي — مصدر ضوء واحد أعلى الصفحة
+
+     هالتان واسعتان جدًا بشفافية منخفضة، ثابتتان لا تتحرّكان: الحركة
+     الدائمة في الخلفية تسرق الانتباه من المحتوى وتستهلك البطارية.
+     الغرض أن يبدو السطح مضاءً من جهة، فتكتسب البطاقات فوقه حجمًا.
+     ========================================================================== */
+  .ambient {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .ambient::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        72% 46% at 76% -8%,
+        color-mix(in srgb, var(--color-accent-deep) 42%, transparent) 0%,
+        color-mix(in srgb, var(--color-accent-deep) 12%, transparent) 34%,
+        transparent 66%
+      ),
+      radial-gradient(
+        58% 40% at 6% 0%,
+        color-mix(in srgb, var(--color-accent) 20%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        90% 50% at 50% 104%,
+        color-mix(in srgb, var(--color-accent-deep) 14%, transparent) 0%,
+        transparent 70%
+      );
+  }
+
+  /* حبيبات دقيقة تكسر التدرّج
+
+     التدرّجات الواسعة على شاشات 8-bit تُظهر أشرطة لونية (banding).
+     ضوضاء بنسبة ٣٪ تكفي لتفتيتها، وتعطي السطح ملمسًا بدل لمعان رقمي. */
+  .ambient::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ==========================================================================
+     لمعان التحميل — بديل النبض
+
+     `animate-pulse` يُظهر أن شيئًا ما يحدث، لكنه لا يوحي باتجاه. مسحة
+     ضوء تعبر الهيكل توحي بأن المحتوى قادم من مكان ما.
+     ========================================================================== */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--glow-soft) 45%,
+      var(--glow) 50%,
+      var(--glow-soft) 55%,
+      transparent 100%
+    );
+    animation: shimmer 1.9s var(--ease-in-out) infinite;
+  }
+
+  @keyframes shimmer {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* توهّج الحدّ عند التصويب — الضوء يلامس الحافّة القريبة منه */
+  @media (hover: hover) {
+    .glow-edge:hover {
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.075),
+        0 0 0 1px color-mix(in srgb, var(--color-accent-deep) 55%, transparent),
+        0 18px 44px -16px rgb(0 0 0 / 0.7),
+        0 0 32px -12px var(--glow);
+    }
   }
 
   /* حقول النماذج: الحد يتلوّن بمنحنى بدل قفزة لونية */

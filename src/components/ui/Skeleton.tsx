@@ -9,7 +9,9 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={cn("animate-pulse rounded-[10px] bg-line/40", className)}
+      /* `shimmer` بدل `animate-pulse`: النبض يقول «شيء يحدث»، والمسحة
+         تقول «المحتوى قادم» — اتجاه الحركة نفسه يحمل المعنى. */
+      className={cn("shimmer rounded-[10px] bg-line/35", className)}
     />
   );
 }

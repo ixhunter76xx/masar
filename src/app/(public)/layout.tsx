@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { PageTransition } from "@/components/motion/PageTransition";
 import { Logo } from "@/components/ui/Logo";
 import { SITE } from "@/lib/site";
 
@@ -28,7 +29,7 @@ export default async function PublicLayout({
   const session = await auth();
 
   return (
-    <div className="min-h-dvh bg-ink">
+    <div className="ambient min-h-dvh bg-ink">
       <header
         className="sticky top-0 z-40 flex h-[68px] items-center gap-4
           border-b border-line/70 bg-ink/70 px-4 backdrop-blur-xl sm:px-8"
@@ -76,7 +77,9 @@ export default async function PublicLayout({
         </nav>
       </header>
 
-      <main>{children}</main>
+      <main>
+        <PageTransition>{children}</PageTransition>
+      </main>
 
       <footer className="mt-20 border-t border-line py-8">
         <div

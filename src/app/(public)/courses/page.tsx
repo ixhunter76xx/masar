@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Play } from "lucide-react";
 
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
+import { Reveal } from "@/components/motion/Reveal";
 import { Price } from "@/components/public/Price";
 import { listPublishedCourses } from "@/lib/data/courses";
 import { SITE } from "@/lib/site";
@@ -25,25 +26,37 @@ export default async function CatalogPage() {
   return (
     <div className="mx-auto max-w-[1120px] px-4 sm:px-8">
       <section className="py-14 sm:py-20">
-        <span className="inline-flex items-center gap-2 text-xs text-accent">
-          <span className="h-0.5 w-3.5 rounded-full bg-accent-deep" />
-          جامعة البحرين · مقررات اللغة العربية
-        </span>
+        {/* البطل يدخل بترتيب يقرأ به: الوسم، ثم العنوان، ثم الشرح،
+            ثم الدعوة. التأخيرات صغيرة (٦٠ms) — تكفي لصنع تسلسل ولا
+            تكفي لأن يشعر الزائر بأنه ينتظر. */}
+        <Reveal delay={0}>
+          <span className="inline-flex items-center gap-2 text-xs text-accent">
+            <span className="h-0.5 w-3.5 rounded-full bg-accent-deep" />
+            جامعة البحرين · مقررات اللغة العربية
+          </span>
+        </Reveal>
 
-        <h1
-          className="mt-4 max-w-[17ch] text-[clamp(1.875rem,5.2vw,3.125rem)]
-            font-semibold leading-[1.28] tracking-[-0.03em]"
-        >
-          شرح مقرَّرك الجامعي،{" "}
-          <em className="bg-gradient-to-b from-accent-bright to-accent-deep bg-clip-text not-italic text-transparent">
-            لا دورة عامة
-          </em>
-        </h1>
+        <Reveal delay={0.06}>
+          <h1
+            className="mt-4 max-w-[17ch] text-[clamp(1.875rem,5.2vw,3.125rem)]
+              font-semibold leading-[1.28] tracking-[-0.03em]"
+          >
+            شرح مقرَّرك الجامعي،{" "}
+            <em
+              className="bg-clip-text not-italic text-transparent
+                [background-image:linear-gradient(160deg,#c8dcea_0%,var(--color-accent-bright)_42%,var(--color-accent-deep)_100%)]"
+            >
+              لا دورة عامة
+            </em>
+          </h1>
+        </Reveal>
 
-        <p className="mt-5 max-w-[44ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
-          لا نُعلّم «اللغة العربية». نشرح المقرر الجامعي كما يُدرَّس في خطتك —
-          بوحداته ومصطلحاته وما يُسأل عنه في الامتحان.
-        </p>
+        <Reveal delay={0.12}>
+          <p className="mt-5 max-w-[44ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
+            لا نُعلّم «اللغة العربية». نشرح المقرر الجامعي كما يُدرَّس في خطتك —
+            بوحداته ومصطلحاته وما يُسأل عنه في الامتحان.
+          </p>
+        </Reveal>
 
         {/* ── لماذا لا صفّ إحصاءات هنا ────────────────────────────────
             كان أعلى الصفحة يحمل «١ مقرر متاح · ٤ درس مسجّل · ١ درس
@@ -51,10 +64,12 @@ export default async function CatalogPage() {
             الكتالوج في أول ما تقع عليه العين، ولا يجيب سؤال الزائر:
             هل عندكم مقرري؟ الجواب في البطاقات أسفله، فنُقدّمها. */}
         {free > 0 && (
-          <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/[0.07] px-3.5 py-2 text-[13px] text-success">
-            <Play size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" />
-            جرّب درسًا كاملًا مجانًا قبل أن تدفع
-          </p>
+          <Reveal delay={0.18}>
+            <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/[0.07] px-3.5 py-2 text-[13px] text-success">
+              <Play size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" />
+              جرّب درسًا كاملًا مجانًا قبل أن تدفع
+            </p>
+          </Reveal>
         )}
       </section>
 
@@ -104,11 +119,12 @@ function CourseCard({
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[14px]
-        border border-line bg-panel p-[1.375rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_1px_2px_rgba(0,0,0,0.35)]
-        transition-[transform,border-color,box-shadow] duration-200 ease-out
-        hover:-translate-y-1 hover:border-accent-deep/85
-        hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_8px_24px_-8px_rgba(0,0,0,0.55)]"
+      className="group glow-edge relative flex h-full flex-col overflow-hidden rounded-[14px]
+        border border-line p-[1.375rem]
+        shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_1px_2px_rgba(0,0,0,0.35)]
+        transition-[transform,border-color,box-shadow] duration-[320ms] ease-out
+        hover:-translate-y-1.5 hover:border-accent-deep/85
+        [background:linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_58%)]"
     >
       {/* ضوء يسقط من الأعلى عند التصويب — لا ظل عام بلا مصدر */}
       <span
