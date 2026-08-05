@@ -38,8 +38,18 @@ Built around the client's actual logo (dark navy circular badge, white bird/wing
 
 ## What Changed: Hesab Center LMS → Masar
 
-> **⚠ Read this before trusting any Masar feature description below.**
-> The Masar pivot changed the **database schema, the access layer, and the middleware** — but **not the pages**. The application you actually get when you run this repo is still the Hesab Center LMS. Audited against the source on 2026-08-05; every claim below is marked with what was verified.
+> **⚠ The 2026-08-05 audit below is now obsolete. Re-audited 2026-08-06.**
+> That audit concluded the pivot had changed the schema, access layer and middleware "but not the pages," and that the app you get is still the Hesab Center LMS. **That is no longer true** — the application layer was built after it was written. Verified 2026-08-06 by running the app and by anonymous HTTP requests (no cookies):
+>
+> | Route | Anonymous status | |
+> |---|---|---|
+> | `/` | 307 → `/courses` | not `/login` |
+> | `/courses` | **200** | public catalog renders |
+> | `/courses/arab110` | **200** | prices, tiers, free-preview |
+> | `/signup` | **200** | self-signup exists |
+> | `/learn`, `/settings/orders` | 307 | correctly protected |
+>
+> `markOrderPaid()` exists in `src/lib/data/orders.ts`, `/settings/orders` is a working queue with `wa.me` links and confirmed payments carrying reviewer + reference notes, and `/learn/[courseId]` is the study environment. **Trust the source over any prose in this file, and re-date what you check.**
 
 The original LMS scope (roles: Super Admin, Academic Coordinator, Instructor, Teaching Assistant, Student, Guest; 4-tab course page — المحتوى/الإعلانات/الدرجات/الرسائل; Tools section removed from nav; role-based Roster) is the **foundation**.
 
@@ -53,25 +63,22 @@ The original LMS scope (roles: Super Admin, Academic Coordinator, Instructor, Te
 - **`isFreePreview`** on `CourseMaterial` — the flag exists and is referenced in 5 files.
 - Auth by **email**, not username.
 
-### ⚠️ Schema and plumbing only — no UI exists
+### ✅ Also built since — all verified 2026-08-06
 
-- `Order`, `OrderItem`, `Payment`, `Enrollment` models exist and migrations are applied, but **nothing in the app reads or writes them**. Three `Product` rows sit in the DB with no page that renders a price.
-- `middleware.ts` declares `/`, `/courses`, and `/courses/` as public routes for the planned catalog — **but this is aspirational and currently has no effect**: `src/app/(app)/layout.tsx:19` redirects any session-less visitor to `/login`, and `src/app/page.tsx:4` redirects `/` straight to `/login`. Verified 2026-08-05 by an anonymous request to a course URL on a preview deploy: **HTTP 307 → `/login`** (note: no `?next=` param, which is how you tell the redirect came from the layout, not the middleware). Nothing is publicly browsable today.
+The previous audit listed these as "never built". They are all in the source now:
 
-### ❌ Described in earlier versions of this file but never built
+- **Public catalog** — `(public)/courses` and `(public)/courses/[slug]`, reachable with no session. The course page renders the three product tiers, per-tier lesson lists, the "الأوفر" saving badge, and a free-preview player.
+- **Self-signup** — `(auth)/signup` with its own `actions.ts`.
+- **`/learn` study environment** — `(app)/learn` and `(app)/learn/[courseId]` with the 4 tabs. `/courses/[slug]` is now the *storefront*; `/learn/[courseId]` is the *classroom*. Two different pages — don't conflate them.
+- **`/settings/orders` admin queue** — real, with `wa.me` links, cancel, and confirm-with-reference.
+- **`markOrderPaid()`** — exists in `src/lib/data/orders.ts` and takes `{orderId, provider, paymentRef, reviewedById, reviewNote, rawPayload}`. The single-writer rule held: `settings/orders/actions.ts` is its only caller today, and a gateway webhook should be the second.
+- **Orders for the buyer** — `(app)/orders` and `(app)/orders/[number]`.
 
-Do not assume these exist. None of them are in the source:
-
-- **Public catalog** — `/courses` renders "مقرراتي — ما تملك وصولًا إليه", a logged-in course list, not a storefront.
-- **Self-signup** (`/signup`) — route does not exist.
-- **`/learn` study environment** — does not exist. The learning environment is still `/courses/[courseId]` with the original 4 tabs and the instructor upload panel.
-- **`/settings/orders` admin order queue** — does not exist (404s on a live preview).
-- **`markOrderPaid()` / `src/lib/data/orders.ts`** — neither the file nor the symbol appears anywhere in the source.
-- **Video progress tracking UI** — the `LessonProgress` model exists; no page drives it.
+Still schema-only: **video progress tracking** (`LessonProgress` exists; no page drives it).
 
 ## Payment Architecture — A DESIGN, NOT AN IMPLEMENTATION
 
-> **⚠ None of the flow below is implemented.** Verified 2026-08-05: `markOrderPaid` does not appear anywhere in the source, `src/lib/data/orders.ts` does not exist, `/settings/orders` 404s, and there is no `wa.me` link or `manual_benefit` string in the repo. Only the **schema** for it exists. Treat this whole section as the agreed design to build toward — the constraints and reasoning are still valid and worth preserving — but do not write code that calls into it as if it were there.
+> **⚠ The "not implemented" warning that stood here is obsolete — the flow is built.** Re-verified 2026-08-06: `markOrderPaid()` lives in `src/lib/data/orders.ts`, `/settings/orders` renders a working queue, and `src/lib/whatsapp.ts` generates the `wa.me` links. Steps 1–5 below describe what the code now does, not a plan. The constraints and reasoning are unchanged and still binding — especially the single-writer rule.
 
 **Current state: no live payment gateway.** The site owner is a Bahraini university student without a Commercial Registration (CR), which is typically required to open a merchant account with a gateway like Tap Payments. Until a lightweight license is obtained (Virtual Commercial Registration or Freelancer/Home Business License — both lighter than a full company CR), payments are **intended** to be handled manually:
 
@@ -167,6 +174,7 @@ List the bucket and diff it against `CourseMaterial.objectKey` ∪ `Submission.o
 - Neon `neondb` is the **only** database; it is not a separate dev instance and the deployed Netlify site reads from it. Treat every reset as production-touching regardless of how empty it currently looks.
 - Re-seeding recreates `admin@masar.bh` / `ustath@masar.bh`. Their passwords are **no longer hard-coded** (they were `Admin@123` / `Teacher@123` until 2026-08-05): `prisma/seed.ts` reads `SEED_ADMIN_PASSWORD` / `SEED_TEACHER_PASSWORD` from `.env`, and when those are unset it generates 24 random bytes per account and prints them once at the end of the seed run. **Capture that output — it is the only time the password is shown.** Note both vars must live in `.env`, not `.env.local`: the Prisma CLI does not read `.env.local`.
 - `seed.ts` uses `ensureUser()` (find-then-create), not `upsert`. This is deliberate: `upsert` with `update: {}` silently leaves an existing account's password untouched, so a generated password would be printed but never applied — worse than a known one, because it looks like it works. Keep this property if you touch the seed.
+- **If the printed password was lost, `npx prisma db seed` will not help** — `ensureUser()` finds the existing account and leaves its password alone, by the design just above. Use `scripts/set-seed-passwords.mts` (added 2026-08-06), which reads `SEED_ADMIN_PASSWORD` / `SEED_TEACHER_PASSWORD` from `.env` and applies them to the existing rows. It refuses to run without those vars, so no credential is ever hard-coded in the repo.
 
 ### `migrate reset` does not run the seed here
 Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated cleanly but **did not** invoke `migrations.seed` from `prisma.config.ts` — the DB was left completely empty (0 users, 0 courses). Run `npx prisma db seed` as a separate second step and verify row counts afterwards. Don't assume the reset re-seeded.
@@ -174,14 +182,9 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
 ## Deferred / Not Started
 
 - ~~Reset the Neon DB and clean the R2 bucket~~ — **done 2026-08-05.** The bucket was wiped (it held one orphaned test PNG, no real content) and the DB was reset and re-seeded. Both are now clean and consistent: 2 seeded users, 1 course, 4 `PENDING` lessons, 3 products, 0 orders, and an empty bucket.
-- **The entire Masar application layer.** The schema, access layer and middleware are ready; the pages are not. Roughly in dependency order:
-  1. `markOrderPaid()` in `src/lib/data/orders.ts` — build this **first**, it is the single writer for access grants
-  2. Public catalog: make `/` and `/courses` genuinely reachable without a session (today the `(app)` layout blocks them regardless of what the middleware says)
-  3. Product/pricing display and the "طلب الدورة" → `Order(PENDING)` + `wa.me` link flow
-  4. `/settings/orders` admin queue calling `markOrderPaid()`
-  5. `/signup` self-signup
-  6. `/learn` study environment (or decide `/courses/[courseId]` stays the learning environment and drop `/learn` from the plan)
-- Admin screens for product/pricing management
+- ~~**The entire Masar application layer.**~~ **Built — all six steps done, verified 2026-08-06.** `markOrderPaid()`, the public catalog, pricing + "طلب الدورة" → `Order(PENDING)` + `wa.me`, the `/settings/orders` queue, `/signup`, and `/learn` as the study environment (the "or drop `/learn`" question resolved in favour of keeping it — `/courses/[slug]` is the storefront, `/learn/[courseId]` the classroom).
+- Admin screens for product/pricing management — **still not built.** `/settings` has الطلبات and المستخدمون only; the three `Product` rows and their prices are seed-only and not editable in any UI.
+- **Instructor-role sweep is incomplete.** Verified as admin (which passes `canManageCourse` on the identical code path): announcements, assignments, gradebook. **Not yet exercised as a real instructor:** course messages — the messages tab deliberately excludes the admin account ("المحادثات خاصة بطرفيها، ولا يشارك فيها حساب الإدارة"), so it can only be tested signed in as `ustath@masar.bh`. A real video upload to R2 is also untested.
 - Redeploy production — it is three days and ~12 commits behind (see Deployment section)
 - Tap Payments webhook integration (blocked on licensing — see Payment Architecture section)
 
