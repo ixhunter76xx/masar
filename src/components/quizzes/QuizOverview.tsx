@@ -78,23 +78,43 @@ export function QuizOverview({
            هذه أهمّ لحظة في المقرر كله، وكانت تُعرض سطرًا رماديًا بأيقونة
            صحّ. الآن: حلقة تُرسم بلون الشرارة، ورقم يظهر بعدها، وانفجار
            صغير مرة واحدة. الشرارة محجوزة للتقدّم — وهذا موضعها. */
-        <Card className="relative mb-6 flex items-center gap-4 overflow-hidden px-5 py-5">
-          <span className="relative grid place-items-center">
-            <SparkBurst size={68} />
-            <ScoreRing percent={bestPct}>
-              <span className="numeric">{Math.round(bestPct)}%</span>
-            </ScoreRing>
-          </span>
-
-          <p className="flex-1 text-sm text-paper">
-            أفضل نتيجة:{" "}
-            <span className="numeric font-medium">{best.earnedPoints}</span>
-            <span className="text-subtle"> / </span>
-            <span className="numeric text-muted">{best.totalPoints}</span>
-            <span className="mt-1 block text-[11px] text-subtle">
-              الدرجة المعتمدة هي الأعلى
+        /* ── البطاقة مبنيّة حول الحلقة لا بجوارها ────────────────────
+           كانت الحلقة عنصرًا صغيرًا مُلحقًا عند الحافة، والنصّ ملتصقًا
+           بها، وبقية البطاقة فراغًا. الحلقة الآن ١١٦px وهي مركز الثقل
+           البصري، والنصّ يتدرّج حولها من الأهم إلى الأقل، وضوء الشرارة
+           يسقط خلفها فيربطها بالسطح بدل أن تطفو فوقه. */
+        <Card
+          className="relative mb-6 overflow-hidden px-6 py-7
+            [background:radial-gradient(120%_140%_at_var(--pos)_-30%,color-mix(in_srgb,var(--color-spark)_11%,transparent),transparent_62%),linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_60%)]
+            [--pos:88%]"
+        >
+          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:gap-7 sm:text-start">
+            <span className="relative grid shrink-0 place-items-center">
+              <SparkBurst size={116} />
+              <ScoreRing percent={bestPct} size={116}>
+                <span className="numeric text-xl font-semibold">
+                  {Math.round(bestPct)}%
+                </span>
+              </ScoreRing>
             </span>
-          </p>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-spark">
+                أفضل نتيجة
+              </p>
+              <p className="mt-1.5 text-2xl font-semibold leading-none text-paper">
+                <span className="numeric">{best.earnedPoints}</span>
+                <span className="mx-1 text-lg text-subtle">/</span>
+                <span className="numeric text-lg text-muted">
+                  {best.totalPoints}
+                </span>
+                <span className="ms-2 text-sm font-normal text-subtle">درجة</span>
+              </p>
+              <p className="mt-2.5 text-[11px] leading-relaxed text-subtle">
+                الدرجة المعتمدة هي الأعلى بين محاولاتك.
+              </p>
+            </div>
+          </div>
         </Card>
       )}
 
