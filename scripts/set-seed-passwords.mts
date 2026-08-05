@@ -20,7 +20,14 @@ import { PrismaClient } from "../src/generated/prisma/client";
 const TARGETS = [
   { email: "admin@masar.bh", envVar: "SEED_ADMIN_PASSWORD" },
   { email: "ustath@masar.bh", envVar: "SEED_TEACHER_PASSWORD" },
+  // حسابا اختبار من التسجيل الذاتي لا من البذرة — يُتخطّيان بلا ضجيج
+  // إن لم يوجدا، فقاعدة نظيفة حديثة لن تحتويهما.
+  { email: "student.test@masar.bh", envVar: "SEED_STUDENT_PASSWORD" },
+  { email: "fresh.visitor@masar.bh", envVar: "SEED_VISITOR_PASSWORD" },
 ] as const;
+
+/** حسابات البذرة وحدها إلزامية؛ غيابُ حساب اختباري ليس فشلًا */
+const REQUIRED = new Set(["admin@masar.bh", "ustath@masar.bh"]);
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -31,8 +38,12 @@ let failed = false;
 for (const { email, envVar } of TARGETS) {
   const password = process.env[envVar]?.trim();
   if (!password) {
-    console.error(`✗ ${email}: المتغيّر ${envVar} غير مضبوط في .env — تُخُطّي.`);
-    failed = true;
+    if (REQUIRED.has(email)) {
+      console.error(`✗ ${email}: المتغيّر ${envVar} غير مضبوط في .env — تُخُطّي.`);
+      failed = true;
+    } else {
+      console.log(`· ${email}: ${envVar} غير مضبوط — تُخُطّي.`);
+    }
     continue;
   }
 
@@ -41,8 +52,12 @@ for (const { email, envVar } of TARGETS) {
     select: { id: true, role: true },
   });
   if (!user) {
-    console.error(`✗ ${email}: الحساب غير موجود — شغّل npx prisma db seed أولًا.`);
-    failed = true;
+    if (REQUIRED.has(email)) {
+      console.error(`✗ ${email}: الحساب غير موجود — شغّل npx prisma db seed أولًا.`);
+      failed = true;
+    } else {
+      console.log(`· ${email}: غير موجود — تُخُطّي.`);
+    }
     continue;
   }
 
