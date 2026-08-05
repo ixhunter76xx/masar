@@ -206,6 +206,26 @@ The same masking is a trap when auditing: `netlify env:list` run locally reports
 ### `AUTH_URL` is pinned to the production origin
 `AUTH_URL=https://hisab-lms.netlify.app` while `src/auth.config.ts` also sets `trustHost: true`. On a preview deploy, any redirect to `/login` lands on the **production** domain instead of the preview host — observed 2026-08-05, which meant a preview test silently ended up on the old production build. Harmless in production (the origins match) but it will break the first time a custom domain is added, and it limits what can be tested on previews.
 
+## Never Run `next dev` and `next start` at the Same Time Here
+
+**Symptom:** the site on **:3100** shows «تعذّر تحميل المنصة» (that string is `src/app/global-error.tsx`, the *root* boundary) or «حدث خطأ غير متوقع» (`src/app/error.tsx`). The page HTML arrives fine — `curl` gets HTTP 200 with real content — but the browser console says `ChunkLoadError: Loading chunk NNNN failed`. Hit 2026-08-06.
+
+**Why.** `.claude/launch.json` defines two servers in the same folder: `masar-dev` (`next dev`, :3000) and `masar-prod` (`next start`, :3100). `next.config.ts` sets no `distDir`, so **both use the same `.next` directory**. Two independent ways that breaks:
+
+1. **Rebuilding under a live `next start`.** Chunk filenames are content-hashed. `next build` renames every chunk whose code changed, so a server started before the build goes on serving HTML that points at chunk names now deleted → `ChunkLoadError`. Routes whose source did *not* change keep their hash and keep working — which is why `/courses` looked healthy while `/learn/...` was broken, and why the fault looks random.
+2. **`next dev` writing into `.next` while a production build lives there.** Produces a half-dev/half-prod tree; the giveaway is a server-side `Cannot find module './vendor-chunks/*.js'` in the `next start` log, from `.next/server/webpack-runtime.js`.
+
+**The recovery** (stop *both*, then rebuild — a rebuild alone is not enough):
+
+```powershell
+# stop dev AND prod first, then:
+Remove-Item -Recurse -Force .next
+npm run build:local      # next build only — no prisma migrate deploy
+npx next start -p 3100
+```
+
+**The rule:** run one or the other, not both. Diagnose from the **browser console and the server log**, not from `curl` — the HTML is a 200 either way, and the status code tells you nothing. If the two ever need to run together, give them separate build dirs (`distDir` in `next.config.ts`, driven by an env var, with the same value set for build and start) — not done today.
+
 ## Build & Verify
 
 ```powershell
