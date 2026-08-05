@@ -129,6 +129,18 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **If you touch `PageTransition`, re-test with a `router.refresh()` path** — adding a quiz question is the fastest one — and watch the screen update *without* reloading. A passing build proves nothing here; the failure is silent by construction.
 
+## The Double App Shell — Fixed 2026-08-06, Read Before Adding a Route Under `/learn/[courseId]/`
+
+**Symptom:** two «تسجيل الخروج» buttons stacked on the page, two `<header>`s, the course tab strip appearing on pages that are not tabs, and — the part that actually breaks something — **two `<main id="main">` elements**. Duplicate `id` is invalid HTML and makes the «تخطٍ إلى المحتوى» skip link ambiguous for assistive tech.
+
+**Cause.** `AppPage` (`src/components/shell/AppPage.tsx`) renders `Topbar` + `<main id="main">`. The course layout rendered it *and* every nested page rendered it again, so the shell nested. Affected `assignments/new`, `assignments/[assignmentId]`, `quizzes/new`, `quizzes/[quizId]`, and `quizzes/[quizId]/attempt/[attemptId]` — verified in the browser: `main#main` count was **2** on each.
+
+**The fix — a `(tabs)` route group.** The course layout is for the four tabs only (المحتوى/الإعلانات/الدرجات/الرسائل), so those four plus `layout.tsx` and `loading.tsx` moved into `learn/[courseId]/(tabs)/`. `quizzes/` and `assignments/` now sit outside that layout and keep their own `AppPage`. Route groups do not appear in URLs — **every route path is byte-identical before and after**, confirmed against the build output.
+
+**Why this was safe:** every page under `[courseId]` already calls `requireCourseAccess()` itself and does not lean on the layout for its access check (the announcements page even documents this). Moving the layout therefore removed no security boundary. `loading.tsx` moved too — its skeleton draws the course header *with four tab placeholders*, so it only ever fitted the tab pages; nested routes now fall back to `(app)/loading.tsx`.
+
+**The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
+
 ## Database & R2 Reset — Read Before Resetting Either One
 
 **The rule: never reset the database and R2 independently. Reset both together, or neither.**

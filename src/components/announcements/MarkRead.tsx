@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { markAnnouncementsRead } from "@/app/(app)/learn/[courseId]/announcements/actions";
+import { markAnnouncementsRead } from "@/app/(app)/learn/[courseId]/(tabs)/announcements/actions";
 
 /**
  * يعلّم الإعلانات المعروضة كمقروءة بعد العرض.

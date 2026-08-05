@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import {
   sendCourseMessage,
   markCourseThreadRead,
-} from "@/app/(app)/learn/[courseId]/messages/actions";
+} from "@/app/(app)/learn/[courseId]/(tabs)/messages/actions";
 import { MESSAGE_MAX_LENGTH, type ThreadMessage } from "@/lib/messages";
 
 /**
