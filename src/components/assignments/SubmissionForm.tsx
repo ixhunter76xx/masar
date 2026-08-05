@@ -67,7 +67,14 @@ export function SubmissionForm({
         xhr.status >= 200 && xhr.status < 300
           ? resolve()
           : reject(new Error(`فشل الرفع (${xhr.status}).`));
-      xhr.onerror = () => reject(new Error("انقطع الاتصال أثناء الرفع."));
+      // نفس فخّ CORS الموصوف في upload-client.ts — الرفع يعبر النطاق إلى R2
+      xhr.onerror = () =>
+        reject(
+          new Error(
+            "تعذّر الوصول إلى التخزين أثناء الرفع — تحقّق من الاتصال، " +
+              "ومن أن نطاق الموقع (بمنفذه) مضاف في سياسة CORS على R2.",
+          ),
+        );
       xhr.send(blob);
     });
   }
