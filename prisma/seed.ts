@@ -56,14 +56,26 @@ async function main() {
     username: string;
     name: string;
     role: Role;
+    /** رقم واتساب تجريبي — بدونه لا يولّد طابور الإدارة رابط المحادثة */
+    phone: string;
     passwordEnvVar: string;
   }) {
     const existing = await db.user.findUnique({
       where: { email: input.email },
-      select: { id: true, email: true },
+      select: { id: true, email: true, phone: true },
     });
     if (existing) {
-      console.log(`• حساب   ${input.role.padEnd(11)} ${existing.email}  (موجود مسبقًا — لم يُمسّ)`);
+      /* الحساب لا يُمسّ، عدا `phone` إن كان فارغًا: أُضيف الحقل بعد
+         إنشاء هذه الحسابات، وتركه فارغًا يعطّل رابط واتساب في الطابور. */
+      if (!existing.phone) {
+        await db.user.update({
+          where: { id: existing.id },
+          data: { phone: input.phone },
+        });
+        console.log(`• حساب   ${input.role.padEnd(11)} ${existing.email}  (موجود — أُضيف phone فقط)`);
+      } else {
+        console.log(`• حساب   ${input.role.padEnd(11)} ${existing.email}  (موجود مسبقًا — لم يُمسّ)`);
+      }
       return existing;
     }
 
@@ -73,11 +85,12 @@ async function main() {
         email: input.email,
         username: input.username,
         name: input.name,
+        phone: input.phone,
         passwordHash: await hash(password.value),
         role: input.role,
         mustChangePassword: false,
       },
-      select: { id: true, email: true },
+      select: { id: true, email: true, phone: true },
     });
 
     if (!password.fromEnv) {
@@ -95,6 +108,7 @@ async function main() {
     username: "admin",
     name: "إدارة مسار",
     role: Role.ADMIN,
+    phone: "97333060460",
     passwordEnvVar: "SEED_ADMIN_PASSWORD",
   });
 
@@ -103,6 +117,7 @@ async function main() {
     username: "ustath",
     name: "د. منى عبدالله",
     role: Role.INSTRUCTOR,
+    phone: "97333060461",
     passwordEnvVar: "SEED_TEACHER_PASSWORD",
   });
 
