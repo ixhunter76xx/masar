@@ -103,6 +103,12 @@ export const getPublicCourse = cache(async function getPublicCourse(
           description: true,
           priceFils: true,
           currency: true,
+          /* معرّفات دروس الباقة — بها تسمّي الصفحةُ ما تشتريه بالضبط
+             بدل رقم مجرّد. قراءة عرضٍ فقط، لا منطق. */
+          items: {
+            orderBy: { position: "asc" },
+            select: { lessonId: true },
+          },
           _count: { select: { items: true } },
         },
       },
@@ -134,6 +140,9 @@ export const getPublicCourse = cache(async function getPublicCourse(
       priceFils: p.priceFils,
       currency: p.currency,
       itemCount: p._count.items,
+      lessonIds: p.items
+        .map((i) => i.lessonId)
+        .filter((id): id is string => id !== null),
     })),
   };
 });
