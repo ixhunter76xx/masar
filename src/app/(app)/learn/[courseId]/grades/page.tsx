@@ -1,6 +1,7 @@
 import { ClipboardList } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ScoreRing } from "@/components/grades/ScoreRing";
 import { GradebookTable } from "@/components/grades/GradebookTable";
 import { GradeItemRow } from "@/components/grades/GradeItemRow";
 import { requireCourseAccess } from "@/lib/data/courses";
@@ -74,18 +75,30 @@ export default async function CourseGradesPage({ params }: Params) {
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-sm font-medium text-paper">درجاتي في هذا المقرر</h3>
-        <p className="text-[13px]">
-          <span className="numeric text-paper">{mine.earned}</span>
-          <span className="text-subtle"> / </span>
-          <span className="numeric text-muted">{mine.total}</span>
-          {pct !== null && (
-            <span className="ms-2 text-accent">
-              <span className="numeric">{pct}%</span>
-            </span>
-          )}
-        </p>
+      {/* الملخّص: الحلقة تحمل النسبة والرقم يحمل التفصيل. كان السطر
+          كله نصًّا رماديًا متساوي الوزن، فلا شيء فيه يقول «هذا أنت». */}
+      <div
+        className="mb-5 flex items-center gap-4 rounded-[14px] border border-line px-5 py-4
+          shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]
+          [background:linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_62%)]"
+      >
+        {pct !== null && (
+          <ScoreRing percent={pct}>
+            <span className="numeric">{pct}%</span>
+          </ScoreRing>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-medium text-paper">
+            درجاتي في هذا المقرر
+          </h3>
+          <p className="mt-1 text-[13px]">
+            <span className="numeric text-paper">{mine.earned}</span>
+            <span className="text-subtle"> / </span>
+            <span className="numeric text-muted">{mine.total}</span>
+            <span className="text-subtle"> درجة على المصحَّح</span>
+          </p>
+        </div>
       </div>
 
       <ul className="space-y-2">

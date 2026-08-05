@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Timer, Repeat, FileQuestion, CheckCircle2 } from "lucide-react";
+import { Timer, Repeat, FileQuestion } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
+import { ScoreRing } from "@/components/grades/ScoreRing";
+import { SparkBurst } from "@/components/motion/SparkBurst";
 import { StartAttemptButton } from "@/components/quizzes/StartAttemptButton";
 import { relativeTime } from "@/lib/format";
 import type { StudentAttempt } from "@/lib/data/quiz-attempts";
@@ -32,6 +34,12 @@ export function QuizOverview({
       acc === null || (a.earnedPoints ?? 0) > (acc.earnedPoints ?? 0) ? a : acc,
     null,
   );
+
+  /* `totalPoints` قد يكون null لمحاولة على اختبار بلا أسئلة — القسمة
+     عليه تعطي NaN فتُرسم الحلقة فارغة بلا خطأ ظاهر. */
+  const bestTotal = best?.totalPoints ?? 0;
+  const bestPct =
+    best && bestTotal > 0 ? ((best.earnedPoints ?? 0) / bestTotal) * 100 : 0;
 
   return (
     <>
@@ -66,22 +74,27 @@ export function QuizOverview({
       </Card>
 
       {best && (
-        <Card className="mb-6 flex items-center gap-3 px-5 py-4">
-          <CheckCircle2
-            size={18}
-            strokeWidth={1.75}
-            aria-hidden="true"
-            className="text-success"
-          />
+        /* ── لحظة الإنجاز ────────────────────────────────────────────
+           هذه أهمّ لحظة في المقرر كله، وكانت تُعرض سطرًا رماديًا بأيقونة
+           صحّ. الآن: حلقة تُرسم بلون الشرارة، ورقم يظهر بعدها، وانفجار
+           صغير مرة واحدة. الشرارة محجوزة للتقدّم — وهذا موضعها. */
+        <Card className="relative mb-6 flex items-center gap-4 overflow-hidden px-5 py-5">
+          <span className="relative grid place-items-center">
+            <SparkBurst size={68} />
+            <ScoreRing percent={bestPct}>
+              <span className="numeric">{Math.round(bestPct)}%</span>
+            </ScoreRing>
+          </span>
+
           <p className="flex-1 text-sm text-paper">
             أفضل نتيجة:{" "}
             <span className="numeric font-medium">{best.earnedPoints}</span>
             <span className="text-subtle"> / </span>
             <span className="numeric text-muted">{best.totalPoints}</span>
+            <span className="mt-1 block text-[11px] text-subtle">
+              الدرجة المعتمدة هي الأعلى
+            </span>
           </p>
-          <span className="text-[11px] text-subtle">
-            الدرجة المعتمدة هي الأعلى
-          </span>
         </Card>
       )}
 

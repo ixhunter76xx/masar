@@ -8,6 +8,7 @@ import {
   OrderReviewCard,
   type AdminOrderView,
 } from "@/components/admin/OrderReviewCard";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 import { requireAdmin } from "@/lib/data/admin";
 import { listOrdersForAdmin } from "@/lib/data/orders";
 import { adminFollowUpLink, displayPhone } from "@/lib/whatsapp";
@@ -87,11 +88,16 @@ export default async function AdminOrdersPage() {
                 لا شيء ينتظرك.
               </p>
             ) : (
-              <ul className="space-y-2.5">
+              /* الطابور كان الشاشة الوحيدة في المنصة بلا أي حركة —
+                 وهي شاشة تُفتح يوميًا. الظهور التسلسلي يعطي العين
+                 ترتيبًا تقرأ به الطلبات بدل أن تهبط دفعة واحدة. */
+              <StaggerList as="ul" className="space-y-2.5">
                 {pending.map((order) => (
-                  <OrderReviewCard key={order.id} order={order} />
+                  <StaggerItem key={order.id}>
+                    <OrderReviewCard order={order} />
+                  </StaggerItem>
                 ))}
-              </ul>
+              </StaggerList>
             )}
           </section>
 
@@ -100,11 +106,13 @@ export default async function AdminOrdersPage() {
               <h2 className="mb-3 text-[13px] font-semibold text-muted">
                 السجل
               </h2>
-              <ul className="space-y-2.5">
+              <StaggerList as="ul" className="space-y-2.5">
                 {settled.map((order) => (
-                  <OrderReviewCard key={order.id} order={order} />
+                  <StaggerItem key={order.id}>
+                    <OrderReviewCard order={order} />
+                  </StaggerItem>
                 ))}
-              </ul>
+              </StaggerList>
             </section>
           )}
         </div>

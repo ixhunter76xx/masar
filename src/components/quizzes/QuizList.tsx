@@ -22,22 +22,47 @@ export function QuizList({
   canManage: boolean;
 }) {
   return (
-    <StaggerList className="space-y-3">
-      {quizzes.map((q) => {
-        const status = STATUS_LABEL[q.status];
-        // الطالب يفتح صفحة الأداء (المرحلة القادمة)؛ المدرب يفتح التحرير
-        const href = `/learn/${courseId}/quizzes/${q.id}`;
+    /* نفس سكّة المحاضرات — الاختبارات محطّات على الطريق نفسه لا قائمة
+       منفصلة. تكرار الشكل هو ما يجعله لغةً بدل أن يكون زخرفة في مكان
+       واحد. */
+    <div className="relative ps-[2.375rem]">
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-4 start-[15px] w-0.5 rounded-full bg-line/70"
+      />
+      <span
+        aria-hidden="true"
+        className="track-draw absolute inset-y-4 start-[15px] w-0.5 origin-top rounded-full
+          [background:linear-gradient(180deg,var(--color-spark)_0%,var(--color-accent-deep)_45%,transparent_100%)]"
+      />
 
-        return (
-          <StaggerItem key={q.id}>
-            <Card className="lift hover:border-accent-deep">
-              <Link href={href} className="flex gap-4 px-5 py-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-ink text-accent">
-                  <FileQuestion size={17} strokeWidth={1.75} aria-hidden="true" />
-                  <span className="sr-only">اختبار</span>
-                </span>
+      <StaggerList className="space-y-3">
+        {quizzes.map((q) => {
+          const status = STATUS_LABEL[q.status];
+          const live = q.status === QuizStatus.PUBLISHED;
+          // الطالب يفتح صفحة الأداء (المرحلة القادمة)؛ المدرب يفتح التحرير
+          const href = `/learn/${courseId}/quizzes/${q.id}`;
 
-                <div className="min-w-0 flex-1">
+          return (
+            <StaggerItem key={q.id} className="group relative">
+              <span
+                className={
+                  "absolute -start-[2.375rem] top-[18px] z-10 grid size-8 place-items-center " +
+                  "rounded-full border bg-ink shadow-[0_0_0_5px_var(--color-ink)] " +
+                  "transition-[transform,border-color,color] duration-[320ms] ease-out " +
+                  "group-hover:scale-110 " +
+                  (live
+                    ? "node-live border-spark/55 text-spark"
+                    : "border-line text-subtle")
+                }
+              >
+                <FileQuestion size={15} strokeWidth={1.75} aria-hidden="true" />
+                <span className="sr-only">اختبار</span>
+              </span>
+
+              <Card className="lift glow-edge hover:border-spark/40">
+                <Link href={href} className="flex gap-4 px-5 py-4">
+                  <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium leading-snug text-paper">
                       {q.title}
@@ -74,13 +99,14 @@ export function QuizList({
                         <span className="numeric">{q.maxAttempts}</span> محاولات
                       </span>
                     )}
-                  </p>
-                </div>
-              </Link>
-            </Card>
-          </StaggerItem>
-        );
-      })}
-    </StaggerList>
+                    </p>
+                  </div>
+                </Link>
+              </Card>
+            </StaggerItem>
+          );
+        })}
+      </StaggerList>
+    </div>
   );
 }
