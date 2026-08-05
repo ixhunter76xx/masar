@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { auth } from "@/auth";
 import { Logo } from "@/components/ui/Logo";
 import { SITE } from "@/lib/site";
 
@@ -12,11 +13,20 @@ import { SITE } from "@/lib/site";
  * والمدرسة وجهان لمنصة واحدة، لكن لكل وجه إطاره.
  * ─────────────────────────────────────────────────────────────────────
  */
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  /**
+   * الجلسة تُقرأ للعرض فقط — لا حراسة هنا، فالصفحات تحتها عامة عمدًا.
+   *
+   * كان الشريط يعرض «تسجيل الدخول» و«إنشاء حساب» لكل زائر، بمن فيهم
+   * من سجّل دخوله قبل دقيقة: يُدعى إلى إنشاء حساب يملكه، ولا يجد
+   * طريقًا واحدًا يعود به إلى ما اشتراه.
+   */
+  const session = await auth();
+
   return (
     <div className="min-h-dvh bg-ink">
       <header
@@ -35,21 +45,34 @@ export default function PublicLayout({
           >
             المقررات
           </Link>
-          <Link
-            href="/login"
-            className="press inline-flex min-h-touch items-center rounded-[10px]
-              px-3.5 text-[13px] text-muted hover:text-paper"
-          >
-            تسجيل الدخول
-          </Link>
-          <Link
-            href="/signup"
-            className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
-              border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
-              transition-colors hover:border-accent-deep hover:bg-[#16212d]"
-          >
-            إنشاء حساب
-          </Link>
+          {session?.user ? (
+            <Link
+              href="/learn"
+              className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
+                border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
+                transition-colors hover:border-accent-deep hover:bg-[#16212d]"
+            >
+              مقرراتي
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="press inline-flex min-h-touch items-center rounded-[10px]
+                  px-3.5 text-[13px] text-muted hover:text-paper"
+              >
+                تسجيل الدخول
+              </Link>
+              <Link
+                href="/signup"
+                className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
+                  border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
+                  transition-colors hover:border-accent-deep hover:bg-[#16212d]"
+              >
+                إنشاء حساب
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 

@@ -20,8 +20,6 @@ export const metadata: Metadata = {
  */
 export default async function CatalogPage() {
   const courses = await listPublishedCourses();
-  const live = courses.length;
-  const lessons = courses.reduce((sum, c) => sum + c.lessonCount, 0);
   const free = courses.filter((c) => c.hasFreePreview).length;
 
   return (
@@ -47,30 +45,17 @@ export default async function CatalogPage() {
           بوحداته ومصطلحاته وما يُسأل عنه في الامتحان.
         </p>
 
-        <dl className="mt-9 flex flex-wrap items-center">
-          {[
-            { value: live, label: "مقرر متاح" },
-            { value: lessons, label: "درس مسجّل" },
-            { value: free, label: "درس مجاني" },
-          ].map((stat, index) => (
-            <div
-              key={stat.label}
-              className={
-                index === 0
-                  ? "pe-7"
-                  : "border-s border-line/80 pe-7 ps-7"
-              }
-            >
-              <dt className="sr-only">{stat.label}</dt>
-              <dd>
-                <b className="numeric block text-2xl font-semibold tracking-[-0.02em]">
-                  {stat.value}
-                </b>
-                <span className="text-xs text-subtle">{stat.label}</span>
-              </dd>
-            </div>
-          ))}
-        </dl>
+        {/* ── لماذا لا صفّ إحصاءات هنا ────────────────────────────────
+            كان أعلى الصفحة يحمل «١ مقرر متاح · ٤ درس مسجّل · ١ درس
+            مجاني». الرقم يخدم المنصة الكبيرة؛ أما هنا فهو يعلن صغر
+            الكتالوج في أول ما تقع عليه العين، ولا يجيب سؤال الزائر:
+            هل عندكم مقرري؟ الجواب في البطاقات أسفله، فنُقدّمها. */}
+        {free > 0 && (
+          <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/[0.07] px-3.5 py-2 text-[13px] text-success">
+            <Play size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" />
+            جرّب درسًا كاملًا مجانًا قبل أن تدفع
+          </p>
+        )}
       </section>
 
       <hr className="h-px border-0 bg-gradient-to-l from-transparent via-line to-transparent" />
@@ -148,6 +133,10 @@ function CourseCard({
         </p>
       )}
 
+      {/* «٣ دورات» و«٤ دروس» متجاورتين تسألان الزائر أن يفرّق بين
+          مفهومين داخليين قبل أن يعرف ما المقرر أصلًا. عدد الدروس
+          وحده يصف المحتوى؛ وعدد المنتجات قرارُ شراءٍ محلّه صفحة
+          المقرر لا بطاقة الكتالوج. */}
       <div className="mt-4 flex flex-wrap gap-1.5">
         {course.hasFreePreview && (
           <Tag tone="free">
@@ -156,10 +145,7 @@ function CourseCard({
           </Tag>
         )}
         <Tag>
-          <span className="numeric">{course.productCount}</span> دورات
-        </Tag>
-        <Tag>
-          <span className="numeric">{course.lessonCount}</span> دروس
+          <span className="numeric">{course.lessonCount}</span> دروس مسجّلة
         </Tag>
       </div>
 
@@ -188,8 +174,16 @@ function CourseCard({
         )}
       </div>
 
-      <span className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-action transition-colors duration-200 group-hover:text-accent-bright">
-        استعرض المقرر
+      {/* كان رابطًا نصّيًا بلون خافت. البطاقة كلها قابلة للنقر، لكن
+          الزائر يبحث بعينه عن زرّ — فليجد زرًّا. */}
+      <span
+        className="press mt-[1.125rem] flex min-h-touch items-center justify-center gap-1.5
+          rounded-[10px] border border-line bg-ink/70 text-sm font-medium text-paper
+          transition-colors duration-200
+          group-hover:border-transparent group-hover:text-ink
+          group-hover:[background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]"
+      >
+        استعرض المقرر والأسعار
         <ArrowLeft
           size={14}
           strokeWidth={2}

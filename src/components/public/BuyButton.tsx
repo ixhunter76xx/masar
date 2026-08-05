@@ -21,10 +21,18 @@ export function BuyButton({
   courseSlug,
   productSlug,
   best,
+  label = "طلب الدورة",
 }: {
   courseSlug: string;
   productSlug: string;
   best: boolean;
+  /**
+   * نصّ الزر. الافتراضي عامّ، والصفحة تمرّر اسم الدورة.
+   *
+   * ثلاثة أزرار متجاورة تحمل «طلب الدورة» نفسها لا تُميَّز إلا بموضعها
+   * — وهو تمييز يضيع على قارئ الشاشة وعلى من يمسح الصفحة بعينه.
+   */
+  label?: string;
 }) {
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -60,7 +68,7 @@ export function BuyButton({
           </>
         ) : (
           <>
-            طلب الدورة
+            {label}
             {best && <ArrowLeft size={15} strokeWidth={2} aria-hidden="true" />}
           </>
         )}

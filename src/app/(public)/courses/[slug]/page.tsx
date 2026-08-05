@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Lock, Play, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Lock, Play, ShieldCheck } from "lucide-react";
 
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 import { BuyButton } from "@/components/public/BuyButton";
@@ -121,23 +121,65 @@ export default async function PublicCoursePage({ params }: Params) {
         </div>
 
         <aside className="grid gap-3.5 lg:sticky lg:top-[92px]">
-          <div className="mb-1 flex items-baseline justify-between">
-            <h2 className="text-[13px] font-semibold text-muted">اختر ما تحتاجه</h2>
-            <span className="text-[11px] text-subtle">وصول دائم</span>
-          </div>
+          {/* ── قرار واحد، لا قائمة طعام ──────────────────────────────
+              كانت هنا ثلاث بطاقات متساوية الوزن. الزائر الذي يفتح
+              المقرر لأول مرة لا يملك ما يختار به بينها: «٢ بندًا في
+              المنهج» لا يقول أيّ درسين، والأزرار الثلاثة تحمل النص
+              نفسه. فالنتيجة توقّفٌ عند أهمّ لحظة في الصفحة.
 
-          <StaggerList as="div" className="grid gap-3.5">
-            {course.products.map((product) => (
-              <StaggerItem key={product.id} as="div">
-                <ProductCard
-                  product={product}
-                  best={bundle?.id === product.id && parts.length >= 2}
-                  saving={bundle?.id === product.id ? saving : 0}
-                  courseSlug={course.slug}
-                />
-              </StaggerItem>
-            ))}
-          </StaggerList>
+              العرض الآن واحد — الوصول الكامل — والتجزئة خلف إفصاح
+              صريح لمن يعرف أنه يريدها. لا إخفاء: السطر مكتوب بلغة
+              الطالب لا بلغة التسويق، ومفتوح بنقرة واحدة. */}
+          {bundle && (
+            <>
+              <div className="mb-1 flex items-baseline justify-between">
+                <h2 className="text-[13px] font-semibold text-muted">
+                  الوصول إلى المقرر
+                </h2>
+                <span className="text-[11px] text-subtle">وصول دائم</span>
+              </div>
+
+              <ProductCard
+                product={bundle}
+                best={parts.length > 0}
+                saving={saving}
+                courseSlug={course.slug}
+                lessonCount={course.lessons.length}
+              />
+
+              {parts.length > 0 && (
+                <details className="group rounded-[12px] border border-line/70 bg-panel/40">
+                  <summary
+                    className="press flex min-h-touch cursor-pointer list-none items-center
+                      justify-between gap-3 rounded-[12px] px-[1.125rem] text-[13px]
+                      text-muted transition-colors hover:text-paper
+                      [&::-webkit-details-marker]:hidden"
+                  >
+                    أحتاج جزءًا من المقرر فقط
+                    <ChevronDown
+                      size={15}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                      className="shrink-0 text-subtle transition-transform duration-200 ease-out group-open:rotate-180"
+                    />
+                  </summary>
+
+                  <div className="grid gap-3.5 px-3 pb-3 pt-1">
+                    {parts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        best={false}
+                        saving={0}
+                        courseSlug={course.slug}
+                        lessonCount={course.lessons.length}
+                      />
+                    ))}
+                  </div>
+                </details>
+              )}
+            </>
+          )}
 
           <p className="mt-1 flex gap-2.5 rounded-[10px] border border-line/70 bg-panel/45 px-[1.125rem] py-[0.9375rem] text-xs leading-[1.85] text-subtle">
             <ShieldCheck
@@ -316,6 +358,7 @@ function ProductCard({
   best,
   saving,
   courseSlug,
+  lessonCount,
 }: {
   product: {
     id: string;
@@ -328,7 +371,10 @@ function ProductCard({
   best: boolean;
   saving: number;
   courseSlug: string;
+  /** عدد دروس المقرر كلّه — به نقول «كل الدروس» بدل رقم مجرّد */
+  lessonCount: number;
 }) {
+  const coversAll = product.itemCount >= lessonCount;
   return (
     <div
       className={cn(
@@ -361,8 +407,19 @@ function ProductCard({
       </p>
 
       <ul className="mt-4 grid gap-2 border-t border-line/75 pt-4 text-xs text-muted">
+        {/* «بندًا في المنهج» مصطلحُ قاعدة بيانات لا لغةُ طالب. والرقم
+            وحده لا يُقاس إلا بمقارنته بالكلّ. */}
         <Included>
-          <span className="numeric">{product.itemCount}</span> بندًا في المنهج
+          {coversAll ? (
+            <>
+              كل دروس المقرر — <span className="numeric">{lessonCount}</span> دروس
+            </>
+          ) : (
+            <>
+              <span className="numeric">{product.itemCount}</span> من{" "}
+              <span className="numeric">{lessonCount}</span> دروس
+            </>
+          )}
         </Included>
         <Included>وصول دائم بلا انتهاء</Included>
         {saving > 0 && (
@@ -376,6 +433,7 @@ function ProductCard({
         courseSlug={courseSlug}
         productSlug={product.slug}
         best={best}
+        label={`طلب ${product.title}`}
       />
     </div>
   );
