@@ -24,11 +24,39 @@ import { PAGE } from "@/lib/motion";
  * لا بسلوك صامت — وحينها احذف هذا الغلاف وستبقى حركة الدخول تعمل.
  * ─────────────────────────────────────────────────────────────────────
  */
-function FrozenRouter({ children }: { children: React.ReactNode }) {
+function FrozenRouter({
+  children,
+  mountedPath,
+}: {
+  children: React.ReactNode;
+  /** المسار الذي رُكِّبت به هذه النسخة — لا يتغيّر لأن `key` هو المسار */
+  mountedPath: string;
+}) {
   const context = React.useContext(LayoutRouterContext);
   const frozen = React.useRef(context).current;
+  const pathname = usePathname();
 
-  if (!frozen) return <>{children}</>;
+  /**
+   * ⚠ التجميد للنسخة **الخارجة** وحدها.
+   *
+   * كان التجميد يشمل النسخة الحيّة أيضًا، لأن المرجع يُلتقط مرة واحدة
+   * ويبقى ما بقي المفتاح. والمفتاح هو المسار، فهو لا يتبدّل عند
+   * `router.refresh()` — أي أن الشجرة تظل تقرأ سياقًا قديمًا وتتجاهل
+   * حمولة RSC الجديدة بصمت.
+   *
+   * الأثر كان أوسع من الحركة بكثير: كل `router.refresh()` في المنصة
+   * يتوقف عن التحديث. إضافة سؤال إلى اختبار تنجح على الخادم ولا تظهر،
+   * وتأكيد دفع في طابور الإدارة ينجح ولا يظهر — بلا رسالة خطأ في
+   * الحالتين، فيبدو الزر معطّلًا وهو يعمل. (شُخِّص هذا سابقًا على أنه
+   * أثر CSP في بيئة الاختبار، وهو ليس كذلك: طلب `?_rsc=` يعود 200.)
+   *
+   * التمييز هنا: النسخة التي مسارُها هو المسار الحالي حيّة فتقرأ
+   * السياق مباشرة؛ والنسخة التي بقي مسارها مخالفًا هي الخارجة فتُجمَّد
+   * حتى تنتهي حركة خروجها.
+   */
+  const isExiting = pathname !== mountedPath;
+
+  if (!frozen || !isExiting) return <>{children}</>;
   return (
     <LayoutRouterContext.Provider value={frozen}>
       {children}
@@ -57,7 +85,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         animate={{ ...PAGE.animate, transition: PAGE.enterTransition }}
         exit={{ ...PAGE.exit, transition: PAGE.exitTransition }}
       >
-        <FrozenRouter>{children}</FrozenRouter>
+        <FrozenRouter mountedPath={pathname}>{children}</FrozenRouter>
       </motion.div>
     </AnimatePresence>
   );
