@@ -58,7 +58,8 @@ export async function getCourseMaterials(
 ): Promise<MaterialListItem[]> {
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  const [{ isStaff, lessonIds }, rows] = await Promise.all([
+  // المحاضرات تستخدم `viewable` — وهي وحدها ما تشمله المعاينة المجانية
+  const [{ isStaff, viewable }, rows] = await Promise.all([
     accessibleLessonIds(courseId),
     db.courseMaterial.findMany({
       where: {
@@ -81,7 +82,7 @@ export async function getCourseMaterials(
     }),
   ]);
 
-  const visible = isStaff ? rows : rows.filter((r) => lessonIds.has(r.id));
+  const visible = isStaff ? rows : rows.filter((r) => viewable.has(r.id));
 
   return visible.map((r) => ({
     id: r.id,

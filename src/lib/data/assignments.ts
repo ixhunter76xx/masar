@@ -28,7 +28,8 @@ export async function getCourseAssignments(
 ): Promise<AssignmentSummary[]> {
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  const { isStaff, lessonIds } = await accessibleLessonIds(courseId);
+  // `owned` لا `viewable`: المعاينة المجانية لا تفتح تقييمًا
+  const { isStaff, owned } = await accessibleLessonIds(courseId);
 
   const rows = await db.assignment.findMany({
     where: {
@@ -62,7 +63,7 @@ export async function getCourseAssignments(
   // النطاق يتبع الدرس — نفس قاعدة canViewAssignment
   const visible = isStaff
     ? rows
-    : rows.filter((a) => a.lessonId === null || lessonIds.has(a.lessonId));
+    : rows.filter((a) => a.lessonId === null || owned.has(a.lessonId));
 
   return visible.map((a) => ({
     id: a.id,

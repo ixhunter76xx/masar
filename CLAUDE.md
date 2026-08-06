@@ -254,10 +254,31 @@ Signed in as each account against a production build on :3100, quiz on `النح
 
 The same API call answering 404 for one buyer and 200 for the other is the proof that matters. Announcements, messages, grades and orders were unchanged for both — those are course-scoped by design.
 
-### Two things to know before you build on this
+### Free preview never opens an assessment — decided and enforced 2026-08-06
 
-- **Free preview propagates.** `canViewLesson` returns true for an `isFreePreview` lesson, so attaching an assessment to the free lesson makes it reachable by *any signed-in user*, bought or not — literally "follows its lesson's scope". That is fine for a video and questionable for graded work. **Decide this before linking an assessment to the preview lesson**; today every assessment is `null` (course-wide), so nothing is exposed.
-- **Lesson-level enforcement is still unproven end to end.** All four lessons are `PENDING`, so `getPlaybackUrl` returns null at the `READY` filter before ownership is consulted. The rewrite is right by construction and typechecked, but the real test — a `midterm` buyer requesting a `final` lesson's stream and getting **404 instead of a 302** — has to wait for the first successful upload.
+**The rule:** `isFreePreview` is a **content** affordance. It opens the video so a visitor can judge the teaching before paying. It confers no entitlement to graded work. An assessment always requires real ownership through `ProductItem`, even when it hangs off the free lesson.
+
+**How the code says it.** `ownsLesson()` is the strict check — `ProductItem` ownership or staff, no preview branch. `canViewLesson()` is `ownsLesson()` *plus* the preview door, and is for lessons only. `canViewQuiz`/`canViewAssignment` call `ownsLesson` and never `canViewLesson`. Do not "simplify" them back into one function; that collapse is the bug.
+
+**The batched form must stay split too.** `accessibleLessonIds()` returns **two** sets: `viewable` (owned ∪ free preview) filters *lectures*, `owned` filters *assessments*. Merging them re-opens the hole in listings even while the page guard holds — the list and the page would then disagree, which is how it hides.
+
+**Why it is not merely theoretical — and narrower than it first looks.** A user who bought *nothing* never reaches the course at all: `requireCourseAccess` → `hasCourseAccess` demands a product in that course. The real exposure is a buyer of a *different* bundle in the same course. `الاستفهام` is the free-preview lesson **and** belongs to `midterm`; so a `final`-only buyer, who never bought `midterm`, would have been handed its assessments purely because that lesson is free to preview.
+
+**Evidence — one account, one session, only the linkage changed:**
+
+| assessment linked to | `fresh.visitor` holding `final` only | |
+|---|---|---|
+| `الاستفهام` (free preview, **not** owned) | list: **absent** · page: **404** · `POST …/submission`: **404** | blocked |
+| `النحو` (owned via `final`) | list: **shown** · page: **opens** | allowed |
+| `null` (course-wide) | list: **shown** | allowed |
+
+The middle and bottom rows are the controls: the same filter that hides the first row lets these through, so it is ownership resolution and not blanket hiding.
+
+### Still unproven end to end
+
+**Lesson playback.** All four lessons are `PENDING`, so `getPlaybackUrl` returns null at the `READY` filter before ownership is consulted. The rewrite is right by construction and typechecked, but the real test — a `midterm` buyer requesting a `final` lesson's stream and getting **404 instead of a 302** — waits on the first successful upload.
+
+**Starting an attempt.** `startAttempt` is guarded by `canViewQuiz` in the same way the page is, but it is a server action and was not invoked directly; the evidence above covers the page and the assignment's REST write path. Exercise it once a bundle-scoped quiz exists.
 
 ## ~~⚠ Paid Bundles Are Not Enforced~~ — the original finding, kept for context
 

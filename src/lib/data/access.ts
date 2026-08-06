@@ -95,22 +95,20 @@ export const hasCourseAccess = cache(async function hasCourseAccess(
 });
 
 /**
- * هل يفتح المستخدم هذا الدرس؟
+ * هل **يملك** المستخدم هذا الدرس فعلًا؟ — ملكية عبر `ProductItem` أو
+ * صلاحية إدارية، **بلا أي استثناء للمعاينة المجانية**.
  *
- * ثلاثة أبواب: درس معاينة مجاني يفتحه أي زائر، أو منتج مملوك يحويه،
- * أو صلاحية إدارية. الأول هو ما يجعل الفيديو التجريبي ممكنًا بلا حساب.
+ * هذا هو الفحص الصارم الذي تُبنى عليه التقييمات. `canViewLesson` تضيف
+ * فوقه باب المعاينة المجانية، والتقييمات لا تمرّ من ذلك الباب.
  */
-export const canViewLesson = cache(async function canViewLesson(
+const ownsLesson = cache(async function ownsLesson(
   lessonId: string,
 ): Promise<boolean> {
   const lesson = await db.courseMaterial.findUnique({
     where: { id: lessonId },
-    select: { courseId: true, isFreePreview: true, course: { select: { isPublished: true } } },
+    select: { courseId: true },
   });
   if (!lesson) return false;
-
-  // المعاينة المجانية لا تُفتح إلا من مقرر منشور
-  if (lesson.isFreePreview && lesson.course.isPublished) return true;
 
   const { user, isStaff } = await staffAccess(lesson.courseId);
   if (!user) return false;
@@ -125,6 +123,30 @@ export const canViewLesson = cache(async function canViewLesson(
     select: { id: true },
   });
   return Boolean(grant);
+});
+
+/**
+ * هل يفتح المستخدم هذا الدرس؟ — للفيديو والمحتوى.
+ *
+ * ثلاثة أبواب: درس معاينة مجاني يفتحه أي زائر، أو منتج مملوك يحويه،
+ * أو صلاحية إدارية. الأول هو ما يجعل الفيديو التجريبي ممكنًا بلا حساب.
+ *
+ * ⚠ لا تستخدمها لتقييم. المعاينة المجانية امتياز **محتوى** لا امتياز
+ * تقييم — انظر `canViewQuiz`.
+ */
+export const canViewLesson = cache(async function canViewLesson(
+  lessonId: string,
+): Promise<boolean> {
+  const lesson = await db.courseMaterial.findUnique({
+    where: { id: lessonId },
+    select: { isFreePreview: true, course: { select: { isPublished: true } } },
+  });
+  if (!lesson) return false;
+
+  // المعاينة المجانية لا تُفتح إلا من مقرر منشور
+  if (lesson.isFreePreview && lesson.course.isPublished) return true;
+
+  return ownsLesson(lessonId);
 });
 
 /**
@@ -148,19 +170,22 @@ async function courseWideAccess(courseId: string): Promise<boolean> {
 /**
  * هل يفتح المستخدم هذا الاختبار؟
  *
- * **الاختبار يتبع نطاق درسه بالضبط.** إن كان مبنيًا على درس فالسؤال
- * يُحوَّل حرفيًا إلى `canViewLesson` لذلك الدرس — فلا يوجد منطق وصول
- * ثانٍ يمكن أن يختلف عن الأول. وإن لم يكن مربوطًا بدرس فهو تقييم على
+ * **الاختبار يتبع نطاق درسه في الملكية، لا في المجانية.** إن كان مبنيًا
+ * على درس فالسؤال يُحوَّل إلى `ownsLesson` — ملكية فعلية عبر
+ * `ProductItem` أو صلاحية إدارية. وإن لم يكن مربوطًا بدرس فهو تقييم على
  * مستوى المقرر يراه كل مالك لأي حزمة فيه.
  *
- * لماذا لا نسأل `ProductItem` عن الاختبار مباشرةً كما كان: ذلك يفرض
- * ربط كل اختبار بكل حزمة تحوي درسه يدويًا، وهو تكرار للحقيقة نفسها
- * ينحرف عند أول نسيان — وقد انحرف فعلًا: لم يكن أي اختبار مربوطًا بأي
- * حزمة، فصار الجواب «لا أحد يملكه» بينما القوائم تعرضه للجميع.
+ * ⚠ **`isFreePreview` لا أثر له هنا إطلاقًا.** المعاينة المجانية امتياز
+ * محتوى: تُري الزائر فيديو ليقرّر الشراء. أما التقييم فعمل مُقيَّم
+ * تُسجَّل فيه محاولة وتُحسب منه درجة، ولا يُفتح إلا لمن اشترى. لو مرّت
+ * التقييمات عبر `canViewLesson` لصار ربط اختبار بالدرس المجاني كافيًا
+ * ليؤدّيه **كل من يملك حسابًا** ولو لم يشترِ شيئًا — وهو ما لا يُلاحَظ
+ * حتى يُربط أول اختبار بذلك الدرس.
  *
- * لا معاينة مجانية للاختبارات: `canViewLesson` تمنح الدرس المجاني
- * للزائر، لكن الاختبار يحتاج حسابًا لتُسجَّل محاولته، فنشترط مستخدمًا
- * حتى لو كان درسه معاينة مجانية.
+ * ولهذا لا نسأل `ProductItem` عن الاختبار نفسه: ذلك يفرض ربط كل اختبار
+ * بكل حزمة تحوي درسه يدويًا، وهو تكرار للحقيقة نفسها ينحرف عند أول
+ * نسيان — وقد انحرف فعلًا: لم يكن أي اختبار مربوطًا بأي حزمة، فصار
+ * الجواب «لا أحد يملكه» بينما القوائم تعرضه للجميع.
  */
 export const canViewQuiz = cache(async function canViewQuiz(
   quizId: string,
@@ -174,12 +199,13 @@ export const canViewQuiz = cache(async function canViewQuiz(
   const session = await auth();
   if (!session?.user) return false;
 
-  if (quiz.lessonId) return canViewLesson(quiz.lessonId);
+  if (quiz.lessonId) return ownsLesson(quiz.lessonId);
   return courseWideAccess(quiz.courseId);
 });
 
 /**
- * هل يفتح المستخدم هذا الواجب؟ — نفس قاعدة الاختبار حرفيًا.
+ * هل يفتح المستخدم هذا الواجب؟ — نفس قاعدة الاختبار حرفيًا، بما فيها
+ * تجاهل `isFreePreview` تمامًا.
  *
  * الواجب لا يمكن أن يكون `ProductItem` بنفسه (`ProductItemKind` يعرف
  * الدرس والاختبار فقط)، فالربط بالدرس هو السبيل الوحيد لتحجيمه داخل
@@ -197,51 +223,64 @@ export const canViewAssignment = cache(async function canViewAssignment(
   const session = await auth();
   if (!session?.user) return false;
 
-  if (assignment.lessonId) return canViewLesson(assignment.lessonId);
+  if (assignment.lessonId) return ownsLesson(assignment.lessonId);
   return courseWideAccess(assignment.courseId);
 });
 
 /**
- * ما يفتحه المستخدم من دروس هذا المقرر — استعلام واحد للقوائم.
+ * دروس هذا المقرر بمجموعتين — استعلام واحد للقوائم.
  *
- * `canViewLesson` تجيب عن درس واحد، وهي الصواب عند فتح صفحة بعينها.
- * لكن تصفية قائمة بها تعني استعلامًا لكل عنصر، فهذه نسختها المجمَّعة:
- * نفس القاعدة (معاينة مجانية، أو حزمة مملوكة تحوي الدرس، أو صلاحية
- * إدارية) لكن بضربة واحدة.
+ * الإفراد (`canViewLesson` / `ownsLesson`) هو الصواب عند فتح صفحة
+ * بعينها، لكن تصفية قائمة به تعني استعلامًا لكل عنصر. هذه نسختهما
+ * المجمَّعة، وتُعيد **مجموعتين لا واحدة** لأن السؤالين مختلفان:
  *
- * `isStaff` تُعاد منفصلة لا مدموجةً في المجموعة: الإدارة والمدرّب يريان
- * المسودات وما لم يُربط بحزمة بعد، وهي حالة «الكل» لا قائمة معرّفات.
+ * - `owned` — ملكية فعلية عبر `ProductItem`. تُصفَّى بها **التقييمات**.
+ * - `viewable` — `owned` زائد دروس المعاينة المجانية. تُصفَّى بها
+ *   **المحاضرات** وحدها.
+ *
+ * دمجهما في مجموعة واحدة هو بالضبط الخطأ الذي يجعل اختبارًا مربوطًا
+ * بالدرس المجاني يظهر لمن لم يشترِ شيئًا. الفصل هنا يطابق الفصل بين
+ * `canViewLesson` و`ownsLesson` في الإفراد، فلا تتباعد القائمة عن
+ * الصفحة.
+ *
+ * `isStaff` تُعاد منفصلة لا مدموجةً في المجموعتين: الإدارة والمدرّب
+ * يريان المسودات وما لم يُربط بحزمة بعد، وهي حالة «الكل» لا قائمة.
  */
 export const accessibleLessonIds = cache(async function accessibleLessonIds(
   courseId: string,
-): Promise<{ isStaff: boolean; lessonIds: Set<string> }> {
+): Promise<{ isStaff: boolean; owned: Set<string>; viewable: Set<string> }> {
   const { user, isStaff } = await staffAccess(courseId);
-  if (isStaff) return { isStaff: true, lessonIds: new Set<string>() };
+  if (isStaff) {
+    return { isStaff: true, owned: new Set<string>(), viewable: new Set<string>() };
+  }
 
-  // الدرس المجاني مفتوح قبل الشراء وقبل تسجيل الدخول
+  const owned = new Set<string>();
+  if (user) {
+    const rows = await db.productItem.findMany({
+      where: {
+        lessonId: { not: null },
+        product: {
+          courseId,
+          enrollments: { some: { userId: user.id, ...notExpired() } },
+        },
+      },
+      select: { lessonId: true },
+    });
+    for (const item of rows) {
+      if (item.lessonId) owned.add(item.lessonId);
+    }
+  }
+
+  // الدرس المجاني مفتوح قبل الشراء وقبل تسجيل الدخول — للمحاضرات فقط
   const free = await db.courseMaterial.findMany({
     where: { courseId, isFreePreview: true, course: { isPublished: true } },
     select: { id: true },
   });
-  const lessonIds = new Set(free.map((lesson) => lesson.id));
 
-  if (!user) return { isStaff: false, lessonIds };
+  const viewable = new Set(owned);
+  for (const lesson of free) viewable.add(lesson.id);
 
-  const owned = await db.productItem.findMany({
-    where: {
-      lessonId: { not: null },
-      product: {
-        courseId,
-        enrollments: { some: { userId: user.id, ...notExpired() } },
-      },
-    },
-    select: { lessonId: true },
-  });
-  for (const item of owned) {
-    if (item.lessonId) lessonIds.add(item.lessonId);
-  }
-
-  return { isStaff: false, lessonIds };
+  return { isStaff: false, owned, viewable };
 });
 
 /** معرّفات المقررات التي يملك المستخدم فيها شيئًا — لقوائم "مقرراتي" */

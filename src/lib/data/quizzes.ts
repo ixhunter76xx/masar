@@ -33,7 +33,8 @@ export async function getCourseQuizzes(
 ): Promise<QuizSummary[]> {
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  const [{ isStaff, lessonIds }, rows] = await Promise.all([
+  // `owned` لا `viewable`: المعاينة المجانية لا تفتح تقييمًا
+  const [{ isStaff, owned }, rows] = await Promise.all([
     accessibleLessonIds(courseId),
     db.quiz.findMany({
       where: {
@@ -59,7 +60,7 @@ export async function getCourseQuizzes(
 
   const visible = isStaff
     ? rows
-    : rows.filter((q) => q.lessonId === null || lessonIds.has(q.lessonId));
+    : rows.filter((q) => q.lessonId === null || owned.has(q.lessonId));
 
   return visible.map((q) => ({
     id: q.id,
