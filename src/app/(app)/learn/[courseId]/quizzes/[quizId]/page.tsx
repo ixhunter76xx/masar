@@ -20,7 +20,26 @@ import {
 
 type Params = { params: Promise<{ courseId: string; quizId: string }> };
 
-export const metadata: Metadata = { title: "تحرير الاختبار" };
+/**
+ * العنوان يتبع الدور، لأن هذا المسار صفحتان لا واحدة.
+ *
+ * كان ثابتًا على «تحرير الاختبار» للجميع، فيرى الطالب في تبويب
+ * المتصفح وفي سجلّه وفي أي إشارة مرجعية أنه في شاشة تحرير — وهو لا
+ * يملك تحرير شيء، وما يراه فعلًا نتيجته ومحاولاته. الجسم كان يفرّع
+ * صحيحًا؛ الوسم وحده هو ما تخلّف.
+ *
+ * `requireCourseAccess` و`canManageCourse` كلتاهما `cache()`، وقد
+ * استدعتهما الصفحة نفسها في الطلب ذاته، فلا استعلام إضافي هنا. ولا
+ * نضع عنوان الاختبار في الوسم: توليد الوسم يجري بلا ضمانة ترتيب مع
+ * حارس الصفحة، فلا نُسرّب اسم محتوى عبره.
+ */
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { courseId } = await params;
+  const { user } = await requireCourseAccess(courseId);
+  const canManage = await canManageCourse(courseId, user.id, user.role);
+
+  return { title: canManage ? "تحرير الاختبار" : "الاختبار" };
+}
 
 export default async function QuizEditorPage({ params }: Params) {
   const { courseId, quizId } = await params;
