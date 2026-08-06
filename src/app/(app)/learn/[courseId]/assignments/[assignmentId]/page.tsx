@@ -17,6 +17,7 @@ import { GradeForm } from "@/components/assignments/GradeForm";
 import { SubmissionForm } from "@/components/assignments/SubmissionForm";
 import { requireCourseAccess } from "@/lib/data/courses";
 import { canManageCourse } from "@/lib/data/materials";
+import { canViewAssignment } from "@/lib/data/access";
 import {
   getAssignmentForManaging,
   getAssignmentForStudent,
@@ -172,6 +173,9 @@ export default async function AssignmentPage({ params }: Params) {
   /* ================================================================ */
   /*  الطالب: التفاصيل + التسليم + درجته هو                            */
   /* ================================================================ */
+  // النطاق حزمة لا مقرر — الواجب يتبع درسه كما يتبعه الاختبار
+  if (!(await canViewAssignment(assignmentId))) notFound();
+
   const a = await getAssignmentForStudent(
     assignmentId,
     courseId,

@@ -5,6 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { db } from "@/server/db";
 import { r2, r2Bucket } from "@/server/r2";
+import { canViewLesson } from "@/lib/data/access";
 import { Role, MaterialStatus } from "@/generated/prisma/enums";
 
 /** مدة صلاحية رابط المشاهدة */
@@ -25,24 +26,35 @@ export async function getPlaybackUrl(
   role: Role,
 ): Promise<string | null> {
   const material = await db.courseMaterial.findFirst({
-    where: {
-      id: materialId,
-      status: MaterialStatus.READY,
-      ...(role === Role.ADMIN
-        ? {}
-        : role === Role.INSTRUCTOR
-          ? { course: { presenterId: userId } }
-          : {
-              publishedAt: { not: null },
-              course: {
-                products: { some: { enrollments: { some: { userId: userId } } } },
-              },
-            }),
-    },
-    select: { objectKey: true, contentType: true },
+    where: { id: materialId, status: MaterialStatus.READY },
+    select: { objectKey: true, contentType: true, publishedAt: true },
   });
 
   if (!material) return null;
+
+  /*
+   * الحارس الوحيد هو `canViewLesson`.
+   *
+   * كان هنا منطق وصول موازٍ يسأل: «هل مقرر هذا الدرس فيه منتج يملكه
+   * المستخدم؟» — وهو سؤال أوسع من الصحيح بدرجة تُسقط نموذج البيع كلّه:
+   * مشتري «دورة المنتصف» مسجَّل في منتج داخل المقرر، فكان يمرّ إلى أي
+   * درس فيه بما فيه دروس «دورة النهائي» التي لم يشترها. السؤال الصحيح
+   * هو «هل يحوي منتجٌ يملكه هذا الدرسَ بعينه؟» وهو ما تسأله
+   * `canViewLesson` عبر `ProductItem`.
+   *
+   * حذفنا الفرع الموازي ولم نُصلحه في مكانه عمدًا: منطقا وصول لنفس
+   * السؤال ينحرفان عند أول تعديل يمسّ أحدهما — وهو ما حدث فعلًا مع
+   * المعاينة المجانية، فهي مطبَّقة في `canViewLesson` وغائبة هنا.
+   */
+  if (!(await canViewLesson(materialId))) return null;
+
+  /*
+   * المسودة لا تُبثّ للطلاب. `canViewLesson` لا تعرف حالة النشر — هي
+   * تجيب عن الملكية لا عن الجاهزية — فيبقى هذا الشرط هنا، ويُستثنى منه
+   * الطاقم لأنه يعاين قبل النشر.
+   */
+  const isStaff = role === Role.ADMIN || role === Role.INSTRUCTOR;
+  if (!isStaff && material.publishedAt === null) return null;
 
   return getSignedUrl(
     r2(),

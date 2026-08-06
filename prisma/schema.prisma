@@ -197,6 +197,10 @@ model CourseMaterial {
   productItems ProductItem[]
   progress     LessonProgress[]
 
+  /// التقييمات المبنية على هذا الدرس — ترث نطاقه في الحزم
+  quizzes     Quiz[]       @relation("QuizLesson")
+  assignments Assignment[] @relation("AssignmentLesson")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -293,12 +297,25 @@ model Quiz {
   questions Question[]
   attempts  QuizAttempt[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  /// الدرس الذي يقيسه هذا الاختبار — منه يرث نطاقه في الحزم.
+  ///
+  /// القاعدة: التقييم يتبع نطاق درسه بالضبط، فمن يملك حزمة تحوي الدرس
+  /// يرى اختباره، ومن لا يملكها لا يراه. `null` يعني اختبارًا على مستوى
+  /// المقرر (امتحان شامل مثلًا) يراه كل من يملك أي منتج في المقرر —
+  /// وهو سلوك الاختبارات القديمة قبل هذا الحقل، فلا تتغيّر بالهجرة.
+  ///
+  /// `SetNull` لا `Cascade`: حذف درس يجب ألّا يمحو اختبارًا ومحاولاته
+  /// ودرجاتها معه — يعود الاختبار إلى نطاق المقرر ويُعاد ربطه يدويًا.
+  lessonId String?
+  lesson   CourseMaterial? @relation("QuizLesson", fields: [lessonId], references: [id], onDelete: SetNull)
 
   productItems ProductItem[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([courseId, status])
+  @@index([lessonId])
   @@map("quizzes")
 }
 
@@ -434,10 +451,20 @@ model Assignment {
 
   submissions Submission[]
 
+  /// الدرس الذي يتفرّع عنه هذا الواجب — منه يرث نطاقه في الحزم.
+  /// نفس قاعدة `Quiz.lesson` و`null` يعني واجبًا على مستوى المقرر.
+  ///
+  /// الواجب لا يمكن أن يكون `ProductItem` بنفسه: `ProductItemKind`
+  /// يعرف الدرس والاختبار فقط. الربط بالدرس هو ما يجعل الواجب قابلًا
+  /// للتحجيم داخل حزمة بلا توسيع ذلك النوع.
+  lessonId String?
+  lesson   CourseMaterial? @relation("AssignmentLesson", fields: [lessonId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([courseId, status])
+  @@index([lessonId])
   @@map("assignments")
 }
 

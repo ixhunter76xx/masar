@@ -127,29 +127,121 @@ export const canViewLesson = cache(async function canViewLesson(
   return Boolean(grant);
 });
 
-/** هل يفتح المستخدم هذا الاختبار؟ لا معاينة مجانية للاختبارات */
+/**
+ * هل يملك المستخدم أي منتج في هذا المقرر؟ — نطاق المقرر لا الحزمة.
+ *
+ * تُستخدم للتقييم غير المربوط بدرس (`lessonId = null`): امتحان شامل أو
+ * واجب عام لا يقيس وحدة بعينها، فيراه كل من دخل المقرر بأي حزمة.
+ */
+async function courseWideAccess(courseId: string): Promise<boolean> {
+  const { user, isStaff } = await staffAccess(courseId);
+  if (!user) return false;
+  if (isStaff) return true;
+
+  const grant = await db.enrollment.findFirst({
+    where: { userId: user.id, ...notExpired(), product: { courseId } },
+    select: { id: true },
+  });
+  return Boolean(grant);
+}
+
+/**
+ * هل يفتح المستخدم هذا الاختبار؟
+ *
+ * **الاختبار يتبع نطاق درسه بالضبط.** إن كان مبنيًا على درس فالسؤال
+ * يُحوَّل حرفيًا إلى `canViewLesson` لذلك الدرس — فلا يوجد منطق وصول
+ * ثانٍ يمكن أن يختلف عن الأول. وإن لم يكن مربوطًا بدرس فهو تقييم على
+ * مستوى المقرر يراه كل مالك لأي حزمة فيه.
+ *
+ * لماذا لا نسأل `ProductItem` عن الاختبار مباشرةً كما كان: ذلك يفرض
+ * ربط كل اختبار بكل حزمة تحوي درسه يدويًا، وهو تكرار للحقيقة نفسها
+ * ينحرف عند أول نسيان — وقد انحرف فعلًا: لم يكن أي اختبار مربوطًا بأي
+ * حزمة، فصار الجواب «لا أحد يملكه» بينما القوائم تعرضه للجميع.
+ *
+ * لا معاينة مجانية للاختبارات: `canViewLesson` تمنح الدرس المجاني
+ * للزائر، لكن الاختبار يحتاج حسابًا لتُسجَّل محاولته، فنشترط مستخدمًا
+ * حتى لو كان درسه معاينة مجانية.
+ */
 export const canViewQuiz = cache(async function canViewQuiz(
   quizId: string,
 ): Promise<boolean> {
   const quiz = await db.quiz.findUnique({
     where: { id: quizId },
-    select: { courseId: true },
+    select: { courseId: true, lessonId: true },
   });
   if (!quiz) return false;
 
-  const { user, isStaff } = await staffAccess(quiz.courseId);
-  if (!user) return false;
-  if (isStaff) return true;
+  const session = await auth();
+  if (!session?.user) return false;
 
-  const grant = await db.enrollment.findFirst({
-    where: {
-      userId: user.id,
-      ...notExpired(),
-      product: { items: { some: { quizId } } },
-    },
+  if (quiz.lessonId) return canViewLesson(quiz.lessonId);
+  return courseWideAccess(quiz.courseId);
+});
+
+/**
+ * هل يفتح المستخدم هذا الواجب؟ — نفس قاعدة الاختبار حرفيًا.
+ *
+ * الواجب لا يمكن أن يكون `ProductItem` بنفسه (`ProductItemKind` يعرف
+ * الدرس والاختبار فقط)، فالربط بالدرس هو السبيل الوحيد لتحجيمه داخل
+ * حزمة — ولهذا كانت الواجبات على مستوى المقرر دائمًا قبل هذا التغيير.
+ */
+export const canViewAssignment = cache(async function canViewAssignment(
+  assignmentId: string,
+): Promise<boolean> {
+  const assignment = await db.assignment.findUnique({
+    where: { id: assignmentId },
+    select: { courseId: true, lessonId: true },
+  });
+  if (!assignment) return false;
+
+  const session = await auth();
+  if (!session?.user) return false;
+
+  if (assignment.lessonId) return canViewLesson(assignment.lessonId);
+  return courseWideAccess(assignment.courseId);
+});
+
+/**
+ * ما يفتحه المستخدم من دروس هذا المقرر — استعلام واحد للقوائم.
+ *
+ * `canViewLesson` تجيب عن درس واحد، وهي الصواب عند فتح صفحة بعينها.
+ * لكن تصفية قائمة بها تعني استعلامًا لكل عنصر، فهذه نسختها المجمَّعة:
+ * نفس القاعدة (معاينة مجانية، أو حزمة مملوكة تحوي الدرس، أو صلاحية
+ * إدارية) لكن بضربة واحدة.
+ *
+ * `isStaff` تُعاد منفصلة لا مدموجةً في المجموعة: الإدارة والمدرّب يريان
+ * المسودات وما لم يُربط بحزمة بعد، وهي حالة «الكل» لا قائمة معرّفات.
+ */
+export const accessibleLessonIds = cache(async function accessibleLessonIds(
+  courseId: string,
+): Promise<{ isStaff: boolean; lessonIds: Set<string> }> {
+  const { user, isStaff } = await staffAccess(courseId);
+  if (isStaff) return { isStaff: true, lessonIds: new Set<string>() };
+
+  // الدرس المجاني مفتوح قبل الشراء وقبل تسجيل الدخول
+  const free = await db.courseMaterial.findMany({
+    where: { courseId, isFreePreview: true, course: { isPublished: true } },
     select: { id: true },
   });
-  return Boolean(grant);
+  const lessonIds = new Set(free.map((lesson) => lesson.id));
+
+  if (!user) return { isStaff: false, lessonIds };
+
+  const owned = await db.productItem.findMany({
+    where: {
+      lessonId: { not: null },
+      product: {
+        courseId,
+        enrollments: { some: { userId: user.id, ...notExpired() } },
+      },
+    },
+    select: { lessonId: true },
+  });
+  for (const item of owned) {
+    if (item.lessonId) lessonIds.add(item.lessonId);
+  }
+
+  return { isStaff: false, lessonIds };
 });
 
 /** معرّفات المقررات التي يملك المستخدم فيها شيئًا — لقوائم "مقرراتي" */

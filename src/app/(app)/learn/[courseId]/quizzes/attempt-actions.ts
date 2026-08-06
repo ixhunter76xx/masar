@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/server/db";
+import { canViewQuiz } from "@/lib/data/access";
 import {
   getQuizForStudent,
   listStudentAttempts,
@@ -33,6 +34,12 @@ export async function startAttempt(
   if (!session?.user) return { ok: false, message: "غير مصرّح." };
 
   const { id: userId, role } = session.user;
+
+  // النطاق حزمة لا مقرر — نفس حارس صفحة الاختبار، فلا يُبدأ عبر
+  // الإجراء ما لا يُفتح عبر الصفحة
+  if (!(await canViewQuiz(quizId))) {
+    return { ok: false, message: "الاختبار غير متاح لك." };
+  }
 
   const quiz = await getQuizForStudent(quizId, courseId, userId, role);
   if (!quiz) return { ok: false, message: "الاختبار غير متاح لك." };

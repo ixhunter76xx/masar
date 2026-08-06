@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { accessibleLessonIds } from "@/lib/data/access";
 import { Role, QuizStatus, QuestionKind } from "@/generated/prisma/enums";
 
 /** بطاقة اختبار كما تظهر في قائمة المحتوى */
@@ -19,34 +20,48 @@ export type QuizSummary = {
 /**
  * اختبارات المقرر.
  * الطالب يرى المنشورة والمغلقة فقط؛ المدرب والإدارة يريان المسودات أيضًا.
+ *
+ * ⚠ **النطاق يتبع الدرس.** اختبار مبني على درس لا يظهر إلا لمن يملك
+ * حزمة تحوي ذلك الدرس؛ واختبار بلا درس (`lessonId = null`) على مستوى
+ * المقرر يراه كل من دخله. نفس قاعدة `canViewQuiz` بالضبط، مطبَّقة هنا
+ * على دفعة واحدة بدل استعلام لكل صف.
  */
 export async function getCourseQuizzes(
   courseId: string,
+  userId: string,
   role: Role,
 ): Promise<QuizSummary[]> {
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
-  const rows = await db.quiz.findMany({
-    where: {
-      courseId,
-      ...(canSeeDrafts
-        ? {}
-        : { status: { in: [QuizStatus.PUBLISHED, QuizStatus.CLOSED] } }),
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      status: true,
-      maxAttempts: true,
-      timeLimitMin: true,
-      createdAt: true,
-      questions: { select: { points: true } },
-    },
-  });
+  const [{ isStaff, lessonIds }, rows] = await Promise.all([
+    accessibleLessonIds(courseId),
+    db.quiz.findMany({
+      where: {
+        courseId,
+        ...(canSeeDrafts
+          ? {}
+          : { status: { in: [QuizStatus.PUBLISHED, QuizStatus.CLOSED] } }),
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        maxAttempts: true,
+        timeLimitMin: true,
+        createdAt: true,
+        lessonId: true,
+        questions: { select: { points: true } },
+      },
+    }),
+  ]);
 
-  return rows.map((q) => ({
+  const visible = isStaff
+    ? rows
+    : rows.filter((q) => q.lessonId === null || lessonIds.has(q.lessonId));
+
+  return visible.map((q) => ({
     id: q.id,
     title: q.title,
     description: q.description,

@@ -11,6 +11,7 @@ import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { r2, r2Bucket, submissionObjectKey } from "@/server/r2";
 import { submissionBlocker } from "@/lib/data/assignments";
+import { canViewAssignment } from "@/lib/data/access";
 import {
   Role,
   AssignmentStatus,
@@ -78,6 +79,12 @@ export async function POST(
   }
 
   const userId = session.user.id;
+
+  // النطاق حزمة لا مقرر — نفس حارس صفحة الواجب، فلا يُسلَّم عبر النقطة
+  // ما لا يُفتح عبر الصفحة
+  if (!(await canViewAssignment(assignmentId))) {
+    return bad("الواجب غير متاح لك.", 404);
+  }
 
   const assignment = await loadForStudent(assignmentId, courseId, userId);
   if (!assignment) return bad("الواجب غير متاح لك.", 404);

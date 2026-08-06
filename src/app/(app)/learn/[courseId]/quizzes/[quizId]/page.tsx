@@ -11,6 +11,7 @@ import { AddQuestionButtons } from "@/components/quizzes/AddQuestionButtons";
 import { QuizOverview } from "@/components/quizzes/QuizOverview";
 import { requireCourseAccess } from "@/lib/data/courses";
 import { canManageCourse } from "@/lib/data/materials";
+import { canViewQuiz } from "@/lib/data/access";
 import { getQuizForEditing, publishBlockers } from "@/lib/data/quizzes";
 import {
   getQuizForStudent,
@@ -49,6 +50,10 @@ export default async function QuizEditorPage({ params }: Params) {
 
   // الطالب يرى نظرة عامة تُبنى من استعلام لا يُحمّل الإجابات الصحيحة
   if (!canManage) {
+    // النطاق حزمة لا مقرر: `requireCourseAccess` أعلاه تُثبت دخول
+    // المقرر فقط، وهذا يسأل عن الحزمة التي تحوي درس الاختبار
+    if (!(await canViewQuiz(quizId))) notFound();
+
     const forStudent = await getQuizForStudent(
       quizId,
       courseId,

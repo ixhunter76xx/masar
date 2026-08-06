@@ -215,9 +215,53 @@ The same masking is a trap when auditing: `netlify env:list` run locally reports
 ### `AUTH_URL` is pinned to the production origin
 `AUTH_URL=https://hisab-lms.netlify.app` while `src/auth.config.ts` also sets `trustHost: true`. On a preview deploy, any redirect to `/login` lands on the **production** domain instead of the preview host — observed 2026-08-05, which meant a preview test silently ended up on the old production build. Harmless in production (the origins match) but it will break the first time a custom domain is added, and it limits what can be tested on previews.
 
-## ⚠ Paid Bundles Are Not Enforced — Access Is Course-Wide, Not Product-Wide
+## Paid Bundles — Fixed 2026-08-06. Read Before Adding Any Content Type
 
-Found 2026-08-06 during the four-role sweep. **This is the most consequential open issue in the repo**, and it is the exact thing the `Product`/`ProductItem` layer was introduced to prevent.
+**The rule, decided by the owner:** an assessment follows its lesson's scope *exactly*. A quiz or assignment built on a lesson is visible only to someone holding a bundle that contains that lesson. `lessonId = null` means course-wide — an assessment that measures no single unit — and that is the default every existing row still has.
+
+### The symptom it fixed
+
+`fresh.visitor@masar.bh` bought `دورة المنتصف` (8 د.ب, lessons ١–٢). With the quiz attached to `النحو` and the assignment to `البلاغة` — both in the half they did **not** buy — before the fix they saw and could open both, identically to the 14 د.ب full-course buyer.
+
+### Why it happened
+
+Three separate paths each asked a *course-level* question, and the one function that asked the right question had no callers:
+
+- `getCourseMaterials` / `getCourseQuizzes` never received a `userId` at all — they could not scope by product even in principle.
+- `getPlaybackUrl` asked "does this lesson's **course** contain some product the user owns?" — true for any buyer of any bundle, so it would have served every lesson in the course.
+- `canViewLesson` asked it correctly and was dead code.
+- Nothing linked an assessment to a lesson: `Quiz` and `Assignment` had only `courseId`, and `ProductItemKind` models lessons and quizzes only — so an assignment could not belong to a bundle at all. **The schema gap was the root cause**; no amount of query fixing could scope an assignment without it.
+
+### The fix
+
+1. **Schema** — `Quiz.lessonId` and `Assignment.lessonId`, both nullable, `ON DELETE SET NULL` so deleting a lesson never destroys a quiz with its attempts and grades. Migration `20260806000000_link_assessments_to_lessons` is purely additive.
+2. **One rule, one implementation** — `canViewQuiz` and the new `canViewAssignment` *delegate* to `canViewLesson` when `lessonId` is set, and fall back to course-wide access when it is null. They do not re-derive the answer, so the two cannot drift.
+3. **`accessibleLessonIds(courseId)`** — the batched form of the same rule, one query, for list filtering. Lists use it; single-item pages use `canViewLesson`/`canViewQuiz`/`canViewAssignment`.
+4. **`getPlaybackUrl`'s parallel logic was deleted, not patched** — it now calls `canViewLesson` and keeps only the draft check (`publishedAt`), which is about readiness, not ownership.
+
+**Every path is gated, not just the views** — list, open quiz, open assignment, **start attempt**, **submit assignment**, and **video playback**. Hiding a page while its API still answers is the failure mode this was written to avoid.
+
+### The evidence
+
+Signed in as each account against a production build on :3100, quiz on `النحو` and assignment on `البلاغة`:
+
+| | `fresh.visitor` (midterm) | `student.test` (full) |
+|---|---|---|
+| content list | **empty** — "لا يوجد محتوى بعد" | both shown |
+| quiz by direct URL | **404** | opens, 4/4 history intact |
+| assignment by direct URL | **404** | opens with submit form |
+| `POST …/submission` (bypassing the UI) | **404** `الواجب غير متاح لك.` | **200** + signed upload URL |
+
+The same API call answering 404 for one buyer and 200 for the other is the proof that matters. Announcements, messages, grades and orders were unchanged for both — those are course-scoped by design.
+
+### Two things to know before you build on this
+
+- **Free preview propagates.** `canViewLesson` returns true for an `isFreePreview` lesson, so attaching an assessment to the free lesson makes it reachable by *any signed-in user*, bought or not — literally "follows its lesson's scope". That is fine for a video and questionable for graded work. **Decide this before linking an assessment to the preview lesson**; today every assessment is `null` (course-wide), so nothing is exposed.
+- **Lesson-level enforcement is still unproven end to end.** All four lessons are `PENDING`, so `getPlaybackUrl` returns null at the `READY` filter before ownership is consulted. The rewrite is right by construction and typechecked, but the real test — a `midterm` buyer requesting a `final` lesson's stream and getting **404 instead of a 302** — has to wait for the first successful upload.
+
+## ~~⚠ Paid Bundles Are Not Enforced~~ — the original finding, kept for context
+
+Found 2026-08-06 during the four-role sweep, fixed the same day (see above). **This was the most consequential open issue in the repo**, and it is the exact thing the `Product`/`ProductItem` layer was introduced to prevent.
 
 **The business model sells parts of a course.** `دورة المنتصف` (8 د.ب) = lessons ١–٢, `دورة النهائي` (8 د.ب) = lessons ٣–٤, `الدورة الكاملة` (14 د.ب) = all four. `ProductItem` maps each product to its lessons/quizzes, and `hasProductAccess`/`canViewLesson` implement the per-product question correctly.
 

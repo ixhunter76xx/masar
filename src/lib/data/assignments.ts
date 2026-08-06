@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { accessibleLessonIds } from "@/lib/data/access";
 import {
   Role,
   AssignmentStatus,
@@ -27,6 +28,8 @@ export async function getCourseAssignments(
 ): Promise<AssignmentSummary[]> {
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
+  const { isStaff, lessonIds } = await accessibleLessonIds(courseId);
+
   const rows = await db.assignment.findMany({
     where: {
       courseId,
@@ -46,6 +49,7 @@ export async function getCourseAssignments(
       status: true,
       totalPoints: true,
       dueAt: true,
+      lessonId: true,
       _count: { select: { submissions: true } },
       // تسليم هذا المستخدم فقط — لا تسليمات غيره
       submissions: {
@@ -55,7 +59,12 @@ export async function getCourseAssignments(
     },
   });
 
-  return rows.map((a) => ({
+  // النطاق يتبع الدرس — نفس قاعدة canViewAssignment
+  const visible = isStaff
+    ? rows
+    : rows.filter((a) => a.lessonId === null || lessonIds.has(a.lessonId));
+
+  return visible.map((a) => ({
     id: a.id,
     title: a.title,
     description: a.description,
