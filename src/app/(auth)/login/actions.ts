@@ -10,7 +10,7 @@ import { AFTER_LOGIN } from "@/lib/routes";
 export type AuthResult = { ok: false; message: string };
 
 const INVALID = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-const DISABLED = "هذا الحساب معطّل. تواصل مع إدارة المركز لإعادة تفعيله.";
+const DISABLED = "هذا الحساب معطّل. تواصل مع إدارة مسار لإعادة تفعيله.";
 
 /** يستخرج كود الخطأ المخصّص من طبقات AuthError المختلفة */
 function codeOf(error: AuthError): string | undefined {

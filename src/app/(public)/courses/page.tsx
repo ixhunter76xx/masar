@@ -41,20 +41,20 @@ export default async function CatalogPage() {
             className="mt-4 max-w-[17ch] text-[clamp(1.875rem,5.2vw,3.125rem)]
               font-semibold leading-[1.28] tracking-[-0.03em]"
           >
-            شرح مقرَّرك الجامعي،{" "}
+            شرح مقرَّرك الجامعي{" "}
             <em
               className="bg-clip-text not-italic text-transparent
                 [background-image:linear-gradient(160deg,#c8dcea_0%,var(--color-accent-bright)_42%,var(--color-accent-deep)_100%)]"
             >
-              لا دورة عامة
+              كما يُدرَّس لك
             </em>
           </h1>
         </Reveal>
 
         <Reveal delay={0.12}>
           <p className="mt-5 max-w-[44ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
-            لا نُعلّم «اللغة العربية». نشرح المقرر الجامعي كما يُدرَّس في خطتك —
-            بوحداته ومصطلحاته وما يُسأل عنه في الامتحان.
+            نتبع توصيف مقرَّرك نفسه — بوحداته ومصطلحاته وما يُسأل عنه في
+            الامتحان.
           </p>
         </Reveal>
 

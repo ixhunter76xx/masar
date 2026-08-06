@@ -23,7 +23,7 @@ export function SidebarContent({
         <Logo size={44} />
         <div className="min-w-0">
           <p className="text-sm font-bold text-paper truncate">{SITE.name}</p>
-          <p className="text-[11px] text-muted truncate">للتعليم والتدريب</p>
+          <p className="text-[11px] text-muted truncate">{SITE.shortTagline}</p>
         </div>
       </div>
 

@@ -60,15 +60,24 @@ export default async function ProfilePage() {
           <Row label="البريد الإلكتروني" value={user.email} />
           <Row label="اسم المستخدم" value={user.username ?? "—"} />
           <Row label="الدور" value={ROLE_LABELS[user.role]} />
-          <Row
-            label={role === Role.INSTRUCTOR ? "مقررات أُدرّسها" : "مقررات مسجَّلة"}
-            value={String(
-              role === Role.INSTRUCTOR
-                ? user._count.coursesPresented
-                : user._count.enrollments,
-            )}
-            numeric
-          />
+          {/*
+            الإدارة لا تُسجَّل في مقرر ولا تُقدّمه، فالعدّاد بلا معنى لها
+            وكان يعرض «مقررات مسجَّلة: ٠» لحساب يرى المنصة كاملة. نحذف
+            الصف بدل أن نخترع له تسمية.
+          */}
+          {role !== Role.ADMIN && (
+            <Row
+              label={
+                role === Role.INSTRUCTOR ? "مقررات أُدرّسها" : "مقررات مسجَّلة"
+              }
+              value={String(
+                role === Role.INSTRUCTOR
+                  ? user._count.coursesPresented
+                  : user._count.enrollments,
+              )}
+              numeric
+            />
+          )}
           <Row
             label="آخر دخول"
             value={user.lastLoginAt ? relativeTime(user.lastLoginAt) : "—"}
@@ -76,7 +85,7 @@ export default async function ProfilePage() {
         </dl>
 
         <p className="mt-5 border-t border-line pt-4 text-[11px] leading-relaxed text-subtle">
-          لتعديل الاسم أو البريد، تواصل مع إدارة المركز.
+          لتعديل الاسم أو البريد، تواصل مع إدارة مسار.
         </p>
       </Card>
 
