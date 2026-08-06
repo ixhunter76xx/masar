@@ -57,6 +57,7 @@ The original LMS scope (roles: Super Admin, Academic Coordinator, Instructor, Te
 
 - **Product/ProductItem layer** between `Course` and content — allows content reuse across products without duplication. Models exist and are used in `src/lib/data/access.ts`, `grades.ts`, `messages.ts`, `settings/actions.ts`.
 - **Product-based access layer** — `src/lib/data/access.ts` exports `hasProductAccess`, `hasCourseAccess`, `canViewLesson`, `canViewQuiz`, `accessibleCourseIds`. The question is now "does the user own a product that unlocks this?", not "is the user enrolled in this course?".
+  - ⚠ **`canViewLesson` and `canViewQuiz` have no call sites** (checked 2026-08-06) — they are written and exported, but nothing imports them. Do not assume a rule is enforced just because it is implemented there; see the free-preview trap below.
 - **`Term`/`Semester` removed entirely** — do not reintroduce it.
 - **Prices in fils, not dinars** — `OrderItem.unitPriceFils`, integer precision.
 - **Price snapshot pattern** — `OrderItem.titleSnapshot` / `unitPriceFils` freeze price and name at order time.
@@ -212,6 +213,27 @@ The same masking is a trap when auditing: `netlify env:list` run locally reports
 
 ### `AUTH_URL` is pinned to the production origin
 `AUTH_URL=https://hisab-lms.netlify.app` while `src/auth.config.ts` also sets `trustHost: true`. On a preview deploy, any redirect to `/login` lands on the **production** domain instead of the preview host — observed 2026-08-05, which meant a preview test silently ended up on the old production build. Harmless in production (the origins match) but it will break the first time a custom domain is added, and it limits what can be tested on previews.
+
+## The Free Preview Is Advertised but Not Playable Yet — Two Access Paths That Disagree
+
+Established 2026-08-06. Nothing is broken for users today, but the next person to build the preview player will walk into this.
+
+**The storefront sells it.** `/courses/arab110` renders «جرّب درسًا كاملًا مجانًا قبل أن تدفع», a «مجاني» badge on lesson 1, and a large play button. **The button is a deliberate placeholder** — `src/app/(public)/courses/[slug]/page.tsx:225` says so: «المشغّل الحقيقي يأتي في مرحلة الشراء — هذا زرّ يمهّد له». It has no handler.
+
+**The trap is what happens when someone wires it up.** There are two access implementations and they disagree about free preview:
+
+| | free preview honoured? | used by anything? |
+|---|---|---|
+| `canViewLesson` (`access.ts:113`) | **yes** — returns `true` for `isFreePreview` on a published course, before requiring a user | **no call sites** |
+| `getPlaybackUrl` (`server/video-url.ts`) | **no** — no `isFreePreview` branch at all; students must have an enrolment | yes — the only playback path |
+
+So the rule is implemented in the function nobody calls, and absent from the one that actually runs. On top of that, `stream/route.ts:22` returns **401 before** consulting either — confirmed with an anonymous request to the free-preview lesson: `401 {"error":"غير مصرّح."}`.
+
+**Net effect if the button is naively pointed at the stream route:** a logged-out visitor gets 401, and a signed-in visitor who has not bought gets 404 — the free preview silently fails for exactly the two audiences it exists to convert, with no error that names the cause.
+
+**Fix it in the playback path, not by loosening the route.** `getPlaybackUrl` needs the `isFreePreview` branch (and to accept an anonymous caller for that case only); `stream/route.ts` must stop rejecting anonymous requests *before* the access check. Deleting the unused `canViewLesson` in favour of one real path would be better than leaving two.
+
+**Also still true:** no lesson has a file. All four are `status = PENDING` with placeholder `seed/ARAB110/*` keys and the bucket is empty, so even a correct player has nothing to play until a real upload lands (see the deferred CORS item).
 
 ## Never Run `next dev` and `next start` at the Same Time Here
 
