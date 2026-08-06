@@ -215,6 +215,31 @@ The same masking is a trap when auditing: `netlify env:list` run locally reports
 ### `AUTH_URL` is pinned to the production origin
 `AUTH_URL=https://hisab-lms.netlify.app` while `src/auth.config.ts` also sets `trustHost: true`. On a preview deploy, any redirect to `/login` lands on the **production** domain instead of the preview host — observed 2026-08-05, which meant a preview test silently ended up on the old production build. Harmless in production (the origins match) but it will break the first time a custom domain is added, and it limits what can be tested on previews.
 
+## ⚠ Paid Bundles Are Not Enforced — Access Is Course-Wide, Not Product-Wide
+
+Found 2026-08-06 during the four-role sweep. **This is the most consequential open issue in the repo**, and it is the exact thing the `Product`/`ProductItem` layer was introduced to prevent.
+
+**The business model sells parts of a course.** `دورة المنتصف` (8 د.ب) = lessons ١–٢, `دورة النهائي` (8 د.ب) = lessons ٣–٤, `الدورة الكاملة` (14 د.ب) = all four. `ProductItem` maps each product to its lessons/quizzes, and `hasProductAccess`/`canViewLesson` implement the per-product question correctly.
+
+**Nothing in the running code asks that question.** Every path a student actually goes through scopes by *course*:
+
+| function | scoping | takes `userId`? |
+|---|---|---|
+| `getCourseMaterials` (`materials.ts:46`) | `courseId` + `READY` + published | **no** — only `role` |
+| `getCourseQuizzes` (`quizzes.ts:23`) | `courseId` + publish status | **no** — only `role` |
+| `getPlaybackUrl` (`server/video-url.ts`) | material's course has **some** product the user is enrolled in | yes, but never joins `ProductItem` |
+| `canViewLesson` (`access.ts:103`) | **correct per-product check** | — **no call sites** |
+
+`getPlaybackUrl`'s student filter asks "does this lesson's *course* contain any product this user owns?", not "does a product this user owns contain this lesson."
+
+**Empirically confirmed today.** No product contains the quiz — all three bundles hold only `LESSON` items — yet `fresh.visitor@masar.bh`, enrolled in `midterm` alone, sees `اختبار الاستفهام` on the course page, identical to the full-course buyer. Quizzes are course-scoped in practice. Assignments are too, and more fundamentally: `ProductItemKind` only models lessons and quizzes, so an assignment cannot belong to a bundle at all.
+
+**Not yet observable for lessons, and here is why.** All four lessons are `PENDING`, so the `status = READY` filter rejects them before product logic would matter — a correct and an incorrect implementation both return nothing. **The moment one real upload lands, a `midterm` buyer will see and play the `final` lessons**, i.e. the 14 د.ب bundle for 8. Do not read today's empty list as evidence that scoping works.
+
+**The test to run once a lesson is `READY`:** sign in as a `midterm`-only buyer and request `/api/courses/<courseId>/videos/<a final-only lesson>/stream`. A 302 to a signed R2 URL is the bug. Do not test with a `PENDING` lesson — it 404s either way and proves nothing.
+
+**Fix direction (needs a product decision first, do not just patch):** route lesson listing and playback through `ProductItem` — most likely by making `canViewLesson` the single gate and deleting the parallel logic in `getPlaybackUrl`, mirroring the single-writer rule that `markOrderPaid()` follows. Two open questions the code cannot answer alone: should **quizzes** be bundle-scoped (they are already `ProductItem`-capable but none are mapped), and should **assignments** become bundle-scopable (needs a schema change)? A defensible answer is that lessons are the paid unit and quizzes/assignments stay course-wide — but that must be a decision, not an accident.
+
 ## The Free Preview Is Advertised but Not Playable Yet — Two Access Paths That Disagree
 
 Established 2026-08-06. Nothing is broken for users today, but the next person to build the preview player will walk into this.
