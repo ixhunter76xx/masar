@@ -283,6 +283,38 @@ export const accessibleLessonIds = cache(async function accessibleLessonIds(
   return { isStaff: false, owned, viewable };
 });
 
+/**
+ * دروس المقرر التي يملكها القارئ — للمتجر العام.
+ *
+ * تختلف عن `accessibleLessonIds` في أنها **لا تعرف الطاقم ولا المعاينة
+ * المجانية**: المتجر يسأل «ماذا اشتريت؟» ليقرّر أيعرض شراءً أم ترقية،
+ * والدرس المجاني ليس مُشترى والإدارة ليست مشترية. خلطهما هنا كان
+ * سيُخفي الأسعار عن الإدارة ويُظهر باقةً مملوكة لمن لم يشترِ.
+ *
+ * تُعيد مجموعة فارغة للزائر المجهول، فتعمل الصفحة العامة كما هي.
+ */
+export const ownedLessonIdsForViewer = cache(
+  async function ownedLessonIdsForViewer(courseId: string): Promise<Set<string>> {
+    const session = await auth();
+    if (!session?.user) return new Set<string>();
+
+    const rows = await db.productItem.findMany({
+      where: {
+        lessonId: { not: null },
+        product: {
+          courseId,
+          enrollments: { some: { userId: session.user.id, ...notExpired() } },
+        },
+      },
+      select: { lessonId: true },
+    });
+
+    const owned = new Set<string>();
+    for (const item of rows) if (item.lessonId) owned.add(item.lessonId);
+    return owned;
+  },
+);
+
 /** معرّفات المقررات التي يملك المستخدم فيها شيئًا — لقوائم "مقرراتي" */
 export const accessibleCourseIds = cache(async function accessibleCourseIds(
   userId: string,

@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/data/admin";
 import {
   markOrderPaid,
   cancelPendingOrder,
+  refundOrder,
   MANUAL_PROVIDER,
 } from "@/lib/data/orders";
 import { db } from "@/server/db";
@@ -65,5 +66,48 @@ export async function cancelOrderAsAdmin(
 
   revalidatePath("/settings/orders");
   revalidatePath("/orders");
+  return { ok: true };
+}
+
+/**
+ * تسجيل استرجاع طلب مدفوع وسحب وصوله.
+ *
+ * تحويل المال يجري خارج المنصة كما يجري التحصيل؛ هذا الإجراء يسجّله
+ * وينفّذ أثره. المرجع مطلوب لا اختياري: بلا مرجعٍ للتحويل العكسي لا
+ * يبقى في المنصة ما يُثبت أن المال أُعيد فعلًا.
+ */
+export async function refundOrderAsAdmin(
+  orderId: string,
+  refundRef: string,
+  note: string,
+): Promise<AdminOrderResult> {
+  const admin = await requireAdmin();
+
+  const reference = refundRef.trim();
+  if (!reference) {
+    return { ok: false, error: "أدخل مرجع التحويل العكسي." };
+  }
+
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { number: true },
+  });
+  if (!order) return { ok: false, error: "الطلب غير موجود." };
+
+  const result = await refundOrder({
+    orderId,
+    /* مرجع مستقل عن مرجع الدفع: القيد الفريد على (المزوّد، المعرّف)
+       يرفض تسجيل الاسترجاع لو حمل رقم الطلب نفسه الذي حمله التحصيل. */
+    refundRef: `refund:${order.number}:${reference}`,
+    reviewedById: admin.id,
+    reviewNote: note.trim() || null,
+  });
+
+  if (!result.ok) return { ok: false, error: result.error };
+
+  revalidatePath("/settings/orders");
+  revalidatePath(`/orders/${order.number}`);
+  revalidatePath("/orders");
+  revalidatePath("/learn");
   return { ok: true };
 }

@@ -7,8 +7,21 @@ import { Reveal } from "@/components/motion/Reveal";
 import { BuyButton } from "@/components/public/BuyButton";
 import { Price } from "@/components/public/Price";
 import { getPublicCourse } from "@/lib/data/courses";
+import { ownedLessonIdsForViewer } from "@/lib/data/access";
 import { bundleSaving, formatFils } from "@/lib/price";
 import { cn } from "@/lib/utils";
+
+/**
+ * حالة الباقة بالنسبة لمن يقرأ الصفحة.
+ *
+ * الصفحة عامة، لكنها ليست عمياء عن الزائر: من اشترى «المنتصف» يجب
+ * ألّا يُعرض عليه شراؤه ثانية، ومن يطلب «الكاملة» بعده يدفع الفرق.
+ * الحساب هنا للعرض وحده — الحارس الملزم في `requestProductOrder`.
+ */
+type TierState =
+  | { kind: "new" }
+  | { kind: "owned" }
+  | { kind: "upgrade"; dueFils: number };
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -42,6 +55,30 @@ export default async function PublicCoursePage({ params }: Params) {
     bundle && parts.length >= 2
       ? bundleSaving(bundle.priceFils, parts.map((p) => p.priceFils))
       : 0;
+
+  /* دروس هذا المقرر التي يملكها القارئ — فارغة للزائر المجهول */
+  const owned = await ownedLessonIdsForViewer(course.id);
+
+  /** نفس قاعدة `requestProductOrder`: الملكية بالدروس والخصم بما تلغيه الترقية */
+  function stateOf(product: (typeof course.products)[number]): TierState {
+    if (owned.size === 0 || product.lessonIds.length === 0) return { kind: "new" };
+
+    const missing = product.lessonIds.filter((id) => !owned.has(id));
+    if (missing.length === 0) return { kind: "owned" };
+
+    const target = new Set(product.lessonIds);
+    const credit = course.products
+      .filter(
+        (other) =>
+          other.lessonIds.length > 0 &&
+          other.lessonIds.every((id) => owned.has(id) && target.has(id)),
+      )
+      .reduce((sum, other) => sum + other.priceFils, 0);
+
+    return credit > 0
+      ? { kind: "upgrade", dueFils: Math.max(0, product.priceFils - credit) }
+      : { kind: "new" };
+  }
 
   return (
     <div className="mx-auto max-w-[1120px] px-4 sm:px-8">
@@ -147,6 +184,7 @@ export default async function PublicCoursePage({ params }: Params) {
                   saving={bundle?.id === product.id ? saving : 0}
                   courseSlug={course.slug}
                   lessons={course.lessons}
+                  state={stateOf(product)}
                 />
               </StaggerItem>
             ))}
@@ -330,6 +368,7 @@ function ProductCard({
   saving,
   courseSlug,
   lessons,
+  state,
 }: {
   product: {
     id: string;
@@ -345,6 +384,7 @@ function ProductCard({
   courseSlug: string;
   /** دروس المقرر كلّها بترتيبها — بها نسمّي ما تفتحه الباقة */
   lessons: { id: string; title: string }[];
+  state: TierState;
 }) {
   const lessonCount = lessons.length;
   const coversAll = product.itemCount >= lessonCount;
@@ -386,7 +426,18 @@ function ProductCard({
       )}
 
       <p className="mt-4">
-        <Price fils={product.priceFils} size="lg" />
+        {state.kind === "upgrade" ? (
+          <>
+            <Price fils={state.dueFils} size="lg" />
+            {/* السعر الكامل مشطوبًا بجانبه: الفرق هو الحجّة، وإخفاء
+                الأصل يجعل الخصم دعوى بلا مرجع */}
+            <span className="ms-2 text-[13px] text-subtle line-through">
+              <span className="numeric">{formatFils(product.priceFils)}</span>
+            </span>
+          </>
+        ) : (
+          <Price fils={product.priceFils} size="lg" />
+        )}
       </p>
 
       {/* ── ما تفتحه هذه الباقة، بالاسم ────────────────────────────
@@ -434,12 +485,25 @@ function ProductCard({
         )}
       </ul>
 
-      <BuyButton
-        courseSlug={courseSlug}
-        productSlug={product.slug}
-        best={best}
-        label={`طلب ${product.title}`}
-      />
+      {state.kind === "owned" ? (
+        /* مملوكة: لا زرّ إطلاقًا. عرض زرٍّ معطّل يترك الطالب يجرّبه
+           ليكتشف أنه لا يعمل؛ والوصول إلى ما اشتراه هو ما يريده هنا. */
+        <p className="mt-5 flex min-h-touch items-center justify-center gap-2 rounded-[10px] border border-success/40 bg-success/5 text-sm font-medium text-success">
+          <Check size={15} strokeWidth={2} aria-hidden="true" />
+          تملك هذه الدورة
+        </p>
+      ) : (
+        <BuyButton
+          courseSlug={courseSlug}
+          productSlug={product.slug}
+          best={best}
+          label={
+            state.kind === "upgrade"
+              ? `الترقية إلى ${product.title}`
+              : `طلب ${product.title}`
+          }
+        />
+      )}
     </div>
   );
 }

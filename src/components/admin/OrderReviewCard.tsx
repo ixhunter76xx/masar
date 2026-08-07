@@ -8,6 +8,7 @@ import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import {
   confirmManualPayment,
   cancelOrderAsAdmin,
+  refundOrderAsAdmin,
 } from "@/app/(app)/settings/orders/actions";
 import { OrderStatus } from "@/generated/prisma/enums";
 
@@ -38,6 +39,9 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
   const router = useRouter();
 
   const isPending = order.status === OrderStatus.PENDING;
+  const isPaid = order.status === OrderStatus.PAID;
+  const [refunding, setRefunding] = React.useState(false);
+  const [refundRef, setRefundRef] = React.useState("");
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
@@ -152,6 +156,76 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
               تأكيد الدفع
             </button>
           </div>
+        </div>
+      )}
+
+      {/*
+        الاسترجاع للمدفوع وحده، وخلف خطوة تأكيد.
+        الزرّ يسحب وصولًا يدرس به الطالب الآن، وهو أثر لا يُلحظ من شاشة
+        الإدارة — فالخطوة الوسيطة هنا ليست زينة.
+      */}
+      {isPaid && (
+        <div className="mt-4 border-t border-line pt-4">
+          {!refunding ? (
+            <button
+              type="button"
+              onClick={() => setRefunding(true)}
+              className="press inline-flex min-h-touch items-center rounded-[10px]
+                px-3 text-xs text-subtle transition-colors hover:text-danger"
+            >
+              تسجيل استرجاع
+            </button>
+          ) : (
+            <div className="space-y-2.5">
+              <p className="text-[11px] leading-relaxed text-warning">
+                سيُسحب وصول الطالب لما منحه هذا الطلب، ويُسجَّل الاسترجاع
+                باسمك. حوّل المبلغ خارج المنصة أولًا.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <label htmlFor={`refund-${order.id}`} className="sr-only">
+                  مرجع التحويل العكسي لطلب {order.number}
+                </label>
+                <input
+                  id={`refund-${order.id}`}
+                  value={refundRef}
+                  onChange={(event) => setRefundRef(event.target.value)}
+                  disabled={pending}
+                  placeholder="مرجع التحويل العكسي (مطلوب)"
+                  className="field-motion min-h-touch flex-1 rounded-[10px] border border-line
+                    bg-ink px-3.5 text-xs text-paper placeholder:text-disabled
+                    hover:border-accent-deep focus:border-accent focus:outline-none"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    run(() => refundOrderAsAdmin(order.id, refundRef, note))
+                  }
+                  disabled={pending}
+                  className="press inline-flex min-h-touch items-center gap-2 rounded-[10px]
+                    border border-danger/50 bg-danger/10 px-4 text-xs font-medium text-danger
+                    transition-colors hover:bg-danger/15
+                    disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {pending && (
+                    <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+                  )}
+                  تأكيد الاسترجاع
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRefunding(false)}
+                  disabled={pending}
+                  className="press inline-flex min-h-touch items-center rounded-[10px]
+                    px-3 text-xs text-subtle transition-colors hover:text-paper"
+                >
+                  تراجع
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

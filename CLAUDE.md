@@ -92,6 +92,34 @@ Still schema-only: **video progress tracking** (`LessonProgress` exists; no page
 ### Why this matters for future work
 When a real payment gateway (Tap Payments) is eventually integrated, its webhook handler should be the **only other caller** of `markOrderPaid()`. Do not build a second/parallel access-granting path for the gateway — that duplication is exactly what would introduce the kind of bug that gets missed for months. The switch to a live gateway should be "add one `route.ts` file that calls the existing function," not a rewrite. The single-writer rule is the reason to build `markOrderPaid()` first, before any UI that grants access.
 
+### Buying, upgrading and refunding — decided and built 2026-08-07
+
+Three decisions were delegated and are now in the code. Each is recorded with its reasoning because none of them is the only defensible answer.
+
+**Ownership is asked in lessons, never in products.** The old check compared `productId` exactly, so the owner of `الدورة الكاملة` could order `دورة المنتصف` — a strict subset of what they held — and be told to pay for it over WhatsApp. Bundles overlap on purpose, so the only meaningful question is *does this bundle still contain a lesson they do not own?* Verified against live data: the full-course buyer is now refused all three tiers, and the midterm holder is refused `midterm` while `final` stays open at full price.
+
+**Upgrades are priced by difference, and the credit is deliberately narrow.** A held bundle is credited only when the requested bundle contains **all** of its lessons — i.e. when the upgrade makes it redundant. A partially overlapping bundle earns nothing, because crediting it would hand over lessons no one paid for. Live check: holding `midterm` (8), requesting `full` (14) → credit 8, due **6**.
+
+**The discounted amount is what gets snapshotted.** `OrderItem.unitPriceFils` stores the amount actually owed, not the list price, so `Order.totalFils` still equals the sum of its items and no discount column was added. The list price is shown struck through in the UI instead. If per-line discounts ever need reporting, that is the point to revisit.
+
+**Refund = status + revocation, in one transaction.** `REFUNDED` existed in the enum with no code path to reach it. Reaching it without withdrawing access would be an accounting error, not half a feature: money back, content kept. So `refundOrder()` moves the order and revokes what it granted together, or does neither.
+
+- **Revocation sets `Enrollment.expiresAt`, it does not delete.** Every access check already passes through `notExpired()`, so expiry takes effect everywhere at once *and* the row survives — who bought, when, under which order. Deletion destroys exactly what a dispute needs.
+- **The refund is itself a `Payment` row** (`status = "refunded"`), so one ledger holds both directions and `reviewedById`/`reviewedAt`/`reviewNote` are already there. Its `providerPaymentId` is `refund:<order>:<ref>` — distinct from the capture's, or `UNIQUE(provider, providerPaymentId)` would reject it.
+- **Both `markOrderPaid` and `refundOrder` are safe to repeat.** Verified: a second `markOrderPaid` returns `alreadyPaid` and writes nothing; a second `refundOrder` revokes nothing.
+
+**A duplicate order is prevented by an advisory lock, not a constraint.** The check-then-create window let a second click create a second pending order. A unique index cannot express it — the status lives on `orders` while the product lives on `order_items` — so `pg_advisory_xact_lock` on (buyer, product) serialises concurrent requests for the same pair and releases with the transaction. No schema change.
+
+### Testing the money path — `tsconfig.script.json`
+
+`markOrderPaid` and `refundOrder` take no session, so they can be driven directly from a script. The obstacle is `import "server-only"`, which Next supplies through its bundler and which does not resolve under `tsx`. `scripts/server-only-shim.ts` plus `tsconfig.script.json` map it to an empty module:
+
+```powershell
+npx tsx --tsconfig tsconfig.script.json scripts/<your-script>.mts
+```
+
+That is how the pay → repeat → refund → repeat cycle above was exercised end to end. Use it rather than re-deriving the logic in a replica script — a replica proves your copy works, not the code.
+
 ### Order/Payment schema notes
 - `OrderStatus`: `PENDING` → `PAID` / `CANCELLED` / `REFUNDED`. `FAILED` is reserved for future gateway use (not used by the manual flow). There is intentionally **no** `UNDER_REVIEW` or `REJECTED` status — WhatsApp itself is the review queue, so those statuses were considered and rejected as unnecessary complexity.
 - `Payment` has `reviewedById`, `reviewedAt`, `reviewNote` — records who approved a manual payment and when. This matters for dispute resolution later, even though it seems unnecessary now.

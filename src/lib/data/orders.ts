@@ -54,10 +54,12 @@ export async function requestProductOrder(input: {
     where: { id: productId },
     select: {
       id: true,
+      courseId: true,
       title: true,
       priceFils: true,
       currency: true,
       isPublished: true,
+      items: { select: { lessonId: true } },
       course: { select: { isPublished: true, title: true, code: true } },
     },
   });
@@ -66,51 +68,124 @@ export async function requestProductOrder(input: {
     return { ok: false, error: "هذه الدورة غير متاحة للطلب." };
   }
 
-  const owned = await db.enrollment.findUnique({
-    where: { userId_productId: { userId, productId } },
-    select: { id: true },
-  });
-  if (owned) {
-    return { ok: false, error: "تملك هذه الدورة بالفعل." };
-  }
-
-  const pending = await db.order.findFirst({
+  /*
+   * ما يملكه المشتري في هذا المقرر — بالدروس لا بالمنتجات.
+   *
+   * كان الفحص هنا تطابقًا تامًّا على `productId` وحده، فيمرّ مالكُ
+   * «الدورة الكاملة» ليشتري «دورة المنتصف» — وهي مجموعة جزئية ممّا
+   * يملك. الحزم متداخلة عمدًا، فالسؤال الصحيح عن الدروس لا عن أسماء
+   * المنتجات: **هل بقي في هذه الحزمة درسٌ لا يملكه؟**
+   */
+  const held = await db.enrollment.findMany({
     where: {
       userId,
-      status: OrderStatus.PENDING,
-      items: { some: { productId } },
+      product: { courseId: product.courseId },
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
-    select: { number: true },
-  });
-  if (pending) return { ok: true, number: pending.number, reused: true };
-
-  /* رقم الطلب من تسلسل قاعدة البيانات لا من عدّ الصفوف: العدّ يتسابق
-     تحت طلبين متزامنين فيولّد الرقم نفسه مرتين. */
-  const [row] = await db.$queryRaw<{ nextval: bigint }[]>`
-    SELECT nextval('order_number_seq')
-  `;
-  const number = formatOrderNumber(new Date().getFullYear(), Number(row.nextval));
-
-  await db.order.create({
-    data: {
-      number,
-      userId,
-      status: OrderStatus.PENDING,
-      totalFils: product.priceFils,
-      currency: product.currency,
-      items: {
-        create: {
-          productId: product.id,
-          /* لقطة السعر والعنوان: الطلب اليدوي يعيش أيامًا، وتغيير
-             السعر أثناءها يجب ألّا يغيّر ما اتُّفق عليه. */
-          unitPriceFils: product.priceFils,
-          titleSnapshot: `${product.course.code} — ${product.title}`,
-        },
+    select: {
+      product: {
+        select: { id: true, priceFils: true, items: { select: { lessonId: true } } },
       },
     },
   });
 
-  return { ok: true, number, reused: false };
+  const ownedLessons = new Set<string>();
+  for (const grant of held) {
+    for (const item of grant.product.items) {
+      if (item.lessonId) ownedLessons.add(item.lessonId);
+    }
+  }
+
+  const targetLessons = product.items
+    .map((item) => item.lessonId)
+    .filter((id): id is string => id !== null);
+
+  const missing = targetLessons.filter((id) => !ownedLessons.has(id));
+  if (targetLessons.length > 0 && missing.length === 0) {
+    return { ok: false, error: "تملك كل دروس هذه الدورة بالفعل." };
+  }
+
+  /*
+   * الترقية بفرق السعر.
+   *
+   * من يملك «المنتصف» ويطلب «الكاملة» دفع ثمن نصفها مرّة، فتحميله
+   * السعر كاملًا يبيعه ما اشتراه. نخصم ثمن كل حزمة يملكها **تحتويها
+   * الحزمة المطلوبة بالكامل** — أي حزمة تلغيها الترقية. حزمة متقاطعة
+   * جزئيًا لا تُخصم، فخصمها يعطي محتوى بلا مقابل.
+   */
+  const targetSet = new Set(targetLessons);
+  const credit = held
+    .filter((grant) => {
+      const lessons = grant.product.items
+        .map((item) => item.lessonId)
+        .filter((id): id is string => id !== null);
+      return lessons.length > 0 && lessons.every((id) => targetSet.has(id));
+    })
+    .reduce((sum, grant) => sum + grant.product.priceFils, 0);
+
+  const dueFils = Math.max(0, product.priceFils - credit);
+  const isUpgrade = credit > 0;
+
+  const label = `${product.course.code} — ${product.title}`;
+  const titleSnapshot = isUpgrade ? `${label} (ترقية)` : label;
+
+  /*
+   * قفل استشاري على (المشتري، المنتج) داخل المعاملة.
+   *
+   * فحصُ «هل له طلب معلّق؟» ثم الإنشاء عمليتان، وبينهما نافذة تتسع
+   * لنقرة ثانية فتُنشئ طلبين لنفس المنتج. القفل يسلسل الطلبات
+   * المتزامنة لنفس الزوج ويُحرَّر بانتهاء المعاملة، فلا يحتاج جدولًا
+   * ولا عمودًا جديدًا — والقيد الفريد غير ممكن هنا لأن الحالة على
+   * `orders` والمنتج على `order_items`.
+   */
+  return db.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${`order:${userId}:${productId}`}))
+    `;
+
+    const pending = await tx.order.findFirst({
+      where: {
+        userId,
+        status: OrderStatus.PENDING,
+        items: { some: { productId } },
+      },
+      select: { number: true },
+    });
+    if (pending) return { ok: true as const, number: pending.number, reused: true };
+
+    /* رقم الطلب من تسلسل قاعدة البيانات لا من عدّ الصفوف: العدّ يتسابق
+       تحت طلبين متزامنين فيولّد الرقم نفسه مرتين. */
+    const [row] = await tx.$queryRaw<{ nextval: bigint }[]>`
+      SELECT nextval('order_number_seq')
+    `;
+    const number = formatOrderNumber(
+      new Date().getFullYear(),
+      Number(row.nextval),
+    );
+
+    await tx.order.create({
+      data: {
+        number,
+        userId,
+        status: OrderStatus.PENDING,
+        totalFils: dueFils,
+        currency: product.currency,
+        items: {
+          create: {
+            productId: product.id,
+            /* لقطة السعر والعنوان: الطلب اليدوي يعيش أيامًا، وتغيير
+               السعر أثناءها يجب ألّا يغيّر ما اتُّفق عليه. وفي الترقية
+               تُلقَّط القيمة **بعد** الخصم، فيبقى مجموع البنود مساويًا
+               لإجمالي الطلب ولا يحتاج المخطط عمود خصم. */
+            unitPriceFils: dueFils,
+            titleSnapshot,
+          },
+        },
+      },
+    });
+
+    return { ok: true as const, number, reused: false };
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -291,9 +366,36 @@ export async function markOrderPaid(input: {
         grantedProductIds: order.items.map((item) => item.productId),
       };
     });
-  } catch {
-    /* أشهر سبب: قيد UNIQUE(provider, providerPaymentId) — أي أن هذه
-       الدفعة سُجّلت في نداء متزامن آخر. النتيجة النهائية صحيحة. */
+  } catch (error) {
+    /*
+     * كان هذا `catch` فارغًا يبتلع الخطأ ويعيد رسالة واحدة.
+     *
+     * على مسار المال وبلا بوابة، فشلُ تأكيدٍ بلا أثر يعني أن سجلّك
+     * الوحيد محادثة واتساب. نسجّل الخطأ كاملًا قبل أي شيء — هذا ما
+     * يلتقطه لاحقًا أي مرصد أخطاء دون تعديل هنا.
+     */
+    console.error("[markOrderPaid] فشل تأكيد الدفع", {
+      orderId,
+      provider,
+      paymentRef,
+      reviewedById,
+      error,
+    });
+
+    /*
+     * التكرار ليس فشلًا. قيد UNIQUE(provider, providerPaymentId) يعني
+     * أن نداءً متزامنًا سجّل الدفعة نفسها، والنتيجة النهائية صحيحة.
+     * كانت الدالة تعيد `ok: false` فيقرأ المراجع نجاحًا كأنه فشل
+     * فيضغط «تأكيد» ثانية. نتحقق من الحالة الفعلية ونصدُق عنها.
+     */
+    const settled = await db.order
+      .findUnique({ where: { id: orderId }, select: { status: true } })
+      .catch(() => null);
+
+    if (settled?.status === OrderStatus.PAID) {
+      return { ok: true as const, alreadyPaid: true, grantedProductIds: [] };
+    }
+
     return {
       ok: false as const,
       error: "تعذّر تأكيد الدفع. حدّث الصفحة وتحقّق من حالة الطلب.",
@@ -308,4 +410,111 @@ export async function cancelPendingOrder(orderId: string) {
     data: { status: OrderStatus.CANCELLED },
   });
   return count === 1;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  الاسترجاع                                                                  */
+/* -------------------------------------------------------------------------- */
+
+export type RefundResult =
+  | { ok: true; revokedProductIds: string[] }
+  | { ok: false; error: string };
+
+/**
+ * استرجاع طلب مدفوع: يُعيد الحالة ويسحب الوصول الذي منحه.
+ *
+ * ── لماذا الاثنان معًا لا الحالة وحدها ──────────────────────────────
+ * `REFUNDED` كانت في المخطط بلا أي مسار كود يبلغها. ولو بلغتها الحالة
+ * وحدها لبقي الطالب يدرس ما استُرجع ثمنه — وهو ليس نصف علاج بل خطأ
+ * محاسبي: المال عاد والمحتوى لم يعد.
+ *
+ * ── لماذا انتهاء لا حذف ─────────────────────────────────────────────
+ * `Enrollment` يحمل `expiresAt`، وكل فحص وصول في المنصة يمرّ على
+ * `notExpired()` أصلًا. فضبطه الآن يسحب الوصول فورًا **ويُبقي السجل**:
+ * من اشترى ومتى وبأي طلب. الحذف يمحو ذلك، وهو أول ما تحتاجه في نزاع.
+ *
+ * ── لماذا الاسترجاع صفّ `Payment` ───────────────────────────────────
+ * دفتر المال واحد. الصفّ يحمل `reviewedById` و`reviewedAt` و`reviewNote`
+ * الموجودة سلفًا، فيُعرف من استرجع ومتى وبأي مرجع بلا عمود جديد. وقيد
+ * `UNIQUE(provider, providerPaymentId)` يمنع تسجيل الاسترجاع نفسه مرتين.
+ *
+ * الاسترجاع الفعلي للمال يجري خارج المنصة كما يجري التحصيل — هذه
+ * الدالة تسجّله وتُنفّذ أثره، ولا تحوّل مالًا.
+ */
+export async function refundOrder(input: {
+  orderId: string;
+  refundRef: string;
+  reviewedById: string;
+  reviewNote?: string | null;
+}): Promise<RefundResult> {
+  const { orderId, refundRef, reviewedById, reviewNote = null } = input;
+
+  try {
+    return await db.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { id: true, status: true, totalFils: true },
+      });
+
+      if (!order) return { ok: false as const, error: "الطلب غير موجود." };
+
+      if (order.status === OrderStatus.REFUNDED) {
+        return { ok: true as const, revokedProductIds: [] };
+      }
+
+      if (order.status !== OrderStatus.PAID) {
+        return {
+          ok: false as const,
+          error: "لا يُسترجَع إلا طلب مدفوع.",
+        };
+      }
+
+      const now = new Date();
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: { status: OrderStatus.REFUNDED },
+      });
+
+      await tx.payment.create({
+        data: {
+          orderId: order.id,
+          provider: MANUAL_PROVIDER,
+          providerPaymentId: refundRef,
+          status: "refunded",
+          amountFils: order.totalFils,
+          reviewedById,
+          reviewedAt: now,
+          reviewNote,
+        },
+      });
+
+      /* الوصول الذي منحه هذا الطلب وحده — لا ما مُنح بطلب آخر أو يدويًا */
+      const granted = await tx.enrollment.findMany({
+        where: { orderId: order.id },
+        select: { id: true, productId: true },
+      });
+
+      await tx.enrollment.updateMany({
+        where: { orderId: order.id },
+        data: { expiresAt: now },
+      });
+
+      return {
+        ok: true as const,
+        revokedProductIds: granted.map((grant) => grant.productId),
+      };
+    });
+  } catch (error) {
+    console.error("[refundOrder] فشل الاسترجاع", {
+      orderId,
+      refundRef,
+      reviewedById,
+      error,
+    });
+    return {
+      ok: false as const,
+      error: "تعذّر تسجيل الاسترجاع. حدّث الصفحة وتحقّق من حالة الطلب.",
+    };
+  }
 }
