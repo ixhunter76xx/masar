@@ -90,9 +90,17 @@ export default async function PublicLayout({
             © <span className="numeric">{SITE.copyrightYear}</span> {SITE.name} —{" "}
             {SITE.tagline}
           </span>
-          <span>
-            الدعم الفني{" "}
-            <span className="numeric text-muted">{SITE.supportPhone}</span>
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Link href="/legal/terms" className="hover:text-paper">
+              شروط الاستخدام
+            </Link>
+            <Link href="/legal/privacy" className="hover:text-paper">
+              سياسة الخصوصية
+            </Link>
+            <span>
+              الدعم الفني{" "}
+              <span className="numeric text-muted">{SITE.supportPhone}</span>
+            </span>
           </span>
         </div>
       </footer>
