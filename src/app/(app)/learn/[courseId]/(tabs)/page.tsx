@@ -76,21 +76,35 @@ export default async function CourseContentPage({ params }: Params) {
             </section>
           )}
 
-          {materials.length > 0 && (
-            <section>
-              <h3 className="mb-3 text-sm font-medium text-paper">
-                المحاضرات{" "}
-                <span className="numeric text-[11px] text-subtle">
-                  {materials.length}
-                </span>
-              </h3>
+          {/*
+            قسم المحاضرات يُعرض حتى وهو فارغ.
+            كان يُحذف كليًّا، فيرى مشتري «الدورة الكاملة» اختبارًا
+            وواجبًا ولا يجد ذكرًا للمحاضرات أصلًا — لا قسمًا ولا سببًا.
+            فلا يعرف: أهو مقرر بلا فيديو، أم لم تُنشر بعد، أم تعطّل شيء؟
+            الحالة الفارغة تجيب، والحذف يترك السؤال معلّقًا لمن دفع.
+          */}
+          <section>
+            <h3 className="mb-3 text-sm font-medium text-paper">
+              المحاضرات{" "}
+              <span className="numeric text-[11px] text-subtle">
+                {materials.length}
+              </span>
+            </h3>
+
+            {materials.length > 0 ? (
               <MaterialList
                 materials={materials}
                 courseId={courseId}
                 canManage={canManage}
               />
-            </section>
-          )}
+            ) : (
+              <p className="rounded-[12px] border border-line bg-panel px-5 py-6 text-[13px] leading-relaxed text-subtle">
+                {canManage
+                  ? "لا محاضرات منشورة بعد — ارفع أول محاضرة من النموذج أعلاه."
+                  : "لم تُنشر محاضرات هذا المقرر بعد. ستظهر هنا فور رفعها، ووصولك إليها مفتوح بلا انتهاء."}
+              </p>
+            )}
+          </section>
         </>
       )}
 

@@ -121,6 +121,39 @@ export async function setCoursePublished(
   return ok;
 }
 
+/**
+ * إسناد مقدّم إلى مقرر قائم أو نزعه.
+ *
+ * كان الإسناد ممكنًا عند الإنشاء فقط، فتغييره بعدها يحتاج قاعدة
+ * البيانات — وهو أكثر ما يتغيّر فعلًا: المدرّب يتبدّل والمقرر يبقى.
+ *
+ * المقدّم يمنح معاينة المحتوى غير المنشور عبر `staffAccess`، فيُشترط
+ * أن يكون مدرّبًا فعلًا. تمرير معرّف طالب هنا يفتح له مسودات المقرر.
+ */
+export async function setCoursePresenter(
+  courseId: string,
+  presenterId: string | null,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  if (presenterId) {
+    const presenter = await db.user.findFirst({
+      where: { id: presenterId, role: Role.INSTRUCTOR, isActive: true },
+      select: { id: true },
+    });
+    if (!presenter) return fail("المقدّم المختار ليس مدرّبًا نشطًا.");
+  }
+
+  await db.course.update({
+    where: { id: courseId },
+    data: { presenterId },
+  });
+
+  revalidatePath("/settings/courses");
+  revalidatePath("/courses");
+  return ok;
+}
+
 /* -------------------------------------------------------------------------- */
 /*  الباقات                                                                    */
 /* -------------------------------------------------------------------------- */

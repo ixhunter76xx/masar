@@ -9,6 +9,7 @@ import { SelectField } from "@/components/admin/Select";
 import { FormField } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { CoursePublishToggle } from "@/components/admin/CoursePublishToggle";
+import { CoursePresenterSelect } from "@/components/admin/CoursePresenterSelect";
 import { requireAdmin } from "@/lib/data/admin";
 import { db } from "@/server/db";
 import { createCourse } from "@/app/(app)/settings/courses/actions";
@@ -27,8 +28,8 @@ export default async function AdminCoursesPage() {
         code: true,
         title: true,
         isPublished: true,
+        presenterId: true,
         faculty: { select: { name: true } },
-        presenter: { select: { name: true } },
         _count: { select: { materials: true, products: true } },
       },
     }),
@@ -125,13 +126,18 @@ export default async function AdminCoursesPage() {
                 </p>
                 <p className="mt-0.5 text-[11px] text-subtle">
                   {course.faculty?.name ?? "بلا كلية"} ·{" "}
-                  {course.presenter?.name ?? "بلا مقدّم"} ·{" "}
                   <span className="numeric">{course._count.materials}</span> دروس ·{" "}
                   <span className="numeric">{course._count.products}</span> باقات
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <CoursePresenterSelect
+                  courseId={course.id}
+                  presenterId={course.presenterId}
+                  courseTitle={course.title}
+                  instructors={instructors}
+                />
                 <CoursePublishToggle
                   courseId={course.id}
                   isPublished={course.isPublished}
