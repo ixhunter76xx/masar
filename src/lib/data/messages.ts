@@ -4,6 +4,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 
 import { db } from "@/server/db";
+import { enrolledInCourse } from "@/lib/data/access";
 import { auth } from "@/auth";
 import { Role } from "@/generated/prisma/enums";
 import {
@@ -62,7 +63,7 @@ export const resolveThreadAccess = cache(async function resolveThreadAccess(
       ...(role === Role.INSTRUCTOR
         ? { presenterId: viewerId }
         : {
-            products: { some: { enrollments: { some: { userId: viewerId } } } },
+            ...enrolledInCourse(viewerId),
           }),
     },
     select: {
@@ -221,7 +222,7 @@ function inboundUnreadWhere(userId: string, role: Role) {
       ? {
           studentId: userId,
           // انسحاب الطالب يُسكت العدّاد كما يُغلق المحادثة
-          course: { products: { some: { enrollments: { some: { userId } } } } },
+          course: enrolledInCourse(userId),
         }
       : { course: { presenterId: userId } };
 
@@ -316,7 +317,7 @@ export async function getInbox(
         ? {
             studentId: userId,
             course: {
-              products: { some: { enrollments: { some: { userId: userId } } } },
+              ...enrolledInCourse(userId),
             },
           }
         : { course: { presenterId: userId } },

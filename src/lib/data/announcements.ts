@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { enrolledInCourse } from "@/lib/data/access";
 import { Role } from "@/generated/prisma/enums";
 
 export type AnnouncementItem = {
@@ -15,13 +16,6 @@ export type AnnouncementItem = {
   /** غير مقروء — للطلاب فقط؛ المدرب مؤلّف إعلاناته */
   isUnread: boolean;
 };
-
-/** المقررات التي يتابعها الطالب فعلًا */
-function studentCourseFilter(userId: string) {
-  return {
-    products: { some: { enrollments: { some: { userId: userId } } } },
-  };
-}
 
 /**
  * إعلانات مقرر واحد.
@@ -100,7 +94,7 @@ export async function countUnreadForUser(
     where: {
       publishedAt: { not: null },
       reads: { none: { userId } },
-      course: studentCourseFilter(userId),
+      course: enrolledInCourse(userId),
     },
   });
 }

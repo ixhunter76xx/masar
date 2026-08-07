@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { enrolledInCourse } from "@/lib/data/access";
 import {
   Role,
   SubmissionStatus,
@@ -67,7 +68,7 @@ export async function getStudentGrades(
 ): Promise<CourseGrades[]> {
   const courses = await db.course.findMany({
     where: {
-      products: { some: { enrollments: { some: { userId: userId } } } },
+      ...enrolledInCourse(userId),
     },
     orderBy: [ { code: "asc" }],
     select: {

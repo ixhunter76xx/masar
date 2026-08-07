@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { db } from "@/server/db";
+import { enrolledInCourse } from "@/lib/data/access";
 import {
   Role,
   MaterialStatus,
@@ -54,7 +55,7 @@ function courseScope(userId: string, role: Role) {
   if (role === Role.INSTRUCTOR) return { presenterId: userId };
   if (role === Role.STUDENT) {
     return {
-      products: { some: { enrollments: { some: { userId: userId } } } },
+      ...enrolledInCourse(userId),
     };
   }
   return {};

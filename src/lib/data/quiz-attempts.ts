@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { canViewQuiz, enrolledInCourse } from "@/lib/data/access";
 import {
   Role,
   QuizStatus,
@@ -28,14 +29,17 @@ export async function getQuizForStudent(
 ) {
   if (role !== Role.STUDENT) return null;
 
+  /* الحارس داخل الدالة لا عند مستدعيها وحده: المرشّح أدناه يسأل عن
+     المقرر، والحزمة أضيق منه. تركُه للمستدعي يعني أن أي مستدعٍ جديد
+     يرث السلوك المتساهل صامتًا — وهو كيف انحرفت القاعدة أول مرة. */
+  if (!(await canViewQuiz(quizId))) return null;
+
   return db.quiz.findFirst({
     where: {
       id: quizId,
       courseId,
       status: { in: [QuizStatus.PUBLISHED, QuizStatus.CLOSED] },
-      course: {
-        products: { some: { enrollments: { some: { userId: userId } } } },
-      },
+      course: enrolledInCourse(userId),
     },
     select: {
       id: true,
@@ -123,17 +127,15 @@ export async function getAttemptForTaking(
   courseId: string,
   userId: string,
 ) {
+  // نفس حارس الاختبار: المحاولة لا تُفتح لمن لا يفتح اختبارها
+  if (!(await canViewQuiz(quizId))) return null;
+
   const attempt = await db.quizAttempt.findFirst({
     where: {
       id: attemptId,
       quizId,
       studentId: userId,
-      quiz: {
-        courseId,
-        course: {
-          products: { some: { enrollments: { some: { userId: userId } } } },
-        },
-      },
+      quiz: { courseId, course: enrolledInCourse(userId) },
     },
     select: {
       id: true,

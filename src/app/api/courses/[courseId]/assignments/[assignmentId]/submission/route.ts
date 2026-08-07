@@ -11,7 +11,7 @@ import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { r2, r2Bucket, submissionObjectKey } from "@/server/r2";
 import { submissionBlocker } from "@/lib/data/assignments";
-import { canViewAssignment } from "@/lib/data/access";
+import { canViewAssignment, enrolledInCourse } from "@/lib/data/access";
 import {
   Role,
   AssignmentStatus,
@@ -51,9 +51,9 @@ async function loadForStudent(
       id: assignmentId,
       courseId,
       status: { in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED] },
-      course: {
-        products: { some: { enrollments: { some: { userId: userId } } } },
-      },
+      /* نطاق المقرر — ونطاق الحزمة يفحصه `canViewAssignment` عند
+         مستدعي هذه الدالة قبل بلوغها */
+      course: enrolledInCourse(userId),
     },
     select: {
       id: true,

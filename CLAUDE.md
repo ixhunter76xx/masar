@@ -178,6 +178,16 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## One Filter, Named — Fixed 2026-08-07
+
+The condition `products: { some: { enrollments: { some: { userId } } } }` was written out by hand in **twelve** places. Some were course-scope by decision; others were leftovers from before bundles existed. Reading any one of them told you nothing about which — so the next person either "fixes" what was deliberate or leaves what is not.
+
+**`enrolledInCourse(userId)` in `access.ts` now carries that meaning in its name.** What calls it is course-scoped on purpose: announcements, messages, grades, the activity feed, "مقرراتي". What is bundle-scoped calls `canViewLesson` / `canViewQuiz` / `canViewAssignment` and never calls this.
+
+**It also added `notExpired()`, which none of the twelve had.** A refund sets `Enrollment.expiresAt`, so before this a refunded buyer kept seeing the course's announcements, messages and grades, and it stayed in their course list — the money was returned and most of the product was not. Verified: the account whose order was refunded during testing holds an expired grant and now resolves to **no courses**, while the two active buyers are unchanged.
+
+**Assessment data functions now guard themselves.** `getQuizForStudent`, `getAttemptForTaking` and `getAssignmentForStudent` call `canViewQuiz` / `canViewAssignment` internally rather than trusting the page to have done it. A comment cannot prevent the next caller from forgetting — that is exactly how `canViewLesson` sat correct and unused while three other paths guessed.
+
 ## Sessions Are Revalidated — Fixed 2026-08-07, Read Before Touching Auth
 
 **Every permission was frozen at login.** `jwt()` in `auth.config.ts` writes only when a `user` object is present — at authentication — and nothing read the `users` table again. `isActive` was consulted in exactly one place in the whole source: `authorize()`. So three admin controls promised what they did not do.

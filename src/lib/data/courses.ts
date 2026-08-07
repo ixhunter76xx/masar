@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/server/db";
 import { auth } from "@/auth";
-import { hasCourseAccess } from "@/lib/data/access";
+import { hasCourseAccess, enrolledInCourse } from "@/lib/data/access";
 import { Role } from "@/generated/prisma/enums";
 
 export type CourseCard = {
@@ -165,7 +165,7 @@ export const getMyCourses = cache(async function getMyCourses() {
       ? {}
       : role === Role.INSTRUCTOR
         ? { presenterId: userId }
-        : { products: { some: { enrollments: { some: { userId } } } } };
+        : enrolledInCourse(userId);
 
   return db.course.findMany({
     where,

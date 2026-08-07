@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
-import { accessibleLessonIds } from "@/lib/data/access";
+import { accessibleLessonIds, canViewAssignment, enrolledInCourse } from "@/lib/data/access";
 import {
   Role,
   AssignmentStatus,
@@ -134,14 +134,16 @@ export async function getAssignmentForStudent(
 ) {
   if (role !== Role.STUDENT) return null;
 
+  /* الحارس داخل الدالة كما في `getQuizForStudent`: المرشّح أدناه نطاقه
+     المقرر، والواجب نطاقه درسه. */
+  if (!(await canViewAssignment(assignmentId))) return null;
+
   return db.assignment.findFirst({
     where: {
       id: assignmentId,
       courseId,
       status: { in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED] },
-      course: {
-        products: { some: { enrollments: { some: { userId: userId } } } },
-      },
+      course: enrolledInCourse(userId),
     },
     select: {
       id: true,
