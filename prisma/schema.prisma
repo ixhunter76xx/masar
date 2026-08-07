@@ -123,8 +123,45 @@ model User {
 
 
 
+/// كلية جامعية تُصنَّف تحتها المقررات.
+///
+/// ── لماذا جدول لا حقل نصّي ──────────────────────────────────────────
+/// حقل نصّي على `Course` أرخص سطرًا وأغلى بعد ذلك: «الآداب» و«الاداب»
+/// و«كلية الآداب» تصير ثلاث كليات في الكتالوج، ولا مكان لترتيب ولا
+/// لمسار عام ثابت. الجدول يجعل التصنيف كيانًا يُعاد تسميته مرة واحدة.
+///
+/// ── ولماذا بهذا القدر فقط ───────────────────────────────────────────
+/// لا وصف ولا صورة ولا عميد ولا أقسام تحتها. الحاجة اليوم أن يعرف
+/// الزائر أي كلية يقرأ، وأن يُصنَّف مقرر جديد عند إنشائه. كل ما زاد
+/// يُضاف حين تطلبه شاشة قائمة، لا استباقًا.
+model Faculty {
+  id String @id @default(cuid())
+
+  /// المسار العام: /courses?faculty=arts
+  slug String @unique
+  name String
+
+  sortOrder Int @default(0)
+
+  courses Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@map("faculties")
+}
+
 model Course {
   id String @id @default(cuid())
+
+  /// الكلية التي يتبعها المقرر.
+  ///
+  /// اختياري عمدًا: المقررات القائمة سبقت الكليات، وجعلُه إلزاميًا
+  /// يحوّل هجرةً إضافية إلى هجرة تكسر البيانات. الكتالوج يعرض غير
+  /// المصنَّف في مجموعة أخيرة بدل أن يُخفيه.
+  facultyId String?
+  faculty   Faculty? @relation(fields: [facultyId], references: [id], onDelete: SetNull)
 
   /// رمز المقرر الجامعي — ARAB110
   code String @unique
@@ -156,6 +193,8 @@ model Course {
   quizzes       Quiz[]
   assignments   Assignment[]
   conversations Conversation[]
+
+  @@index([facultyId, sortOrder])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

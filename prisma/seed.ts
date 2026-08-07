@@ -121,6 +121,23 @@ async function main() {
     passwordEnvVar: "SEED_TEACHER_PASSWORD",
   });
 
+  /* الكليتان الأوليان. تُنشئهما الهجرة أيضًا بنفس المسارات — والبذرة
+     تُشغَّل على قاعدة مهاجَرة، فـ`upsert` يجعل تشغيلها بعدها بلا أثر. */
+  const faculties = [
+    { slug: "it", name: "تقنية المعلومات", sortOrder: 1 },
+    { slug: "arts", name: "الآداب", sortOrder: 2 },
+  ];
+  for (const entry of faculties) {
+    await db.faculty.upsert({
+      where: { slug: entry.slug },
+      update: {},
+      create: entry,
+    });
+    console.log(`✓ كلية   ${entry.name}`);
+  }
+
+  const arts = await db.faculty.findUniqueOrThrow({ where: { slug: "arts" } });
+
   const course = await db.course.upsert({
     where: { code: "ARAB110" },
     update: {},
@@ -135,6 +152,7 @@ async function main() {
       isPublished: true,
       sortOrder: 1,
       presenterId: presenter.id,
+      facultyId: arts.id,
     },
   });
   console.log(`✓ مقرر   ${course.code}  ${course.title}`);

@@ -5,7 +5,7 @@ import { ArrowLeft, Play } from "lucide-react";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 import { Reveal } from "@/components/motion/Reveal";
 import { Price } from "@/components/public/Price";
-import { listPublishedCourses } from "@/lib/data/courses";
+import { listCatalogueByFaculty, type CourseCard as CourseCardData } from "@/lib/data/courses";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -16,11 +16,12 @@ export const metadata: Metadata = {
 /**
  * كتالوج المقررات — أول صفحة يراها من لا حساب له.
  *
- * `listPublishedCourses` لا تقرأ الجلسة إطلاقًا: هذه صفحة عامة، وأي
+ * `listCatalogueByFaculty` لا تقرأ الجلسة إطلاقًا: هذه صفحة عامة، وأي
  * استدعاء لـ `auth()` هنا يخلط العام بالخاص بلا سبب.
  */
 export default async function CatalogPage() {
-  const courses = await listPublishedCourses();
+  const groups = await listCatalogueByFaculty();
+  const courses = groups.flatMap((group) => group.courses);
   const free = courses.filter((c) => c.hasFreePreview).length;
 
   return (
@@ -88,22 +89,39 @@ export default async function CatalogPage() {
           لا مقررات منشورة بعد.
         </p>
       ) : (
-        /* `auto-fill` يحجز أعمدة فارغة، فمقرر واحد يظهر بثلث العرض
-           وحوله فراغان — يبدو كأن شيئًا لم يُحمَّل. `auto-fit` يطوي
-           الأعمدة الفارغة، و`max-w` يمنع البطاقة الوحيدة من التمدّد
-           على كامل السطر. الكتالوج يبدأ بمقرر واحد فعلًا، فهذه هي
-           الحالة الشائعة لا الحالة الحدّية. */
-        <StaggerList
-          as="ul"
-          className="grid items-start gap-[1.125rem]
-            [grid-template-columns:repeat(auto-fit,minmax(20.25rem,25.5rem))]"
-        >
-          {courses.map((course) => (
-            <StaggerItem key={course.id}>
-              <CourseCard course={course} />
-            </StaggerItem>
+        /* مجموعة لكل كلية.
+           عنوان الكلية يُعرض حتى لو كانت المجموعة واحدة: هو ما يقول
+           للزائر إن هذا كتالوج جامعة لا صفحة مقرر — وغيابه هو سبب
+           قراءة الصفحة كموقع لمقرر واحد. */
+        <div className="space-y-12">
+          {groups.map((group) => (
+            <section key={group.slug ?? "unassigned"}>
+              <h3 className="mb-4 flex items-baseline gap-2.5 text-sm font-medium text-muted">
+                <span className="h-[11px] w-[2px] rounded-sm bg-line" />
+                {group.name}
+                <span className="numeric text-[11px] text-subtle">
+                  {group.courses.length}
+                </span>
+              </h3>
+
+              {/* `auto-fill` يحجز أعمدة فارغة، فمقرر واحد يظهر بثلث
+                  العرض وحوله فراغان — يبدو كأن شيئًا لم يُحمَّل.
+                  `auto-fit` يطوي الأعمدة الفارغة، و`max-w` يمنع
+                  البطاقة الوحيدة من التمدّد على كامل السطر. */}
+              <StaggerList
+                as="ul"
+                className="grid items-start gap-[1.125rem]
+                  [grid-template-columns:repeat(auto-fit,minmax(20.25rem,25.5rem))]"
+              >
+                {group.courses.map((course) => (
+                  <StaggerItem key={course.id}>
+                    <CourseCard course={course} />
+                  </StaggerItem>
+                ))}
+              </StaggerList>
+            </section>
           ))}
-        </StaggerList>
+        </div>
       )}
     </div>
   );
@@ -114,7 +132,7 @@ export default async function CatalogPage() {
 function CourseCard({
   course,
 }: {
-  course: Awaited<ReturnType<typeof listPublishedCourses>>[number];
+  course: CourseCardData;
 }) {
   return (
     <Link

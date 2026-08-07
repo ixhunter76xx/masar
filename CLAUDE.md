@@ -178,6 +178,30 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## Faculties and the Course Admin — Built 2026-08-07
+
+**Decision: a `Faculty` table, not a text column on `Course`.** A string would let «الآداب» and «كلية الآداب» become two faculties in the catalogue, with no ordering and no stable public slug. The table keeps it one entity that is renamed once. It carries `slug`, `name`, `sortOrder` and nothing else — no dean, no description, no departments. Add those when a screen asks for them.
+
+`Course.facultyId` is **nullable on purpose**. Existing courses predate faculties, and making it required turns an additive migration into one that breaks data. The catalogue groups unclassified courses under «مقررات أخرى» last rather than hiding them — a published course must never become undiscoverable because an admin field was left blank. Empty faculties are not rendered at all.
+
+Two faculties ship in the migration (تقنية المعلومات، الآداب) and ARAB110 is backfilled to الآداب. The seed upserts the same slugs, so running it after the migration changes nothing.
+
+### The order of operations is forced by the data, not by taste
+
+```
+create course  →  upload lessons  →  create bundles + prices  →  publish
+```
+
+**Uploading is what creates a lesson row** (`courseMaterial.create` in the videos route), so a bundle cannot reference lessons before they exist. This is also why the four seeded `seed/ARAB110/*` placeholders can never become `READY`: an upload makes a *new* row beside them.
+
+Two guards encode that order:
+- **A course cannot be published with no published bundle.** The visitor would reach a page with no way to buy, which reads as broken rather than as empty.
+- **A bundle that has been ordered or granted cannot be deleted** — deleting it would cut `OrderItem` from its product and destroy what an `Enrollment` opens. Unpublish it to stop selling. Verified against live data: all three ARAB110 bundles are correctly locked.
+
+**Bundle lessons are picked explicitly, never by count.** «first two lessons» is not the model — bundles overlap deliberately, with `الدورة الكاملة` pointing at the same rows as the other two rather than copies. A numeric shortcut would misrepresent that.
+
+**The public slug is derived from the course code**, not typed separately. Two fields carrying the same meaning drift on the first typo, and the slug is what gets shared over WhatsApp, where it cannot be corrected afterwards.
+
 ## One Filter, Named — Fixed 2026-08-07
 
 The condition `products: { some: { enrollments: { some: { userId } } } }` was written out by hand in **twelve** places. Some were course-scope by decision; others were leftovers from before bundles existed. Reading any one of them told you nothing about which — so the next person either "fixes" what was deliberate or leaves what is not.
