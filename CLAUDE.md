@@ -178,6 +178,19 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## Still Open After the 2026-08-07 Hardening Pass
+
+Ordered by what blocks real use. Everything else from that pass is done and documented in the sections below.
+
+1. **Video upload → R2.** The one thing that stops a real course existing. Needs `http://localhost:3100` in the bucket's CORS `AllowedOrigins` **from the Cloudflare dashboard** — the app's token cannot do it (see the deferred item). Nothing else is known to be broken in that path; the client already aborts and cleans up correctly on failure.
+2. **A git remote.** There is none. Without it, deploys stay manual from one machine and `.github/workflows/ci.yml` cannot run.
+3. **`DATABASE_URL` on Netlify → the pooled host.** Left unapplied deliberately: it changes the live site.
+4. **Analytics / reports.** Not started. `reportError` is the only observability seam and it is for faults, not usage.
+5. **The 200-instead-of-404 status** in the protected area. Deliberately deferred by the owner; the public catalogue already returns a correct 404.
+6. **Legal review** of `/legal/terms` — three clauses are parked at the weakest commitment until decided (refund window, partial viewing, governing law).
+
+**Verification gap worth knowing:** the admin screens built in that pass — course creation, bundle pricing, presenter assignment, role change, refund — were verified by typecheck, build, and their guards exercised against live data, but **not seen rendered**, because the assistant cannot sign in. Look at them once before relying on them.
+
 ## Faculties and the Course Admin — Built 2026-08-07
 
 **Decision: a `Faculty` table, not a text column on `Course`.** A string would let «الآداب» and «كلية الآداب» become two faculties in the catalogue, with no ordering and no stable public slug. The table keeps it one entity that is renamed once. It carries `slug`, `name`, `sortOrder` and nothing else — no dean, no description, no departments. Add those when a screen asks for them.
