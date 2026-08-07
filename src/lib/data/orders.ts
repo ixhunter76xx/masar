@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/server/db";
+import { reportError } from "@/lib/observability";
 import { GrantSource, OrderStatus } from "@/generated/prisma/enums";
 
 /**
@@ -374,12 +375,11 @@ export async function markOrderPaid(input: {
      * الوحيد محادثة واتساب. نسجّل الخطأ كاملًا قبل أي شيء — هذا ما
      * يلتقطه لاحقًا أي مرصد أخطاء دون تعديل هنا.
      */
-    console.error("[markOrderPaid] فشل تأكيد الدفع", {
+    reportError("markOrderPaid", error, {
       orderId,
       provider,
       paymentRef,
       reviewedById,
-      error,
     });
 
     /*
@@ -506,12 +506,7 @@ export async function refundOrder(input: {
       };
     });
   } catch (error) {
-    console.error("[refundOrder] فشل الاسترجاع", {
-      orderId,
-      refundRef,
-      reviewedById,
-      error,
-    });
+    reportError("refundOrder", error, { orderId, refundRef, reviewedById });
     return {
       ok: false as const,
       error: "تعذّر تسجيل الاسترجاع. حدّث الصفحة وتحقّق من حالة الطلب.",

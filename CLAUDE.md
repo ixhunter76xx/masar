@@ -290,6 +290,11 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
   - Still genuinely untested end-to-end: a completed upload driving a lesson to `status = READY`, and playback from R2.
 
 - **Student and registered-visitor roles are still unexercised.** `student.test@masar.bh` (bought, has a graded attempt and an instructor message) and `fresh.visitor@masar.bh`. Their passwords never existed anywhere — both accounts came from self-signup testing, not the seed — so `scripts/set-seed-passwords.mts` now covers them via `SEED_STUDENT_PASSWORD` / `SEED_VISITOR_PASSWORD`.
+- **Blocked on you, not on code — the repository has no git remote at all.** `git remote -v` is empty (checked 2026-08-07), so two items cannot be started from here:
+  - **Connect deploys to git.** Requires creating a remote (GitHub) and pointing the Netlify site at it. Until then every deploy stays a manual CLI push from one machine.
+  - **CI.** `.github/workflows/ci.yml` exists and runs `npm ci` → `prisma generate` → `tsc --noEmit` → `build:local`. It is **inert until a remote exists**. It deliberately uses `build:local`, because `npm run build` runs `prisma migrate deploy` and would touch the only database on every check.
+- **`DATABASE_URL` on Netlify → pooled endpoint.** Not applied here: it changes the running production site, which is outside what should happen without you. The value is the current host with `-pooler` inserted before the first dot — `ep-quiet-water-axtvmi6n-pooler.c-4.us-east-2.aws.neon.tech` — set for the `production` context, keeping the direct host as `DIRECT_URL` for migrations.
+- **Error reporting has a seam, not a vendor.** `src/lib/observability.ts` exports `reportError(scope, error, context)`, writing one structured JSON line so the host's logs stay searchable; `markOrderPaid` and `refundOrder` use it. Wiring Sentry is three lines inside that one function plus a `SENTRY_DSN` — no call site changes. It is for *unexpected* failures only: validation and permission refusals are answers, not faults, and reporting them makes the monitor useless.
 - Redeploy production — it is three days and ~12 commits behind (see Deployment section)
 - Tap Payments webhook integration (blocked on licensing — see Payment Architecture section)
 
