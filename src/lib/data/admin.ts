@@ -2,7 +2,7 @@ import "server-only";
 
 import { notFound } from "next/navigation";
 
-import { auth } from "@/auth";
+import { getLiveUser } from "@/lib/data/session";
 import { db } from "@/server/db";
 import { Role } from "@/generated/prisma/enums";
 
@@ -12,11 +12,15 @@ import { Role } from "@/generated/prisma/enums";
  * يُستدعى في كل صفحة إدارية **وفي كل إجراء خادم** — لا في التخطيط وحده،
  * لأن Next.js ينفّذ التخطيط والصفحة على التوازي، ولأن إجراءات الخادم
  * نقاط دخول مستقلة يمكن استدعاؤها مباشرةً.
+ *
+ * الدور يُقرأ من الجدول لا من رمز الجلسة: أدمن أُنزل دوره أو عُطّل
+ * حسابه كان يحتفظ بتأكيد المدفوعات وإنشاء الحسابات وإعادة تعيين
+ * كلمات المرور حتى ينتهي رمزه — انظر `getLiveUser`.
  */
 export async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user || session.user.role !== Role.ADMIN) notFound();
-  return session.user;
+  const user = await getLiveUser();
+  if (!user || user.role !== Role.ADMIN) notFound();
+  return user;
 }
 
 /* -------------------------------------------------------------------------- */

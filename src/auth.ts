@@ -60,6 +60,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           username: user.username,
           role: user.role,
           mustChangePassword: user.mustChangePassword,
+          /* يُختم في الرمز ويُقارَن بالجدول في كل طلب — رفعُه يُبطل
+             هذه الجلسة وكل جلسة أخرى للحساب نفسه */
+          sessionVersion: user.sessionVersion,
         };
       },
     }),

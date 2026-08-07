@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import { auth } from "@/auth";
+import { getLiveUser } from "@/lib/data/session";
 import { getNavCounts } from "@/lib/data/counts";
 import type { NavCounts } from "@/lib/navigation";
 import type { Role } from "@/generated/prisma/enums";
@@ -28,20 +28,17 @@ export type ShellUser = {
  */
 export const getShellData = cache(
   async (): Promise<{ user: ShellUser; counts: NavCounts } | null> => {
-    const session = await auth();
-    if (!session?.user) return null;
-
-    const { id, role } = session.user;
+    /* المستخدم من الجدول لا من الرمز: تعطيلُ حساب أو إنزال دوره يسري
+       على الجلسة المفتوحة فورًا — انظر `getLiveUser`. */
+    const user = await getLiveUser();
+    if (!user) return null;
 
     return {
-      user: { id, name: session.user.name ?? "", role },
-      counts: await getNavCounts(id, role),
+      user: { id: user.id, name: user.name, role: user.role },
+      counts: await getNavCounts(user.id, user.role),
     };
   },
 );
 
-/** الجلسة وحدها — مخزّنة أيضًا لمن لا يحتاج العدّادات */
-export const getCurrentUser = cache(async () => {
-  const session = await auth();
-  return session?.user ?? null;
-});
+/** المستخدم وحده — مخزّن أيضًا لمن لا يحتاج العدّادات */
+export const getCurrentUser = cache(async () => getLiveUser());

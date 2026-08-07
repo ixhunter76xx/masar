@@ -87,6 +87,19 @@ export async function createUser(formData: FormData): Promise<ActionResult> {
       email,
       role,
       passwordHash: await bcrypt.hash(password, 12),
+      /*
+       * الإجبار على التغيير عند أول دخول.
+       *
+       * كان هذا السطر غائبًا، فيبقى كل حساب تنشئه الإدارة بكلمة مرور
+       * **كتبها الأدمن ويعرفها** إلى الأبد، ولا تظهر لصاحبه لافتة
+       * التغيير أبدًا — بينما تسمّيها الواجهة «كلمة المرور المبدئية»
+       * وتطلب تسليمها له ليغيّرها. وتعليق `mustChangePassword` في
+       * المخطط ينصّ على أنها «تُرفع يدويًا للحسابات التي تنشئها
+       * الإدارة»، فكان الكود يخالف نيّته الموثّقة.
+       *
+       * `resetUserPassword` كانت ترفعها أصلًا، فالسلوكان اتّفقا الآن.
+       */
+      mustChangePassword: true,
     },
   });
 
@@ -116,6 +129,9 @@ export async function resetUserPassword(
     data: {
       passwordHash: await bcrypt.hash(parsed.data.password, 12),
       mustChangePassword: true,
+      /* يطرد كل جلسة مفتوحة لهذا الحساب. بدونه تبقى الجلسة المسروقة —
+         وهي غالبًا سبب إعادة التعيين — تعمل بعد تغيير الكلمة. */
+      sessionVersion: { increment: 1 },
     },
   });
 

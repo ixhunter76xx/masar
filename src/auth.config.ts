@@ -34,6 +34,7 @@ export const authConfig = {
         token.username = user.username;
         token.name = user.name;
         token.mustChangePassword = user.mustChangePassword;
+        token.sessionVersion = user.sessionVersion;
       }
       return token;
     },
@@ -45,6 +46,7 @@ export const authConfig = {
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.mustChangePassword = token.mustChangePassword;
+        session.user.sessionVersion = token.sessionVersion;
       }
       return session;
     },

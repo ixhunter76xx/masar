@@ -3,7 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { db } from "@/server/db";
-import { auth } from "@/auth";
+import { getLiveUser } from "@/lib/data/session";
 import { Role } from "@/generated/prisma/enums";
 
 /**
@@ -34,31 +34,32 @@ function notExpired() {
  * صاحب المحتوى — لكن مقرراته وحدها، لا كل المنصة.
  */
 async function staffAccess(courseId: string) {
-  const session = await auth();
-  if (!session?.user) return { user: null, isStaff: false };
+  /* الدور من الجدول لا من الرمز: أدمن أُنزل إلى طالب يفقد صلاحيته في
+     الطلب التالي، وحساب معطَّل يصير بلا جلسة — انظر `getLiveUser`. */
+  const user = await getLiveUser();
+  if (!user) return { user: null, isStaff: false };
 
-  const { id, role } = session.user;
-  if (role === Role.ADMIN) return { user: session.user, isStaff: true };
+  if (user.role === Role.ADMIN) return { user, isStaff: true };
 
-  if (role === Role.INSTRUCTOR) {
+  if (user.role === Role.INSTRUCTOR) {
     const owned = await db.course.findFirst({
-      where: { id: courseId, presenterId: id },
+      where: { id: courseId, presenterId: user.id },
       select: { id: true },
     });
-    return { user: session.user, isStaff: Boolean(owned) };
+    return { user, isStaff: Boolean(owned) };
   }
 
-  return { user: session.user, isStaff: false };
+  return { user, isStaff: false };
 }
 
 /** هل يملك المستخدم هذا المنتج تحديدًا؟ */
 export const hasProductAccess = cache(async function hasProductAccess(
   productId: string,
 ): Promise<boolean> {
-  const session = await auth();
-  if (!session?.user) return false;
+  const user = await getLiveUser();
+  if (!user) return false;
 
-  if (session.user.role !== Role.STUDENT) {
+  if (user.role !== Role.STUDENT) {
     const product = await db.product.findUnique({
       where: { id: productId },
       select: { courseId: true },
@@ -68,7 +69,7 @@ export const hasProductAccess = cache(async function hasProductAccess(
   }
 
   const grant = await db.enrollment.findFirst({
-    where: { userId: session.user.id, productId, ...notExpired() },
+    where: { userId: user.id, productId, ...notExpired() },
     select: { id: true },
   });
   return Boolean(grant);
@@ -196,8 +197,7 @@ export const canViewQuiz = cache(async function canViewQuiz(
   });
   if (!quiz) return false;
 
-  const session = await auth();
-  if (!session?.user) return false;
+  if (!(await getLiveUser())) return false;
 
   if (quiz.lessonId) return ownsLesson(quiz.lessonId);
   return courseWideAccess(quiz.courseId);
@@ -220,8 +220,7 @@ export const canViewAssignment = cache(async function canViewAssignment(
   });
   if (!assignment) return false;
 
-  const session = await auth();
-  if (!session?.user) return false;
+  if (!(await getLiveUser())) return false;
 
   if (assignment.lessonId) return ownsLesson(assignment.lessonId);
   return courseWideAccess(assignment.courseId);
@@ -295,15 +294,15 @@ export const accessibleLessonIds = cache(async function accessibleLessonIds(
  */
 export const ownedLessonIdsForViewer = cache(
   async function ownedLessonIdsForViewer(courseId: string): Promise<Set<string>> {
-    const session = await auth();
-    if (!session?.user) return new Set<string>();
+    const viewer = await getLiveUser();
+    if (!viewer) return new Set<string>();
 
     const rows = await db.productItem.findMany({
       where: {
         lessonId: { not: null },
         product: {
           courseId,
-          enrollments: { some: { userId: session.user.id, ...notExpired() } },
+          enrollments: { some: { userId: viewer.id, ...notExpired() } },
         },
       },
       select: { lessonId: true },

@@ -65,6 +65,10 @@ export async function changePassword(
     data: {
       passwordHash: await bcrypt.hash(parsed.data.newPassword, 12),
       mustChangePassword: false,
+      /* الجلسة الحالية تُنهى بعد هذا الإجراء على أي حال، لكن الرفع
+         يطرد **بقية الأجهزة** أيضًا — وهو المتوقّع ممّن يغيّر كلمته
+         لأنه يشكّ في تسريبها. */
+      sessionVersion: { increment: 1 },
     },
   });
 

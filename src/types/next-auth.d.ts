@@ -6,6 +6,8 @@ declare module "next-auth" {
     role: Role;
     username: string | null;
     mustChangePassword: boolean;
+    /** رقم إصدار الجلسة وقت الدخول — يُقارَن بالجدول لإبطال الجلسات */
+    sessionVersion: number;
   }
 
   interface Session {
@@ -14,6 +16,8 @@ declare module "next-auth" {
       role: Role;
       username: string | null;
       mustChangePassword: boolean;
+    /** رقم إصدار الجلسة وقت الدخول — يُقارَن بالجدول لإبطال الجلسات */
+    sessionVersion: number;
     } & DefaultSession["user"];
   }
 }
@@ -25,5 +29,7 @@ declare module "@auth/core/jwt" {
     role: Role;
     username: string | null;
     mustChangePassword: boolean;
+    /** رقم إصدار الجلسة وقت الدخول — يُقارَن بالجدول لإبطال الجلسات */
+    sessionVersion: number;
   }
 }
