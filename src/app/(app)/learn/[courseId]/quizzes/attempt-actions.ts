@@ -99,17 +99,26 @@ export async function submitAttempt(
   const parsed = submitSchema.safeParse(payload);
   if (!parsed.success) return { ok: false, message: "بيانات التسليم غير صالحة." };
 
+  /*
+   * نفس حارس `startAttempt` بالضبط.
+   *
+   * كان التسليم يكتفي بالمرشّح أدناه — «مقرر هذا الاختبار فيه منتج
+   * يملكه المستخدم» — وهو سؤال المقرر لا سؤال الحزمة. فبقي البدء
+   * محروسًا بالحزمة والتسليمُ محروسًا بالمقرر، أي حارسان مختلفان
+   * لنفس المورد. لا يُستغَلّ اليوم لأن المحاولة لا تُنشأ إلا عبر
+   * `startAttempt`، لكنه ينكشف لحظة تغيّر نطاق الاختبار بعد بدء
+   * محاولة — والأهم أنه يعيد إنتاج الازدواج الذي سبّب عطل الحزم.
+   */
+  if (!(await canViewQuiz(quizId))) {
+    return { ok: false, message: "الاختبار غير متاح لك." };
+  }
+
   const attempt = await db.quizAttempt.findFirst({
     where: {
       id: attemptId,
       quizId,
       studentId: userId,
-      quiz: {
-        courseId,
-        course: {
-          products: { some: { enrollments: { some: { userId: userId } } } },
-        },
-      },
+      quiz: { courseId },
     },
     select: {
       id: true,

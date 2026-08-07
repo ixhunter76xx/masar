@@ -57,7 +57,7 @@ The original LMS scope (roles: Super Admin, Academic Coordinator, Instructor, Te
 
 - **Product/ProductItem layer** between `Course` and content — allows content reuse across products without duplication. Models exist and are used in `src/lib/data/access.ts`, `grades.ts`, `messages.ts`, `settings/actions.ts`.
 - **Product-based access layer** — `src/lib/data/access.ts` exports `hasProductAccess`, `hasCourseAccess`, `canViewLesson`, `canViewQuiz`, `accessibleCourseIds`. The question is now "does the user own a product that unlocks this?", not "is the user enrolled in this course?".
-  - ⚠ **`canViewLesson` and `canViewQuiz` have no call sites** (checked 2026-08-06) — they are written and exported, but nothing imports them. Do not assume a rule is enforced just because it is implemented there; see the free-preview trap below.
+  - ~~⚠ `canViewLesson` and `canViewQuiz` have no call sites.~~ **Fixed 2026-08-06** — both are now the real gates (see the paid-bundles section). The warning behind the note still stands and is why it is kept: **a rule is not enforced because it is implemented, only because it is called.** That gap existed for months and cost the bundle boundary.
 - **`Term`/`Semester` removed entirely** — do not reintroduce it.
 - **Prices in fils, not dinars** — `OrderItem.unitPriceFils`, integer precision.
 - **Price snapshot pattern** — `OrderItem.titleSnapshot` / `unitPriceFils` freeze price and name at order time.
