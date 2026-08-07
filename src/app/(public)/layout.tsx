@@ -90,16 +90,24 @@ export default async function PublicLayout({
             © <span className="numeric">{SITE.copyrightYear}</span> {SITE.name} —{" "}
             {SITE.tagline}
           </span>
-          <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Link href="/legal/terms" className="hover:text-paper">
+          {/* `min-h-touch` على الرابطين: بلا ارتفاع صريح كانا ١٦ بكسل
+              فقط — نصًّا يُقرأ ولا يكاد يُنقر على الجوال. */}
+          <span className="flex flex-wrap items-center gap-x-4">
+            <Link
+              href="/legal/terms"
+              className="inline-flex min-h-touch items-center hover:text-paper"
+            >
               شروط الاستخدام
             </Link>
-            <Link href="/legal/privacy" className="hover:text-paper">
+            <Link
+              href="/legal/privacy"
+              className="inline-flex min-h-touch items-center hover:text-paper"
+            >
               سياسة الخصوصية
             </Link>
-            <span>
+            <span className="inline-flex min-h-touch items-center">
               الدعم الفني{" "}
-              <span className="numeric text-muted">{SITE.supportPhone}</span>
+              <span className="numeric text-muted">&nbsp;{SITE.supportPhone}</span>
             </span>
           </span>
         </div>
