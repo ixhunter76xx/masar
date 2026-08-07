@@ -11,6 +11,10 @@ export type AuthResult = { ok: false; message: string };
 
 const INVALID = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
 const DISABLED = "هذا الحساب معطّل. تواصل مع إدارة مسار لإعادة تفعيله.";
+/* نُسمّي الحظر ولا نخفيه خلف رسالة عامة: من بلغه يعرف أن الحساب قائم،
+   والإخفاء يضلّل صاحبه فيظنّ كلمته خاطئة ويكرّر فيُطيل الحظر. */
+const LOCKED =
+  "أُوقف الدخول مؤقتًا بعد محاولات فاشلة متتالية. حاول بعد ربع ساعة.";
 
 /** يستخرج كود الخطأ المخصّص من طبقات AuthError المختلفة */
 function codeOf(error: AuthError): string | undefined {
@@ -44,9 +48,15 @@ export async function authenticate(
     unstable_rethrow(error);
 
     if (error instanceof AuthError) {
+      const code = codeOf(error);
       return {
         ok: false,
-        message: codeOf(error) === "AccountDisabled" ? DISABLED : INVALID,
+        message:
+          code === "AccountDisabled"
+            ? DISABLED
+            : code === "AccountLocked"
+              ? LOCKED
+              : INVALID,
       };
     }
 

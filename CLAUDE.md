@@ -178,6 +178,39 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## Sessions Are Revalidated — Fixed 2026-08-07, Read Before Touching Auth
+
+**Every permission was frozen at login.** `jwt()` in `auth.config.ts` writes only when a `user` object is present — at authentication — and nothing read the `users` table again. `isActive` was consulted in exactly one place in the whole source: `authorize()`. So three admin controls promised what they did not do.
+
+| Action | Before | Now |
+|---|---|---|
+| Disable a signed-in account | worked until the token aged out (Auth.js default 30 days) | **session rejected** |
+| Demote an admin | kept confirming payments, creating users, resetting passwords | **role read from the table** |
+| Reset a password | the very session that prompted the reset stayed alive | **old token rejected** |
+
+**`getLiveUser()` (`src/lib/data/session.ts`) is the source of truth for role and status.** It reads the account per request, `cache()`d across callers, and is wired into the three gates every protected path already passes through: `getShellData` (pages), `staffAccess` (access layer), `requireAdmin` (admin actions).
+
+**Why not in `jwt()`:** that callback also runs inside `middleware` on the Edge runtime, where the Prisma client cannot run. The check therefore lives in the Node layer. Middleware still does the redirecting; the layout and the access helpers are the boundary — the same division CLAUDE.md already records for `PUBLIC_PREFIXES`.
+
+**Password resets needed more than a fresh read**, because nothing in a signed token depends on the password. `User.sessionVersion` is stamped into the token at login and compared on every request; both the admin reset and a user's own change increment it. So a reset ejects every device, and a self-change ejects the others. Tokens minted before the column existed carry no value and read as `0`, matching the default — deploying this ends nobody's session.
+
+**If you add a new entry point, call `getLiveUser()`, not `auth()`.** `auth()` returns the token's claims, which are as old as the login. That distinction is the whole fix.
+
+### Login throttling — same file, same reasoning
+
+Eight consecutive failures lock an account for 15 minutes; one success clears the counter. **The lock is checked before `bcrypt.compare` runs**, because that comparison is itself the resource an attacker drains — verified: the 9th attempt short-circuits.
+
+- **Counters live on the `users` row, not in memory.** The deployment is serverless: an in-process map resets on every cold start, handing the attacker a free reset.
+- **Only existing accounts are counted.** Creating a row per guessed address would turn the defence into a table-flooding vector.
+- **The lock is named in the UI rather than hidden behind the generic message.** Anyone who reaches eight failures already knows the account exists; hiding it only misleads the owner into thinking their password is wrong and retrying, which extends the lock.
+- **Not covered:** per-IP limiting for signup and order spam. That needs state at the edge and is deliberately out of scope — recorded here so nobody assumes it exists.
+
+### Roles are now changeable — and only became safe to ship after the above
+
+There was no way to change a role at all: it was set at creation and any later change required database access. It was **not** shippable before session revalidation, because the role came from a token stamped at login — the control would have looked like it worked and changed nothing.
+
+Two guards: an admin cannot change their own role (losing the panel, possibly with no other admin), and an instructor still presenting a course cannot be moved off the role, since `Course.presenterId` would keep pointing at them and leave a course with no real instructor.
+
 ## Database & R2 Reset — Read Before Resetting Either One
 
 **The rule: never reset the database and R2 independently. Reset both together, or neither.**

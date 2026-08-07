@@ -7,6 +7,7 @@ import { SelectField } from "@/components/admin/Select";
 import { FormField } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { UserActiveToggle } from "@/components/admin/UserActiveToggle";
+import { UserRoleSelect } from "@/components/admin/UserRoleSelect";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { requireAdmin, listUsers } from "@/lib/data/admin";
 import { createUser } from "@/app/(app)/settings/actions";
@@ -17,7 +18,9 @@ import { PasswordField } from "@/components/ui/PasswordField";
 export const metadata: Metadata = { title: "المستخدمون" };
 
 export default async function UsersPage() {
-  await requireAdmin();
+  /* معرّف المدير الحالي: صفّه وحده لا يعرض تغيير الدور، فلا يُنزل
+     نفسه ويفقد اللوحة — والحارس مكرَّر في الإجراء نفسه. */
+  const { id: adminId } = await requireAdmin();
   const users = await listUsers();
 
   return (
@@ -89,7 +92,13 @@ export default async function UsersPage() {
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <UserRoleSelect
+                  userId={u.id}
+                  role={u.role}
+                  name={u.name}
+                  disabled={u.id === adminId}
+                />
                 <ResetPasswordButton userId={u.id} name={u.name} />
                 <UserActiveToggle userId={u.id} isActive={u.isActive} />
               </div>

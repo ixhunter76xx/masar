@@ -155,3 +155,52 @@ export async function setUserActive(
   revalidatePath("/settings/users");
   return ok;
 }
+
+/**
+ * تغيير دور مستخدم.
+ *
+ * لم يكن للدور سبيل تغيير إطلاقًا: يُحدَّد عند الإنشاء ثم يحتاج تعديلُه
+ * وصولًا إلى قاعدة البيانات — فترقية طالب إلى مدرّب كانت عملية يدوية
+ * خارج المنصة.
+ *
+ * ولم يكن يصحّ شحنُه قبل إصلاح الجلسة: الدور كان يُقرأ من رمز مختوم عند
+ * الدخول، فتغييره من هنا ما كان ليمسّ جلسةً مفتوحة — زرٌّ يبدو أنه يعمل
+ * ولا يعمل. صار `getLiveUser` يقرأ الدور من الجدول كل طلب، فالتغيير
+ * يسري في الطلب التالي مباشرة.
+ */
+export async function setUserRole(
+  userId: string,
+  role: Role,
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+
+  /* لا يُنزل المدير دوره بنفسه: النتيجة فقدانُ لوحة الإدارة فورًا —
+     وربما بلا أدمن آخر يعيدها. */
+  if (userId === admin.id) {
+    return fail("لا يمكنك تغيير دور حسابك أنت.");
+  }
+
+  const target = await db.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  });
+  if (!target) return fail("الحساب غير موجود.");
+  if (target.role === role) return ok;
+
+  /* المدرّب الذي يُقدّم مقررًا لا يُنزَع دوره بصمت: المقرر يبقى مشيرًا
+     إليه عبر `presenterId`، فيصير مقرر بلا مدرّب فعلي. */
+  if (target.role === Role.INSTRUCTOR && role !== Role.INSTRUCTOR) {
+    const presenting = await db.course.count({ where: { presenterId: userId } });
+    if (presenting > 0) {
+      return fail(
+        "هذا المدرّب يُقدّم مقررًا. أسنِد المقرر إلى غيره قبل تغيير دوره.",
+      );
+    }
+  }
+
+  await db.user.update({ where: { id: userId }, data: { role } });
+
+  revalidatePath("/settings/users");
+  revalidatePath("/learn");
+  return ok;
+}

@@ -60,6 +60,16 @@ model User {
   /// المستخدم كلمته بنفسه.
   sessionVersion Int @default(0)
 
+  /// محاولات الدخول الفاشلة المتتالية، تُصفَّر عند أول نجاح.
+  ///
+  /// العدّاد في القاعدة لا في الذاكرة عمدًا: النشر بلا خادم دائم، فكل
+  /// نسخة باردة تبدأ بذاكرة فارغة — أي أن عدّادًا في العملية يُعاد
+  /// ضبطه للمهاجم مجانًا. الصفّ مشترك بين كل النسخ.
+  failedLoginAttempts Int @default(0)
+
+  /// نهاية الحظر المؤقّت بعد تكرار الفشل — فارغ يعني غير محظور
+  lockedUntil DateTime?
+
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
