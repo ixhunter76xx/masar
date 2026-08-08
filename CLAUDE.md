@@ -193,31 +193,31 @@ A full gap audit was run on 2026-08-07 and turned into a six-phase plan. Two ite
 | 2 | identity — session revalidation, login throttle, role change, forced password change | **done** |
 | 3 | one named access filter across the 13 sites; assessments self-guard | **done** |
 | 4 | faculties, course + bundle admin screens, presenter reassignment, video upload | **done** |
-| 5 | pooled `DATABASE_URL`, error-reporting seam, git remote, CI | **partly** — the seam and `ci.yml` exist; the rest is blocked on you (below) |
+| 5 | pooled `DATABASE_URL`, error-reporting seam, git remote, CI | **partly** — the seam, the remote and a running `ci.yml` are done; the pooled URL is still blocked on you (below) |
 | 6 | 404 status, slug casing, currency, empty states, legal pages, mobile, analytics | **mostly done** — analytics not started; the 404 status is deferred by your decision |
 
 Everything marked done was verified in a browser or against live data, not by reading. Each has its own section below with the evidence.
 
-### What actually blocks progress now — all three need you, not code
+### What actually blocks progress now
 
-1. **No git remote.** `git remote -v` is empty. Deploys stay manual from one machine and `.github/workflows/ci.yml` cannot run until a remote exists.
+1. ~~**No git remote.**~~ **Done 2026-08-09** — `origin` is `https://github.com/ixhunter76xx/masar.git` (private). See "The Repository Has a Remote" below.
 2. **`DATABASE_URL` on Netlify is the direct host, not pooled.** Left unapplied because it changes the live site. Exact value in the Deployment section.
-3. **Production is stale** and has never served any of this work.
+3. **Production is stale** and has never served any of this work. Note the remote existing does **not** fix this: the Netlify site is still not git-connected, which is a separate setting.
 
 ### Live data, so you are not surprised by it
 
 5 users · faculties `it` + `arts` · `ARAB110` (published) and `ITCS106` (unpublished, created while testing the new admin screen) · bundles `midterm`/`final`/`full` · 5 lessons in ARAB110, one of them `READY` with a real R2 object (`03 JAVA - Data Types`), the other four planned · 6 orders (3 paid, 2 pending, 1 refunded from testing) · 1 quiz, 1 assignment, 1 announcement.
 
-### The one test still worth running
+### ~~The one test still worth running~~ — run and passed 2026-08-09
 
-Attach a `READY` lesson to a single bundle, then request its stream as a buyer of a *different* bundle. **404, not 302, is the pass.** Everything else in the bundle boundary is proven; this last path could not be exercised because the only `READY` lesson belongs to no bundle.
+The bundle boundary is now proven on **real playback**, not only on listings and assessment pages. See "The Bundle Boundary Holds on Playback" below. Nothing in the six-phase plan is now unverified for lack of data; what remains open needs you, not code.
 
 ## Still Open After the 2026-08-07 Hardening Pass
 
 Ordered by what blocks real use. Everything else from that pass is done and documented in the sections below.
 
 1. ~~**Video upload → R2.**~~ **Works, proven end to end 2026-08-08** — see "The Upload Was Blocked by Our Own CSP" below. Upload, `READY`, a real object in the bucket, a 302 to a signed playback URL, and deletion clearing both sides.
-2. **A git remote.** There is none. Without it, deploys stay manual from one machine and `.github/workflows/ci.yml` cannot run.
+2. ~~**A git remote.**~~ **Done 2026-08-09** — see "The Repository Has a Remote" below. Deploys are still manual, because that is a Netlify setting, not a git one.
 3. **`DATABASE_URL` on Netlify → the pooled host.** Left unapplied deliberately: it changes the live site.
 4. **Analytics / reports.** Not started. `reportError` is the only observability seam and it is for faults, not usage.
 5. **The 200-instead-of-404 status** in the protected area. Deliberately deferred by the owner; the public catalogue already returns a correct 404.
@@ -349,13 +349,34 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
   - Still true and still worth keeping: on failure the client aborts the R2 multipart upload and removes the `CourseMaterial` row, leaving no orphan on either side. Re-verified after the fix by deleting the uploaded lesson — bucket back to **0 objects**, DB back to the 4 seeded placeholders.
 
 - **Student and registered-visitor roles are still unexercised.** `student.test@masar.bh` (bought, has a graded attempt and an instructor message) and `fresh.visitor@masar.bh`. Their passwords never existed anywhere — both accounts came from self-signup testing, not the seed — so `scripts/set-seed-passwords.mts` now covers them via `SEED_STUDENT_PASSWORD` / `SEED_VISITOR_PASSWORD`.
-- **Blocked on you, not on code — the repository has no git remote at all.** `git remote -v` is empty (checked 2026-08-07), so two items cannot be started from here:
-  - **Connect deploys to git.** Requires creating a remote (GitHub) and pointing the Netlify site at it. Until then every deploy stays a manual CLI push from one machine.
-  - **CI.** `.github/workflows/ci.yml` exists and runs `npm ci` → `prisma generate` → `tsc --noEmit` → `build:local`. It is **inert until a remote exists**. It deliberately uses `build:local`, because `npm run build` runs `prisma migrate deploy` and would touch the only database on every check.
+- ~~**Blocked on you, not on code — the repository has no git remote at all.**~~ **The remote exists as of 2026-08-09** (see below). Of the two items it blocked, one is unblocked and one is not:
+  - **CI is live.** `.github/workflows/ci.yml` runs `npm ci` → `prisma generate` → `tsc --noEmit` → `build:local`, and fired on the first push. It deliberately uses `build:local`, because `npm run build` runs `prisma migrate deploy` and would touch the only database on every check.
+  - **Deploys are still manual.** A remote is necessary but not sufficient: the Netlify site must additionally be pointed at the GitHub repo in Netlify's own settings. Until that, every deploy stays a CLI push from one machine.
 - **`DATABASE_URL` on Netlify → pooled endpoint.** Not applied here: it changes the running production site, which is outside what should happen without you. The value is the current host with `-pooler` inserted before the first dot — `ep-quiet-water-axtvmi6n-pooler.c-4.us-east-2.aws.neon.tech` — set for the `production` context, keeping the direct host as `DIRECT_URL` for migrations.
 - **Error reporting has a seam, not a vendor.** `src/lib/observability.ts` exports `reportError(scope, error, context)`, writing one structured JSON line so the host's logs stay searchable; `markOrderPaid` and `refundOrder` use it. Wiring Sentry is three lines inside that one function plus a `SENTRY_DSN` — no call site changes. It is for *unexpected* failures only: validation and permission refusals are answers, not faults, and reporting them makes the monitor useless.
 - Redeploy production — it is three days and ~12 commits behind (see Deployment section)
 - Tap Payments webhook integration (blocked on licensing — see Payment Architecture section)
+
+## The Repository Has a Remote — 2026-08-09
+
+`origin` = `https://github.com/ixhunter76xx/masar.git`, **private**, created by the owner. All six local branches were pushed **as they are**, with no merge into `master`:
+
+| branch | commits | ships `ci.yml`? |
+|---|---|---|
+| `masar-design-pass` | 65 | **yes** |
+| `master` | 47 | no |
+| `masar-signature` | 47 | no |
+| `masar-purchase-layer`, `masar-ux-clarity`, `masar-visual-polish` | — | no |
+
+Every branch's remote SHA equals its local SHA, `git log --branches --not --remotes` is empty, and there are no tags. **`master` is untouched at 47 commits** — the 18 commits of this work live only on `masar-design-pass` until someone opens a PR.
+
+**`ci.yml` exists on `masar-design-pass` only**, because it was committed there (`324c6d5`). So the six-branch push produced **one** workflow run, not six. That is not a misconfiguration — the trigger is `push: branches: ["**"]`, and GitHub reads the workflow file *from the pushed branch*. Any branch that does not carry the file gets no run. Merging into `master` is what will give `master` CI.
+
+**CI #1 passed** — `674809e` on `masar-design-pass`, job `verify`, **Success in 1m 54s**, run `31281590244`. `npm ci` → `prisma generate` → `tsc --noEmit` → `build:local` all green on a clean runner, which is the first time this tree has been built anywhere but this machine. One warning, not a failure: `actions/checkout@v4` and `actions/setup-node@v4` target the deprecated Node 20 and are being forced onto Node 24. Bumping both to `@v5` clears it.
+
+**Before pushing, the history was checked for secrets** — `.gitignore` has `.env*` with `!.env.example`, the only tracked match is `.env.example`, and it holds empty placeholders. `git log --all --diff-filter=A -- ".env*"` confirms no real env file was ever committed. **Do this check before the first push to any new remote**; a private repo is not a substitute, and a leaked secret cannot be un-pushed.
+
+**Credentials:** there is no `gh` CLI and no SSH key on this machine; the push went through Git Credential Manager (`credential.helper=manager` at system level), which now holds the GitHub credential. Agents cannot supply a token — if the credential is ever cleared, the first push has to be run by the owner.
 
 ## Deployment (Netlify) — Facts Established 2026-08-05
 
@@ -434,9 +455,9 @@ The same API call answering 404 for one buyer and 200 for the other is the proof
 
 The middle and bottom rows are the controls: the same filter that hides the first row lets these through, so it is ownership resolution and not blanket hiding.
 
-### Still unproven end to end
+### ~~Still unproven end to end~~ — playback proven 2026-08-09
 
-**Lesson playback.** All four lessons are `PENDING`, so `getPlaybackUrl` returns null at the `READY` filter before ownership is consulted. The rewrite is right by construction and typechecked, but the real test — a `midterm` buyer requesting a `final` lesson's stream and getting **404 instead of a 302** — waits on the first successful upload.
+**Lesson playback.** Done — see "The Bundle Boundary Holds on Playback" below.
 
 **Starting an attempt.** `startAttempt` is guarded by `canViewQuiz` in the same way the page is, but it is a server action and was not invoked directly; the evidence above covers the page and the assignment's REST write path. Exercise it once a bundle-scoped quiz exists.
 
@@ -542,7 +563,25 @@ A CSP refusal and a CORS refusal both surface as a bare `xhr.onerror` with no de
 | `GET …/stream` as staff | **302** to a signed URL |
 | Delete the lesson | DB row gone **and** bucket back to 0 objects — no orphan either way |
 
-**Still unproven, and now much narrower:** a student who owns one bundle requesting a lesson from another. The lesson used here belonged to no product, so only the staff path was exercised. Attach a `READY` lesson to one bundle and request it as a buyer of a different one — **404, not 302**, is the pass.
+~~**Still unproven, and now much narrower:** a student who owns one bundle requesting a lesson from another.~~ **Closed 2026-08-09** — see the next section.
+
+## The Bundle Boundary Holds on Playback — Proven 2026-08-09
+
+The last unproven path in the money/access model. `getPlaybackUrl` had been rewritten to call `canViewLesson` and was right by construction, but no student had ever requested a real `READY` lesson over HTTP, because the only uploaded lesson (`03 JAVA - Data Types`, `status = READY`, `publishedAt` set) belonged to no bundle.
+
+**The method, against a `build:local` production server on :3100, as `fresh.visitor@masar.bh` — who holds `دورة المنتصف` and nothing else:**
+
+| | lesson's bundle | `GET …/videos/<id>/stream` |
+|---|---|---|
+| أ | `دورة النهائي` (not owned) | **404** `{"error":"غير موجود."}` |
+| ب — control | `دورة المنتصف` (owned) | **302** → signed `hisab-media.…r2…` URL |
+| restore | none | **404** |
+
+**Row ب is the part that makes this evidence rather than a coincidence.** Same lesson, same account, same session cookie, same server process — only the `ProductItem` row changed. So the refusal in row أ is ownership resolution, not a draft check, not a `READY` filter, not an expired session. Without that control a 404 proves nothing: every wrong reason also returns 404.
+
+**The session was minted, not typed.** The test signs an Auth.js JWT with `AUTH_SECRET` and sends it as `authjs.session-token`, rather than driving the login form. It is the *same* session the app would issue — it passes `auth()` **and** `getLiveUser()`'s live `isActive`/`sessionVersion` comparison, which row ب demonstrates by returning 302; a token the app rejected would have produced **401** in both rows, a third distinguishable outcome. Prefer this over UI login when the thing under test is an API route: it is deterministic and needs no credential.
+
+**State was restored in a `finally` block** — the lesson is back in no bundle, and the three ARAB110 bundles hold exactly the four seeded lessons they held before. This ran against the live Neon database, because there is no other one.
 
 ## Never Run `next dev` and `next start` at the Same Time Here
 
