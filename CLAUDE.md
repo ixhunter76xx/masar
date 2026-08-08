@@ -178,6 +178,40 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## ⇢ START HERE — State as of 2026-08-08
+
+**Branch `masar-design-pass`, 17 commits ahead of `master`, nothing merged, nothing deployed.** Typecheck and `build:local` are green at HEAD. The working tree is clean apart from untracked `.claude/` (editor config — `launch.json` is referenced by this file, `settings.local.json` is local permissions; neither has ever been committed).
+
+### The six-phase plan — where it stands
+
+A full gap audit was run on 2026-08-07 and turned into a six-phase plan. Two items were removed by the owner as deliberate decisions, not gaps: **the manual WhatsApp payment flow** and **the unresolved commercial registration**. Do not re-raise either as a defect.
+
+| Phase | Scope | State |
+|---|---|---|
+| 0 | lockfile, `submitAttempt` guard, dead `removeEnrollment`, stale doc line | **done** |
+| 1 | money path — sells-what-you-own, upgrade pricing, duplicate orders, silent failures, refunds | **done** |
+| 2 | identity — session revalidation, login throttle, role change, forced password change | **done** |
+| 3 | one named access filter across the 13 sites; assessments self-guard | **done** |
+| 4 | faculties, course + bundle admin screens, presenter reassignment, video upload | **done** |
+| 5 | pooled `DATABASE_URL`, error-reporting seam, git remote, CI | **partly** — the seam and `ci.yml` exist; the rest is blocked on you (below) |
+| 6 | 404 status, slug casing, currency, empty states, legal pages, mobile, analytics | **mostly done** — analytics not started; the 404 status is deferred by your decision |
+
+Everything marked done was verified in a browser or against live data, not by reading. Each has its own section below with the evidence.
+
+### What actually blocks progress now — all three need you, not code
+
+1. **No git remote.** `git remote -v` is empty. Deploys stay manual from one machine and `.github/workflows/ci.yml` cannot run until a remote exists.
+2. **`DATABASE_URL` on Netlify is the direct host, not pooled.** Left unapplied because it changes the live site. Exact value in the Deployment section.
+3. **Production is stale** and has never served any of this work.
+
+### Live data, so you are not surprised by it
+
+5 users · faculties `it` + `arts` · `ARAB110` (published) and `ITCS106` (unpublished, created while testing the new admin screen) · bundles `midterm`/`final`/`full` · 5 lessons in ARAB110, one of them `READY` with a real R2 object (`03 JAVA - Data Types`), the other four planned · 6 orders (3 paid, 2 pending, 1 refunded from testing) · 1 quiz, 1 assignment, 1 announcement.
+
+### The one test still worth running
+
+Attach a `READY` lesson to a single bundle, then request its stream as a buyer of a *different* bundle. **404, not 302, is the pass.** Everything else in the bundle boundary is proven; this last path could not be exercised because the only `READY` lesson belongs to no bundle.
+
 ## Still Open After the 2026-08-07 Hardening Pass
 
 Ordered by what blocks real use. Everything else from that pass is done and documented in the sections below.
