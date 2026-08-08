@@ -25,6 +25,7 @@ export type UploadHandle = {
 export async function uploadVideo({
   courseId,
   file,
+  materialId,
   title,
   description,
   onProgress,
@@ -32,7 +33,16 @@ export async function uploadVideo({
 }: {
   courseId: string;
   file: File;
-  title: string;
+  /**
+   * درسٌ قائم يُرفع إليه. حين يُمرَّر، يملأ الرفعُ ذلك الدرس ولا يُنشئ
+   * صفًّا جديدًا — وهو ما يجعل كل درس في السكّة نقطةَ رفعه، بعنوانه
+   * وترتيبه المعروفين سلفًا.
+   *
+   * وحين يُترك فارغًا يبقى السلوك العام: يُنشأ درس جديد بالعنوان
+   * المُدخَل، وهو ما تستعمله المواد غير المرتبطة بدرس بعينه.
+   */
+  materialId?: string;
+  title?: string;
   description?: string;
   onProgress: (percent: number) => void;
   signal: AbortSignal;
@@ -50,8 +60,13 @@ export async function uploadVideo({
     return data as T;
   };
 
-  const { materialId, uploadId, partSize } = await post<CreateResponse>({
+  const {
+    materialId: createdId,
+    uploadId,
+    partSize,
+  } = await post<CreateResponse>({
     action: "create",
+    materialId,
     title,
     description,
     contentType: ALLOWED_VIDEO_TYPE,
@@ -64,7 +79,7 @@ export async function uploadVideo({
   let completedBytes = 0;
 
   const cleanup = async () => {
-    await post({ action: "abort", materialId, uploadId }).catch(() => undefined);
+    await post({ action: "abort", materialId: createdId, uploadId }).catch(() => undefined);
   };
 
   signal.addEventListener("abort", () => void cleanup(), { once: true });
@@ -80,7 +95,7 @@ export async function uploadVideo({
         getUrl: () =>
           post<{ url: string }>({
             action: "sign-part",
-            materialId,
+            materialId: createdId,
             uploadId,
             partNumber,
           }).then((r) => r.url),
@@ -96,9 +111,9 @@ export async function uploadVideo({
       completedBytes += chunk.size;
     }
 
-    await post({ action: "complete", materialId, uploadId, parts });
+    await post({ action: "complete", materialId: createdId, uploadId, parts });
     onProgress(100);
-    return { materialId };
+    return { materialId: createdId };
   } catch (error) {
     if (!signal.aborted) await cleanup();
     throw error;
@@ -171,13 +186,15 @@ function putChunk(
     };
 
     /*
-     * `onerror` في طلب عابر للنطاق لا يعني انقطاع الشبكة غالبًا: المتصفح
-     * يُطلقه بلا تفاصيل عندما يرفض CORS الطلب أيضًا، وهو السبب الأرجح
-     * هنا لأن الرفع يذهب إلى R2 على نطاق آخر. أشهر صوره: تشغيل الموقع
-     * على منفذ غير المدرَج في `AllowedOrigins` للدلو (المدرَج هو 3000 —
-     * انظر README)، فيفشل الرفع على 3100 وحده بينما تعمل بقية المنصة.
-     * الرسالة تذكر الاحتمالين لأن الأول يُرسل الباحث إلى الشبكة ويضيّع
-     * وقته، والثاني هو ما يحتاج تعديلًا فعليًا.
+     * `onerror` في طلب عابر للنطاق يصل بلا أي تفصيل، ويطلقه المتصفح
+     * لثلاثة أسباب لا يفرّق بينها الاستثناء: حجبُ CSP من طرفنا، ورفضُ
+     * CORS من طرف الدلو، وانقطاعُ الشبكة.
+     *
+     * وقد كلّف هذا التشابهُ جلستين: نُسب الإخفاق إلى CORS بينما كان
+     * CSP يحجب نطاق الدلو الفرعي — ورسالةٌ سابقة هنا كانت تقول
+     * «تحقّق من CORS» فتُرسل القارئ إلى لوحة Cloudflare بعيدًا عن
+     * السبب. لذلك تُحيل الرسالة الآن إلى وحدة التحكّم: هناك وحدها
+     * يُسمّى السبب.
      */
     xhr.onerror = () =>
       reject(

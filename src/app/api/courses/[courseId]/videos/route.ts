@@ -26,7 +26,15 @@ const PART_URL_TTL = 60 * 60; // ساعة
 
 const createSchema = z.object({
   action: z.literal("create"),
-  title: z.string().trim().min(1, "العنوان مطلوب").max(200),
+  /**
+   * درسٌ قائم يُرفع إليه — أي أن الرفع **يملأ** درسًا مخطَّطًا بدل أن
+   * يُنشئ صفًّا جديدًا. فارغ يعني الرفع العام الذي يُنشئ درسًا بنفسه،
+   * وهو ما يبقى للمواد غير المرتبطة بدرس بعينه.
+   */
+  materialId: z.string().min(1).optional(),
+  /* العنوان مطلوب في الرفع العام وحده: الدرس القائم يحمل عنوانه
+     ومكانه في السكّة، ولا يُطلبان من الرافع مرة أخرى. */
+  title: z.string().trim().min(1, "العنوان مطلوب").max(200).optional(),
   description: z.string().trim().max(2000).optional(),
   contentType: z.literal(ALLOWED_VIDEO_TYPE, {
     message: "الصيغة المدعومة حاليًا هي MP4 فقط.",
@@ -119,23 +127,57 @@ export async function POST(
   /*  بدء الرفع                                                        */
   /* ---------------------------------------------------------------- */
   if (body.action === "create") {
-    const material = await db.courseMaterial.create({
-      data: {
-        courseId,
-        title: body.title,
-        description: body.description || null,
-        contentType: body.contentType,
-        objectKey: "", // يُملأ بعد معرفة المعرّف
-        uploadedById: session.user.id,
-        status: MaterialStatus.PENDING,
-      },
-      select: { id: true },
-    });
+    /*
+     * مسـاران: الرفع إلى درس قائم، أو إنشاء درس جديد.
+     *
+     * الأول هو ما يجعل تخطيط المنهج ممكنًا — السكّة تُبنى أولًا ثم
+     * يُملأ كل درس في وقته. والثاني يبقى للرفع العام غير المرتبط بدرس.
+     *
+     * `attached` تُميّز الحالتين عند الفشل: صفٌّ أنشأناه للتوّ يُحذف،
+     * وصفٌّ خطّطه المدرّس **لا يُحذف أبدًا** — إخفاق الرفع لا يجوز أن
+     * يمحو تخطيطًا، ولا أن يقطع ما ارتبط به من باقات أو تقييمات.
+     */
+    const attached = Boolean(body.materialId);
 
+    let materialId: string;
+
+    if (body.materialId) {
+      const existing = await db.courseMaterial.findFirst({
+        where: { id: body.materialId, courseId },
+        select: { id: true, status: true, objectKey: true },
+      });
+      if (!existing) return bad("الدرس غير موجود في هذا المقرر.", 404);
+
+      /* درس جاهز لا يُرفع فوقه: الاستبدال يحتاج حذفًا صريحًا يمحو
+         الكائن القديم من R2، وإلا بقي يتيمًا يُدفع ثمن تخزينه. */
+      if (existing.status === MaterialStatus.READY) {
+        return bad("هذا الدرس له فيديو بالفعل — احذفه أولًا لرفع غيره.", 409);
+      }
+
+      materialId = existing.id;
+    } else {
+      if (!body.title) return bad("العنوان مطلوب.");
+
+      const created = await db.courseMaterial.create({
+        data: {
+          courseId,
+          title: body.title,
+          description: body.description || null,
+          contentType: body.contentType,
+          objectKey: null, // يُملأ بعد معرفة المعرّف
+          uploadedById: session.user.id,
+          status: MaterialStatus.PENDING,
+        },
+        select: { id: true },
+      });
+      materialId = created.id;
+    }
+
+    const material = { id: materialId };
     const objectKey = videoObjectKey(courseId, material.id);
     await db.courseMaterial.update({
       where: { id: material.id },
-      data: { objectKey },
+      data: { objectKey, contentType: body.contentType },
     });
 
     try {
@@ -153,10 +195,18 @@ export async function POST(
         partSize: PART_SIZE,
       });
     } catch (error) {
-      // لا نترك سجلًا معلّقًا بلا رفع فعلي
-      await db.courseMaterial
-        .delete({ where: { id: material.id } })
-        .catch(() => undefined);
+      if (attached) {
+        /* درس مخطَّط: نُعيده إلى حالته لا نحذفه — التخطيط ليس أثرًا
+           جانبيًا للرفع، وقد تكون باقةٌ تشير إليه بالفعل. */
+        await db.courseMaterial
+          .update({ where: { id: material.id }, data: { objectKey: null } })
+          .catch(() => undefined);
+      } else {
+        // صفّ أنشأناه للتوّ: لا نتركه معلّقًا بلا رفع فعلي
+        await db.courseMaterial
+          .delete({ where: { id: material.id } })
+          .catch(() => undefined);
+      }
       return storageFailure("بدء الرفع المجزّأ", error);
     }
   }
@@ -164,11 +214,23 @@ export async function POST(
   /* ---------------------------------------------------------------- */
   /*  توقيع جزء                                                        */
   /* ---------------------------------------------------------------- */
-  const material = await db.courseMaterial.findFirst({
+  const found = await db.courseMaterial.findFirst({
     where: { id: body.materialId, courseId },
     select: { id: true, objectKey: true, contentType: true },
   });
-  if (!material) return bad("المادة غير موجودة.", 404);
+  if (!found) return bad("المادة غير موجودة.", 404);
+
+  /*
+   * الأفعال الثلاثة الباقية تخصّ رفعًا جاريًا، وهو لا يبدأ إلا بعد أن
+   * يُكتب المفتاح في `create`. فمفتاح فارغ هنا يعني درسًا مخطَّطًا لم
+   * يبدأ رفعه — لا حالة صالحة. نتحقّق صراحةً بدل تأكيد نوعٍ يُخفي
+   * الحالة، فيُصبح الشرط النادر خطأً مقروءًا لا انهيارًا في R2.
+   */
+  if (found.objectKey === null) {
+    return bad("لم يبدأ رفعٌ لهذا الدرس.", 409);
+  }
+
+  const material = { ...found, objectKey: found.objectKey };
 
   if (body.action === "sign-part") {
     try {
@@ -202,7 +264,38 @@ export async function POST(
       )
       .catch(() => undefined);
 
-    await db.courseMaterial.delete({ where: { id: material.id } });
+    /*
+     * الإلغاء يُرجع الدرس إلى «مخطَّط»، ولا يحذفه إلا إن كان الرفع هو
+     * ما أنشأه.
+     *
+     * التمييز بأن الدرس **سبق أن نُشر** أو أن باقةً أو تقييمًا يشير
+     * إليه: أيٌّ من ذلك يعني أنه جزء من تخطيط قائم، وحذفُه لإلغاء رفعٍ
+     * يمحو ما لا علاقة له بالرفع — وقد يُنقص باقة مُباعة بلا إشعار.
+     */
+    const planned = await db.courseMaterial.findUnique({
+      where: { id: material.id },
+      select: {
+        publishedAt: true,
+        _count: { select: { productItems: true, quizzes: true, assignments: true } },
+      },
+    });
+
+    const partOfPlan =
+      planned !== null &&
+      (planned.publishedAt !== null ||
+        planned._count.productItems > 0 ||
+        planned._count.quizzes > 0 ||
+        planned._count.assignments > 0);
+
+    if (partOfPlan) {
+      await db.courseMaterial.update({
+        where: { id: material.id },
+        data: { objectKey: null, status: MaterialStatus.PENDING },
+      });
+    } else {
+      await db.courseMaterial.delete({ where: { id: material.id } });
+    }
+
     return NextResponse.json({ ok: true });
   }
 

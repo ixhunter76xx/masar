@@ -40,6 +40,40 @@ export type MaterialListItem = {
 };
 
 /**
+ * كل دروس المقرر بترتيبها — لشاشة التخطيط، للمدير وحده.
+ *
+ * تختلف عن `getCourseMaterials` عمدًا: تلك تصفّي بالحزمة وبحالة النشر
+ * لأنها تجيب «ما الذي يراه هذا المستخدم؟». والتخطيط سؤال آخر: «ما
+ * الذي في المقرر؟» — بما فيه المخطَّط الذي لا ملف له وغير المنشور.
+ * خلطهما كان سيجعل السكّة تُخفي عن المدير ما جاء ليرتّبه.
+ */
+export async function listLessonsForPlanner(courseId: string) {
+  const rows = await db.courseMaterial.findMany({
+    where: { courseId },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      title: true,
+      isFreePreview: true,
+      status: true,
+      objectKey: true,
+      publishedAt: true,
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    isFreePreview: row.isFreePreview,
+    isReady: row.status === MaterialStatus.READY,
+    /* وجود مفتاح لا حالةٌ: الدرس قد يكون قيد الرفع — له مفتاح ولم
+       يكتمل. التمييز هو ما يفرّق «بانتظار الرفع» عن «قيد الرفع». */
+    hasFile: row.objectKey !== null,
+    isPublished: row.publishedAt !== null,
+  }));
+}
+
+/**
  * مواد المقرر.
  * الطالب يرى المنشورة الجاهزة فقط؛ المدرب والإدارة يريان كل شيء
  * بما فيه المسودات والرفعات الفاشلة.

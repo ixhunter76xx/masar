@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { r2, r2Bucket } from "@/server/r2";
 import { canManageCourse } from "@/lib/data/materials";
+import { MaterialStatus } from "@/generated/prisma/enums";
 
 /**
  * حذف مادة تعليمية.
@@ -84,6 +85,46 @@ export async function DELETE(
         { status: 502 },
       );
     }
+  }
+
+  /*
+   * حذف الفيديو ≠ حذف الدرس.
+   *
+   * كان السجل يُحذف دائمًا، و`ProductItem.lessonId` يُحذف بالتتالي معه —
+   * أي أن حذف فيديو **يُنقص باقةً مُباعة بلا إشعار**، ويُحوّل اختبارًا
+   * مخصَّصًا لدرس إلى اختبار على مستوى المقرر (`SetNull`). كان ذلك
+   * محتملًا حين لم يكن الدرس يوجد إلا برفعه؛ أما الآن والدرس كيانٌ
+   * مخطَّط تشير إليه الباقات، فحذفه لإزالة ملفٍ يمحو ما لا علاقة له
+   * بالملف.
+   *
+   * فإن كان الدرس جزءًا من تخطيط قائم يعود «بانتظار الرفع» ويبقى
+   * مكانه في السكّة وروابطه سليمة. وإن لم يكن، يُحذف كما كان.
+   */
+  const planned = await db.courseMaterial.findUnique({
+    where: { id: material.id },
+    select: {
+      _count: { select: { productItems: true, quizzes: true, assignments: true } },
+    },
+  });
+
+  const partOfPlan =
+    planned !== null &&
+    (planned._count.productItems > 0 ||
+      planned._count.quizzes > 0 ||
+      planned._count.assignments > 0);
+
+  if (partOfPlan) {
+    await db.courseMaterial.update({
+      where: { id: material.id },
+      data: {
+        objectKey: null,
+        status: MaterialStatus.PENDING,
+        sizeBytes: null,
+        durationSec: null,
+        publishedAt: null,
+      },
+    });
+    return NextResponse.json({ ok: true, cleared: material.title });
   }
 
   await db.courseMaterial.delete({ where: { id: material.id } });

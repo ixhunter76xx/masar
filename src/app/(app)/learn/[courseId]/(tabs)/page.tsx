@@ -3,11 +3,16 @@ import { FolderOpen, Plus } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VideoUploader } from "@/components/materials/VideoUploader";
+import { LessonPlanner } from "@/components/materials/LessonPlanner";
 import { MaterialList } from "@/components/materials/MaterialList";
 import { QuizList } from "@/components/quizzes/QuizList";
 import { AssignmentList } from "@/components/assignments/AssignmentList";
 import { requireCourseAccess } from "@/lib/data/courses";
-import { canManageCourse, getCourseMaterials } from "@/lib/data/materials";
+import {
+  canManageCourse,
+  getCourseMaterials,
+  listLessonsForPlanner,
+} from "@/lib/data/materials";
 import { getCourseQuizzes } from "@/lib/data/quizzes";
 import { getCourseAssignments } from "@/lib/data/assignments";
 
@@ -25,11 +30,20 @@ export default async function CourseContentPage({ params }: Params) {
     getCourseAssignments(courseId, user.id, user.role),
   ]);
 
+  /* السكّة للمدير وحده: تشمل المخطَّط وغير المنشور، وهو ما لا يراه
+     الطالب أصلًا. `getCourseMaterials` تصفّي بالحزمة والنشر، فلا تصلح
+     للتخطيط — التخطيط يحتاج كل دروس المقرر بترتيبها. */
+  const plan = canManage ? await listLessonsForPlanner(courseId) : [];
+
   const isEmpty =
     materials.length === 0 && quizzes.length === 0 && assignments.length === 0;
 
   return (
     <>
+      {/* التخطيط أولًا ثم الرفع العام: السكّة هي مكان العمل اليومي،
+          والرفع العام للمواد غير المرتبطة بدرس بعينه. */}
+      {canManage && <LessonPlanner courseId={courseId} lessons={plan} />}
+
       {canManage && <VideoUploader courseId={courseId} />}
 
       {isEmpty ? (

@@ -452,6 +452,29 @@ So the rule is implemented in the function nobody calls, and absent from the one
 
 **Also still true:** no lesson has a file. All four are `status = PENDING` with placeholder `seed/ARAB110/*` keys and the bucket is empty, so even a correct player has nothing to play until a real upload lands (see the deferred CORS item).
 
+## A Lesson Exists Before Its Video — Built 2026-08-08
+
+**What was wrong.** `courseMaterial.create` appeared in exactly one place in the whole platform: the video upload route. A lesson could not exist without a file, because `objectKey` was `NOT NULL`. Two consequences:
+
+- **No syllabus planning.** Titles, order, and which lesson is the free preview could only be decided by uploading — so nothing could be laid out before every video was filmed.
+- **The upload had no lesson to attach to.** It was a generic form asking for a title, and it always created a new row. That is why the four seeded lessons could never become `READY`: uploading made a *fifth* row beside them.
+
+**The fix is in the column.** `objectKey` is now nullable, and `NULL` means "planned, awaiting upload". The migration also nulls the fake `seed/ARAB110/*` keys, which turns those four dead placeholders into real planned lessons that can now be filled.
+
+**The upload takes an optional `materialId`.** With it, the upload fills that lesson — its title and place are already known and are not asked for again. Without it, the old behaviour is unchanged, which is what the generic upload for non-lesson material still uses.
+
+### The interlock: lesson ids are load-bearing
+
+`ProductItem.lessonId`, `Quiz.lessonId`, `Assignment.lessonId` and `canViewLesson` all key off the lesson id. So every operation here was built to never move one:
+
+- **Reordering renumbers `position` only.** No row is recreated. Verified against live data — after moving a lesson, all three bundles' lesson lists were byte-identical, and positions were renumbered `0..4`, which also repaired a duplicate `position = 0` left by rows created at the default.
+- **Uploading into a planned lesson keeps its id.** Verified: the lesson stayed at the same id and position, the count stayed at 5 rather than 6, and the `midterm` bundle — which already pointed at that lesson — began delivering real content with no relinking.
+- **Deleting a video no longer deletes the lesson** when a bundle or assessment points at it. It returns to planned instead. This one was a live hazard: `ProductItem` cascades, so removing a video used to **silently shrink a bundle people had already bought**. Verified: after deleting, the lesson stayed in the track and `midterm` still listed it.
+- **Aborting a failed upload** follows the same rule — a planned lesson is never destroyed by an upload that did not finish.
+- **Deleting a planned lesson is refused** while it is in a bundle or carries an assessment, naming which.
+
+**One free preview per course, enforced.** The storefront reads `materials.find(m => m.isFreePreview)`, so a second one would make the shown lesson depend on query order rather than on a decision. Setting one clears the rest in the same transaction.
+
 ## The Upload Was Blocked by Our Own CSP — Fixed 2026-08-08
 
 **The first successful upload in this project's history happened on 2026-08-08.** Everything else about the upload path had been correct for a long time; one line of our own security header stood in front of it.

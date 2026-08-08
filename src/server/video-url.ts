@@ -26,11 +26,18 @@ export async function getPlaybackUrl(
   role: Role,
 ): Promise<string | null> {
   const material = await db.courseMaterial.findFirst({
-    where: { id: materialId, status: MaterialStatus.READY },
+    /* `objectKey: { not: null }` مع `READY` ليسا تكرارًا: الحالة تصف
+       اكتمال الرفع، والمفتاح يصف وجود ملف. الدرس المخطَّط يفتقد
+       الاثنين، والتحقّق من المفتاح هو ما يجعل النوع غير فارغ أدناه. */
+    where: {
+      id: materialId,
+      status: MaterialStatus.READY,
+      objectKey: { not: null },
+    },
     select: { objectKey: true, contentType: true, publishedAt: true },
   });
 
-  if (!material) return null;
+  if (!material?.objectKey) return null;
 
   /*
    * الحارس الوحيد هو `canViewLesson`.
