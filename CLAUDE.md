@@ -189,7 +189,20 @@ Ordered by what blocks real use. Everything else from that pass is done and docu
 5. **The 200-instead-of-404 status** in the protected area. Deliberately deferred by the owner; the public catalogue already returns a correct 404.
 6. **Legal review** of `/legal/terms` — three clauses are parked at the weakest commitment until decided (refund window, partial viewing, governing law).
 
-**Verification gap worth knowing:** the admin screens built in that pass — course creation, bundle pricing, presenter assignment, role change, refund — were verified by typecheck, build, and their guards exercised against live data, but **not seen rendered**, because the assistant cannot sign in. Look at them once before relying on them.
+**The admin screens were reviewed in the browser on 2026-08-08** and behave as built. What was exercised, signed in as admin:
+
+| | Result |
+|---|---|
+| Duplicate course code | refused — «رمز المقرر مستخدَم بالفعل», nothing created |
+| Create course | created **unpublished**, filed under its faculty, `0 دروس · 0 باقات` |
+| Publish with no bundle | refused — «أضف باقة منشورة واحدة على الأقل» |
+| Bundle screen, course with no lessons | shows the reason instead of an unusable form |
+| Create bundle | created at the right price with the picked lessons |
+| Delete guard | the 3 sold bundles render **no** delete control; the new unsold one renders exactly one, and deleting it worked |
+| Role select | present per user; **the admin's own row is `disabled`** |
+| Refund control | offered on the 3 `PAID` orders only — not on `PENDING`, not on the `REFUNDED` one — and opens a confirm step naming the consequence |
+
+Two paths were **not** driven to completion on purpose, and remain covered only by the data-layer tests: demoting an instructor who still presents a course (the permission classifier blocks role writes), and executing a refund (it would revoke a live student's access). Test data created during the review — one course, one bundle — was removed afterwards; the database is back to one course and three bundles.
 
 ## Faculties and the Course Admin — Built 2026-08-07
 
