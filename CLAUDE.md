@@ -182,7 +182,7 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 Ordered by what blocks real use. Everything else from that pass is done and documented in the sections below.
 
-1. **Video upload → R2.** The one thing that stops a real course existing. Needs `http://localhost:3100` in the bucket's CORS `AllowedOrigins` **from the Cloudflare dashboard** — the app's token cannot do it (see the deferred item). Nothing else is known to be broken in that path; the client already aborts and cleans up correctly on failure.
+1. ~~**Video upload → R2.**~~ **Works, proven end to end 2026-08-08** — see "The Upload Was Blocked by Our Own CSP" below. Upload, `READY`, a real object in the bucket, a 302 to a signed playback URL, and deletion clearing both sides.
 2. **A git remote.** There is none. Without it, deploys stay manual from one machine and `.github/workflows/ci.yml` cannot run.
 3. **`DATABASE_URL` on Netlify → the pooled host.** Left unapplied deliberately: it changes the live site.
 4. **Analytics / reports.** Not started. `reportError` is the only observability seam and it is for faults, not usage.
@@ -311,9 +311,8 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
 
 - **Deferred: finish the real video upload — and it must be done in the Cloudflare dashboard.** *Add `http://localhost:3100` to the R2 bucket's CORS `AllowedOrigins`, or re-test on :3000 later.*
   - **Do not try to script it.** Attempted 2026-08-07 with the app's own R2 credentials: `GetBucketCors` on `hisab-media` returns **`AccessDenied`**. The token in `.env.local` carries object permissions (put/get/delete), not bucket configuration — so `PutBucketCors` over the S3 API is not an option either. It is the dashboard, or a new token with admin scope. Not a code defect — attempted 2026-08-06 with a genuine MP4 and the server started a real multipart upload (valid `uploadId`), then the browser's cross-origin PUT was refused because `AllowedOrigins` lists `http://localhost:3000` (see README) and **not** `:3100`. The whole platform works on :3100; only the upload fails, which is what makes it look like a bug.
-  - The client cleans up correctly on failure: it aborts the R2 multipart upload and removes the `CourseMaterial` row, so a failed attempt leaves no orphan in either place (verified — only the 4 seeded lessons remained).
-  - The origin check is **port-sensitive**. A host-only reading of `AllowedOrigins` is exactly what hides this, so the upload error messages now name the port explicitly.
-  - Still genuinely untested end-to-end: a completed upload driving a lesson to `status = READY`, and playback from R2.
+  - **⚠ The paragraph above is wrong and is kept only as a record of how it went wrong.** The upload was never blocked by the bucket's CORS policy. It was blocked by **our own CSP** — see the section below. The CORS story survived two sessions because `GetBucketCors` returns `AccessDenied` to the app's token, so it could not be checked from here and was assumed instead of tested.
+  - Still true and still worth keeping: on failure the client aborts the R2 multipart upload and removes the `CourseMaterial` row, leaving no orphan on either side. Re-verified after the fix by deleting the uploaded lesson — bucket back to **0 objects**, DB back to the 4 seeded placeholders.
 
 - **Student and registered-visitor roles are still unexercised.** `student.test@masar.bh` (bought, has a graded attempt and an instructor message) and `fresh.visitor@masar.bh`. Their passwords never existed anywhere — both accounts came from self-signup testing, not the seed — so `scripts/set-seed-passwords.mts` now covers them via `SEED_STUDENT_PASSWORD` / `SEED_VISITOR_PASSWORD`.
 - **Blocked on you, not on code — the repository has no git remote at all.** `git remote -v` is empty (checked 2026-08-07), so two items cannot be started from here:
@@ -452,6 +451,41 @@ So the rule is implemented in the function nobody calls, and absent from the one
 **Fix it in the playback path, not by loosening the route.** `getPlaybackUrl` needs the `isFreePreview` branch (and to accept an anonymous caller for that case only); `stream/route.ts` must stop rejecting anonymous requests *before* the access check. Deleting the unused `canViewLesson` in favour of one real path would be better than leaving two.
 
 **Also still true:** no lesson has a file. All four are `status = PENDING` with placeholder `seed/ARAB110/*` keys and the bucket is empty, so even a correct player has nothing to play until a real upload lands (see the deferred CORS item).
+
+## The Upload Was Blocked by Our Own CSP — Fixed 2026-08-08
+
+**The first successful upload in this project's history happened on 2026-08-08.** Everything else about the upload path had been correct for a long time; one line of our own security header stood in front of it.
+
+**What the browser console said** — the only place it was ever visible:
+
+```
+Connecting to 'https://hisab-media.<account>.r2.cloudflarestorage.com/…'
+violates the following Content Security Policy directive:
+"connect-src 'self' https://<account>.r2.cloudflarestorage.com"
+```
+
+**The cause.** `R2_ENDPOINT` is the *account* host, `https://<account>.r2.cloudflarestorage.com`, and `buildCsp` allowed exactly that. But the AWS SDK signs **virtual-hosted-style** URLs, where the bucket is a subdomain: `https://<bucket>.<account>.r2.cloudflarestorage.com`. To a browser those are two different origins, so every `PUT` of a part was refused before it left the page. `media-src` had the same hole, so **playback was blocked by the same bug** — it just had no `READY` lesson to fail on. `r2Origins()` now derives the bucket origin too.
+
+### Why this went misdiagnosed for two sessions
+
+A CSP refusal and a CORS refusal both surface as a bare `xhr.onerror` with no detail. From the failure alone they are indistinguishable — so the first plausible story stuck, and it happened to be the wrong one. Two things kept it alive:
+
+- The bucket's CORS policy **cannot be read with the app's token** (`GetBucketCors` → `AccessDenied`), so the theory could never be falsified from here.
+- The error message that was added to help actually said "check the CORS policy", which sent the next person to the Cloudflare dashboard — away from the real cause. It now says to open the console, because that is the only place the two are distinguishable.
+
+**The rule: diagnose `xhr.onerror` from the browser console, never from the exception.** The exception carries nothing.
+
+### The evidence, end to end
+
+| | Result |
+|---|---|
+| Upload a real MP4 | completed |
+| `CourseMaterial` | `status = READY`, `publishedAt` set, `sizeBytes = 65568` |
+| The object in R2 | `courses/<courseId>/videos/<materialId>.mp4`, **65568 bytes** — byte-for-byte with the row |
+| `GET …/stream` as staff | **302** to a signed URL |
+| Delete the lesson | DB row gone **and** bucket back to 0 objects — no orphan either way |
+
+**Still unproven, and now much narrower:** a student who owns one bundle requesting a lesson from another. The lesson used here belonged to no product, so only the staff path was exercised. Attach a `READY` lesson to one bundle and request it as a buyer of a different one — **404, not 302**, is the pass.
 
 ## Never Run `next dev` and `next start` at the Same Time Here
 

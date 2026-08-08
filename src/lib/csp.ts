@@ -29,10 +29,35 @@ function originOf(url: string | undefined): string | null {
 /**
  * نطاقات R2: الفيديو يُشغَّل من رابط مؤقّت موقّع، والرفع يذهب مباشرة من
  * المتصفح إلى نفس النطاق. بدونهما يُحجب التشغيل والرفع معًا.
+ *
+ * ── ولماذا نطاق الدلو أيضًا ─────────────────────────────────────────
+ * `R2_ENDPOINT` نطاق الحساب: `https://<account>.r2.cloudflarestorage.com`.
+ * لكن الروابط الموقّعة التي يولّدها SDK بأسلوب **virtual-hosted**، أي
+ * الدلو نطاقٌ فرعي: `https://<bucket>.<account>.r2.cloudflarestorage.com`.
+ * وهما أصلان مختلفان عند المتصفح.
+ *
+ * فكان الرفع يُحجب بـCSP الخاصة بنا لا بسياسة CORS على الدلو — والخطأ
+ * الظاهر واحد في الحالتين (`xhr.onerror` بلا تفصيل)، فسهل أن يُنسب
+ * إلى الطرف الخطأ. رُصد أخيرًا من وحدة تحكّم المتصفح:
+ *
+ *   Connecting to 'https://<bucket>.<account>.r2.cloudflarestorage.com/…'
+ *   violates … "connect-src 'self' https://<account>.r2.cloudflarestorage.com"
+ *
+ * والتشغيل كان محجوبًا بالعلّة نفسها عبر `media-src`.
  */
 function r2Origins(): string[] {
+  const endpoint = originOf(process.env.R2_ENDPOINT);
+  const bucket = process.env.R2_BUCKET_NAME?.trim();
+
+  /** نطاق الدلو الفرعي المشتقّ من نطاق الحساب */
+  const bucketOrigin =
+    endpoint && bucket
+      ? endpoint.replace("://", `://${bucket}.`)
+      : null;
+
   const values = [
-    originOf(process.env.R2_ENDPOINT),
+    endpoint,
+    bucketOrigin,
     originOf(process.env.R2_PUBLIC_BASE_URL),
   ].filter((value): value is string => Boolean(value));
 
