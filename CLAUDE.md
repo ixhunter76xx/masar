@@ -193,7 +193,7 @@ A full gap audit was run on 2026-08-07 and turned into a six-phase plan. Two ite
 | 2 | identity — session revalidation, login throttle, role change, forced password change | **done** |
 | 3 | one named access filter across the 13 sites; assessments self-guard | **done** |
 | 4 | faculties, course + bundle admin screens, presenter reassignment, video upload | **done** |
-| 5 | pooled `DATABASE_URL`, error-reporting seam, git remote, CI | **done 2026-08-09** — seam, remote, green CI, pooled URL. Only git-connected auto-deploy is left, and it is a Netlify setting |
+| 5 | pooled `DATABASE_URL`, error-reporting seam, git remote, CI | **done 2026-08-09** — seam, remote, green CI, pooled URL, and git-connected auto-deploy |
 | 6 | 404 status, slug casing, currency, empty states, legal pages, mobile, analytics | **mostly done** — analytics not started; the 404 status is deferred by your decision |
 
 Everything marked done was verified in a browser or against live data, not by reading. Each has its own section below with the evidence.
@@ -202,7 +202,7 @@ Everything marked done was verified in a browser or against live data, not by re
 
 1. ~~**No git remote.**~~ **Done 2026-08-09** — `origin` is `https://github.com/ixhunter76xx/masar.git` (private). See "The Repository Has a Remote" below.
 2. ~~**`DATABASE_URL` on Netlify is the direct host.**~~ **Done 2026-08-09** — pooled, with `DIRECT_URL` split out.
-3. ~~**Production is stale.**~~ **Done 2026-08-09** — production is `master @ 92274f2`. What is *not* done: the Netlify site is still not git-connected, so deploys remain manual. That is a Netlify setting, not a git one.
+3. ~~**Production is stale.**~~ **Done 2026-08-09** — production is `master`, deployed automatically from git. Pushing to `master` publishes; there is nothing manual left in the loop.
 
 ### Live data, so you are not surprised by it
 
@@ -217,7 +217,7 @@ The bundle boundary is now proven on **real playback**, not only on listings and
 Ordered by what blocks real use. Everything else from that pass is done and documented in the sections below.
 
 1. ~~**Video upload → R2.**~~ **Works, proven end to end 2026-08-08** — see "The Upload Was Blocked by Our Own CSP" below. Upload, `READY`, a real object in the bucket, a 302 to a signed playback URL, and deletion clearing both sides.
-2. ~~**A git remote.**~~ **Done 2026-08-09** — see "The Repository Has a Remote" below. Deploys are still manual, because that is a Netlify setting, not a git one.
+2. ~~**A git remote.**~~ **Done 2026-08-09** — see "The Repository Has a Remote" below. Auto-deploy followed the same day.
 3. ~~**`DATABASE_URL` on Netlify → the pooled host.**~~ **Done 2026-08-09.**
 4. **Analytics / reports.** Not started. `reportError` is the only observability seam and it is for faults, not usage.
 5. **The 200-instead-of-404 status** in the protected area. Deliberately deferred by the owner; the public catalogue already returns a correct 404.
@@ -351,7 +351,7 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
 - **Student and registered-visitor roles are still unexercised.** `student.test@masar.bh` (bought, has a graded attempt and an instructor message) and `fresh.visitor@masar.bh`. Their passwords never existed anywhere — both accounts came from self-signup testing, not the seed — so `scripts/set-seed-passwords.mts` now covers them via `SEED_STUDENT_PASSWORD` / `SEED_VISITOR_PASSWORD`.
 - ~~**Blocked on you, not on code — the repository has no git remote at all.**~~ **The remote exists as of 2026-08-09** (see below). Of the two items it blocked, one is unblocked and one is not:
   - **CI is live.** `.github/workflows/ci.yml` runs `npm ci` → `prisma generate` → `tsc --noEmit` → `build:local`, and fired on the first push. It deliberately uses `build:local`, because `npm run build` runs `prisma migrate deploy` and would touch the only database on every check.
-  - **Deploys are still manual.** A remote is necessary but not sufficient: the Netlify site must additionally be pointed at the GitHub repo in Netlify's own settings. Until that, every deploy stays a CLI push from one machine.
+  - ~~**Deploys are still manual.**~~ **Also done 2026-08-09.** A remote was necessary but not sufficient — the Netlify site had to be pointed at the repo in Netlify's own settings, a separate step, and the one that then exposed the secrets-scanning fault.
 - ~~**`DATABASE_URL` on Netlify → pooled endpoint.**~~ **Applied 2026-08-09 — read the section below before touching these variables again.**
 
 ### The Env-Var Change, and the Trap in Setting It
@@ -370,7 +370,7 @@ Observed 2026-08-05: `npx prisma migrate reset --force` dropped and re-migrated 
 
 **A known warning, not an error:** the function log shows `pg` complaining that `sslmode=require` is treated as `verify-full` today and will adopt weaker libpq semantics in `pg v9`. Netlify labels anything on stderr as `ERROR`. Switch both URLs to `sslmode=verify-full` when convenient.
 - **Error reporting has a seam, not a vendor.** `src/lib/observability.ts` exports `reportError(scope, error, context)`, writing one structured JSON line so the host's logs stay searchable; `markOrderPaid` and `refundOrder` use it. Wiring Sentry is three lines inside that one function plus a `SENTRY_DSN` — no call site changes. It is for *unexpected* failures only: validation and permission refusals are answers, not faults, and reporting them makes the monitor useless.
-- Redeploy production — it is three days and ~12 commits behind (see Deployment section)
+- ~~Redeploy production~~ — **done 2026-08-09**, and it now redeploys itself on every push to `master`.
 - Tap Payments webhook integration (blocked on licensing — see Payment Architecture section)
 
 ## The Repository Has a Remote — 2026-08-09
@@ -398,7 +398,7 @@ Every branch's remote SHA equals its local SHA, `git log --branches --not --remo
 
 Site `hisab-lms` → `https://hisab-lms.netlify.app`, project id `c4f1e74f-5254-485b-9a5c-ac40e0b3c32d` (matches `.netlify/state.json`). Build command `npm run build` and publish dir are configured **in the Netlify UI**, not in a committed `netlify.toml`; the Next.js runtime comes from `@netlify/plugin-nextjs`.
 
-- **The site is not git-connected.** All deploys so far were manual CLI deploys — the deploy records carry no `branch` or `commit_ref`. Nothing deploys automatically when you commit. *Still true on 2026-08-09*: a remote now exists and GitHub was authorised in Netlify's link wizard, but the repo was never selected, so `build_settings` is still `{}`.
+- ~~**The site is not git-connected.**~~ **Connected 2026-08-09** to `ixhunter76xx/masar`, production branch `master`, build command `npm run build`. Pushing to `master` now builds and publishes on Netlify's servers. Verified: the published deploy carries `branch: master`, `commit_ref: d0877de`, state `ready`.
 - ~~**Production is badly stale.**~~ **Fixed 2026-08-09 — production runs `master @ 92274f2`.** What it was, and why it matters as a lesson, is below.
 - **`npm run build` runs `prisma migrate deploy`.** Every deploy touches the production database. Harmless when nothing is pending, but know it happens.
 
@@ -420,6 +420,26 @@ Three things worth keeping from this:
 - **`/dashboard` was never a removed route.** `src/app/(app)/dashboard/page.tsx` exists and `manifest.ts` uses it as `start_url`. "The route is gone" was the wrong first guess.
 - **`P2022` proves the connection succeeded.** A bad `DATABASE_URL` fails as `P1001`/`P1013` — a *connection* error with no table names. Use the error class to tell a config fault from a schema fault before touching config.
 - **A schema migration silently breaks every deploy older than it.** There is one database. Re-migrating it is a deploy-forcing event, not just a local one — treat "the DB moved ahead of production" as an outage, not as debt.
+
+### Connecting Git Broke The Build — Secrets Scanning, 2026-08-09
+
+The first two git-triggered builds both failed with exit code 2 while the live site stayed up on the last manual deploy. The cause was not the code and not the pooled URL:
+
+```
+Scanning complete. 228 file(s) scanned. Secrets scanning found 2 instance(s)
+Secret env var "R2_BUCKET_NAME"'s value detected:  .env.example:37, CLAUDE.md ×3
+Secret env var "AUTH_URL"'s value detected:        CLAUDE.md ×2
+```
+
+**Every variable on this site had been marked *secret*, including two that are not secrets** — a bucket name (`hisab-media`) and the public site URL. Their values legitimately appear in `.env.example` and in this file, so the scanner refused to publish.
+
+**Why it only surfaced on 2026-08-09:** `netlify deploy --build` builds *locally* and uploads the result — **secrets scanning never runs on that path.** It runs only on Netlify's own builders. Every deploy in this project's history had been a CLI deploy, so a latent misconfiguration sat invisible until the repo was linked. Expect the same class of surprise for anything else that only runs server-side.
+
+**The fix was to correct the classification, not to silence the scanner.** `R2_BUCKET_NAME` and `AUTH_URL` are now plain; `AUTH_SECRET`, `DATABASE_URL`, `DIRECT_URL`, `R2_ACCESS_KEY_ID`, `R2_ACCOUNT_ID`, `R2_ENDPOINT`, `R2_SECRET_ACCESS_KEY` stay secret and keep being scanned. `SECRETS_SCAN_OMIT_PATHS` would have blinded the scanner to this whole file — a real credential pasted here later would then ship silently.
+
+**`netlify env:set` cannot remove the secret flag, only add it.** Re-setting a value without `--secret` updates the value and leaves the flag. Clearing it requires `env:unset` followed by `env:set`; pair them in one command so the variable is never missing across a build.
+
+**Before writing a credential-shaped string into any tracked file, check it against the real values** — `git grep -F "$VALUE"` for each secret env var. Confirmed clean on 2026-08-09: no value of any of the six real secrets appears in a tracked file.
 
 ### Verifying a deploy from here
 
