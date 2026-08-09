@@ -13,6 +13,12 @@ tsconfig.tsbuildinfo
 # Prisma
 /src/generated
 
+# Editor/agent config that is local to one machine, not project source.
+# `.agents/skills` IS committed — those are shared. `.claude/skills` only
+# holds symlinks the installer points at absolute paths on this disk, so
+# committing them would break every other checkout.
+.claude
+
 # Netlify — build output and local site link, not source.
 # Was tracked by mistake (296 files, incl. a 23MB function bundle that
 # churned on every deploy). The site id lives in CLAUDE.md if the link
