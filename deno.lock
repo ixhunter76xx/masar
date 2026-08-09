@@ -25,6 +25,7 @@
         "npm:clsx@^2.1.1",
         "npm:dotenv@^17.4.2",
         "npm:lucide-react@^1.28.0",
+        "npm:motion@^12.43.0",
         "npm:next-auth@5.0.0-beta.32",
         "npm:next@15.5.22",
         "npm:prisma@^7.9.1",
