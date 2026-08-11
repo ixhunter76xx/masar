@@ -1,18 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Atom,
-  Briefcase,
-  Cpu,
-  GraduationCap,
-  HeartPulse,
-  Landmark,
-  Layers,
-  Scale,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+import { Atom, Cpu, GraduationCap, Layers, Wrench, type LucideIcon } from "lucide-react";
 
 import { CourseCard } from "@/components/public/CourseCard";
 import { NOT_OFFERED_LABEL, type FacultyIconKey, type Station } from "@/lib/faculties";
@@ -43,13 +32,10 @@ import type { CourseCard as CourseCardData } from "@/lib/data/courses";
 const ICONS: Record<FacultyIconKey, LucideIcon> = {
   arts: GraduationCap,
   it: Cpu,
-  engineering: Wrench,
   science: Atom,
-  business: Briefcase,
-  law: Scale,
-  health: HeartPulse,
-  applied: Layers,
-  teachers: Landmark,
+  engineering: Wrench,
+  /* كلية من قاعدة البيانات خارج قائمة المنصة — تُعرض ولا تُخفى */
+  other: Layers,
 };
 
 export function FacultyStations({
