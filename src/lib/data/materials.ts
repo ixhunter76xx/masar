@@ -85,23 +85,40 @@ export async function listLessonsForPlanner(courseId: string) {
  * يهمّ المنتج. التصفية تتم في الذاكرة بعد استعلام واحد لمعرّفات
  * الدروس المتاحة، لا باستعلام لكل صف.
  */
+/* `userId`/`role` لم يعودا معاملين: `accessibleLessonIds` تقرأ الجلسة
+   بنفسها وتعيد `isStaff`. معامل باسم دور لا يؤثّر في شيء يوهم القارئ
+   التالي بأن الدالة واعية بالأدوار — وهي ليست كذلك. */
 export async function getCourseMaterials(
   courseId: string,
-  userId: string,
-  role: Role,
 ): Promise<MaterialListItem[]> {
-  const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
-
+  /* ══ الرؤية بالملكية، والتشغيل بالجاهزية ══════════════════════════
+   *
+   * كان الطالب لا يرى إلا الدروس `READY` المرفوعة، فمقرر اشتراه كاملًا
+   * ولم تُرفع محاضراته بعد يظهر له **فارغًا تمامًا** — يُقرأ معطوبًا أو
+   * مهجورًا، لا منظَّمًا في انتظار الرفع.
+   *
+   * الفصل الصحيح: **الملكية تقرّر ما يُرى، والجاهزية تقرّر ما يُشغَّل.**
+   * الدرس المخطَّط عنوانٌ وترتيبٌ في منهج يملكه الطالب فعلًا، وهذه
+   * معلومة له لا عنه.
+   *
+   * ── لماذا سقط شرط `publishedAt` بلا خطر ────────────────────────────
+   * `CourseMaterial.publishedAt` لا تُكتب إلا في موضعين، كلاهما في
+   * مسار الفيديو: تُضبط عند اكتمال الرفع وتُمسح عند حذفه. **لا يوجد
+   * زرّ نشر/إخفاء لدرس**، فالحقل مرادف لـ«له ملف» لا قرار تحريري —
+   * ولا مسودة هنا تُحمى. (الشرط الآخر `status = READY` يقول الشيء
+   * نفسه، فكانا شرطًا واحدًا مكرّرًا.)
+   *
+   * ── ما لم يتغيّر ───────────────────────────────────────────────────
+   * ترشيح `viewable` باقٍ كما هو: من لا يملك الدرس لا يراه، مخطَّطًا
+   * كان أو مرفوعًا. والتشغيل يمرّ من `getPlaybackUrl` التي ترفض
+   * `publishedAt === null` مستقلّةً عن هذا الاستعلام، و`MaterialList`
+   * لا تُركّب المشغّل إلا عند `READY`. الحدّ المدفوع لم يُمسّ.
+   * ═══════════════════════════════════════════════════════════════════ */
   // المحاضرات تستخدم `viewable` — وهي وحدها ما تشمله المعاينة المجانية
   const [{ isStaff, viewable }, rows] = await Promise.all([
     accessibleLessonIds(courseId),
     db.courseMaterial.findMany({
-      where: {
-        courseId,
-        ...(canSeeDrafts
-          ? {}
-          : { status: MaterialStatus.READY, publishedAt: { not: null } }),
-      },
+      where: { courseId },
       orderBy: [{ position: "asc" }, { createdAt: "asc" }],
       select: {
         id: true,
