@@ -5,7 +5,11 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/server/db";
 import { auth } from "@/auth";
-import { hasCourseAccess, enrolledInCourse } from "@/lib/data/access";
+import {
+  hasCourseAccess,
+  enrolledInCourse,
+  accessibleLessonIds,
+} from "@/lib/data/access";
 import { Role } from "@/generated/prisma/enums";
 
 export type CourseCard = {
@@ -313,3 +317,86 @@ export const requireCourseAccess = cache(async function requireCourseAccess(
 
 /** يُبقي الاسم القديم عاملًا في الصفحات التي لم تُحدَّث بعد */
 export const getCourseForUser = requireCourseAccess;
+
+/**
+ * ══ من أين يُستأنف المقرر ═══════════════════════════════════════════
+ *
+ * «مقرراتي» كانت تقول ما تملك ولا تقول أين وقفت — وأول ما يريده
+ * العائد هو زرّ واحد يعيده إلى مكانه.
+ *
+ * ── لماذا لا تعتمد على التقدّم وحده ─────────────────────────────────
+ * `LessonProgress` موجود في المخطط بفهرس `[userId, updatedAt]` — أي
+ * فهرس استئناف بالضبط — لكن **لا شيء يكتب فيه بعد**: لا مشغّل يسجّل
+ * الموضع. ميزةٌ تُبنى عليه وحده تظهر فارغة دائمًا فتبدو معطوبة.
+ *
+ * فالجواب مركّب: إن وُجد تقدّم فهو «تابع من»، وإلا فأول درس جاهز
+ * يملكه الطالب وهو «ابدأ من». تصحّ اليوم، وتترقّى وحدها يوم يبدأ
+ * التسجيل بلا تعديل هنا.
+ *
+ * ── الملكية تُسأل من البوّابة لا تُعاد اشتقاقًا ──────────────────────
+ * `accessibleLessonIds` هي نفسها المستعملة في القوائم والصفحات. أي
+ * استعلام ملكية جديد هنا يصير مصدرًا ثانيًا للحقيقة — وهو ما كلّف
+ * هذا المشروع حدود الحزم مرة.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+export type CourseResume = {
+  /** الدرس الذي يُفتح عند الضغط — فارغ إن لا درس جاهز متاح */
+  lesson: { id: string; title: string; position: number } | null;
+  /** هل يُستأنف من تقدّم محفوظ أم يبدأ من الأول */
+  kind: "resume" | "start";
+  /** دروس جاهزة يملكها المستخدم */
+  ownedReady: number;
+  /** دروس جاهزة في المقرر كلّه */
+  totalReady: number;
+  /** دروس أنهاها — صفر حتى يبدأ تسجيل التقدّم */
+  completed: number;
+};
+
+export const getCourseResume = cache(async function getCourseResume(
+  courseId: string,
+): Promise<CourseResume> {
+  const session = await auth();
+  const empty: CourseResume = {
+    lesson: null,
+    kind: "start",
+    ownedReady: 0,
+    totalReady: 0,
+    completed: 0,
+  };
+  if (!session?.user) return empty;
+
+  const { isStaff, owned } = await accessibleLessonIds(courseId);
+
+  /* الدروس الجاهزة والمنشورة فقط: الدرس المخطَّط بلا ملف لا يُستأنف */
+  const ready = await db.courseMaterial.findMany({
+    where: { courseId, status: "READY", publishedAt: { not: null } },
+    orderBy: { position: "asc" },
+    select: { id: true, title: true, position: true },
+  });
+
+  const mine = isStaff ? ready : ready.filter((m) => owned.has(m.id));
+  if (mine.length === 0) {
+    return { ...empty, totalReady: ready.length };
+  }
+
+  const mineIds = mine.map((m) => m.id);
+  const progress = await db.lessonProgress.findMany({
+    where: { userId: session.user.id, lessonId: { in: mineIds } },
+    orderBy: { updatedAt: "desc" },
+    select: { lessonId: true, completedAt: true },
+  });
+
+  const completed = progress.filter((p) => p.completedAt !== null).length;
+  const lastOpen = progress.find((p) => p.completedAt === null);
+  const lesson = lastOpen
+    ? (mine.find((m) => m.id === lastOpen.lessonId) ?? mine[0])
+    : mine[0];
+
+  return {
+    lesson,
+    kind: lastOpen ? "resume" : "start",
+    ownedReady: mine.length,
+    totalReady: ready.length,
+    completed,
+  };
+});
