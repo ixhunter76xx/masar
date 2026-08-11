@@ -53,7 +53,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
-  themeColor: "#0d1013",
+  /* يطابق `--color-ink` في globals.css — عند تغيير القاعدة غيّره هنا،
+     وإلا ظهر شريط المتصفّح بلون لا يطابق أعلى الصفحة. */
+  themeColor: "#0a0e12",
   colorScheme: "dark",
   /* عند التثبيت على آيفون تمتدّ الصفحة تحت النتوء وشريط الإيماءة،
      و`viewport-fit: cover` مع حشو المنطقة الآمنة في globals.css يمنع

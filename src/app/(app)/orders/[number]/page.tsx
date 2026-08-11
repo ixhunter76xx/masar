@@ -128,7 +128,7 @@ export default async function OrderPage({ params }: Params) {
             href="/learn"
             className="press mt-4 flex min-h-touch w-full items-center justify-center gap-2
               rounded-[10px] border border-line bg-panel text-sm font-medium text-paper
-              transition-colors hover:border-accent-deep hover:bg-[#16212d]"
+              transition-colors hover:border-accent-deep hover:bg-panel-lift"
           >
             ابدأ الدراسة
             <ArrowLeft size={15} strokeWidth={2} aria-hidden="true" />
