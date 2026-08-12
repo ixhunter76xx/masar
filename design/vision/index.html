@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="ink">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -17,46 +17,101 @@
    لا يستطيع المكدّس تنفيذه تجعل الموافقة عليها بلا قيمة.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ═══ ثلاثة اتجاهات لونية على نفس التخطيط ═══════════════════════════
+   كل قرار لوني في هذا الملف يمرّ من هذه الرموز، فتبديل الاتجاه سطرٌ
+   واحد على <html>.  وهذا في ذاته نتيجة تستحق الذكر: التصميم قابل
+   للتلوين، فاختيار الاتجاه ليس قرارًا يُدفن في الكود.
+
+   الرموز الدلالية (`--on-accent`, `--sunk`, `--hair`, `--shadow`)
+   موجودة لأن الوضع الفاتح يقلب معنى «أفتح» و«أغمق».  بلا هذه الطبقة
+   يستحيل قلب النظام دون إعادة كتابته. */
 :root{
-  /* ── سلّم الأسطح — مدى أوسع مما في الإنتاج ──────────────────────────
-     الإنتاج اليوم أربع درجات في شريط ضيّق، فتبدو كل بطاقة ملصقة.
-     هنا القاعدة أعمق والأسطح أعلى، فيظهر ارتفاع حقيقي. */
-  --ink:        #07090c;
-  --ink-lift:   #0b0f14;
-  --panel:      #121c26;
-  --panel-lift: #1a2735;
-  --panel-high: #223243;
-  --line:       #2b3d4d;
-  --line-soft:  #1d2935;
-
-  --paper:  #eef4f8;
-  --muted:  #9db0be;
-  --subtle: #74899a;
-  --faint:  #55697a;
-
-  /* الأزرق الرمادي — هوية مسار، بلا تغيير */
-  --accent:        #7e9aae;
-  --accent-bright: #a9c3d4;
-  --accent-deep:   #4f6d83;
-  --action:        #8fb2c8;
-
-  /* الشرارة — للتقدّم والإنجاز حصرًا.  لا تُستعمل لأي شيء آخر. */
-  --spark:      #4fe3b9;
-  --spark-deep: #2aa88a;
-
-  --warning: #d9a961;
-  --danger:  #c26461;
-
   --r-field: 11px;
   --r-card:  16px;
   --r-lg:    22px;
-
   --dur-fast: 150ms;
   --dur-base: 240ms;
   --dur-slow: 380ms;
   --ease: cubic-bezier(.22,1,.36,1);
+}
 
-  --glass: rgba(14,20,27,.72);
+/* ── ١ · حبر — الهوية الحالية، بمدى إضاءة أوسع ────────────────────── */
+html[data-theme="ink"]{
+  --ink:#07090c; --ink-lift:#0b0f14;
+  --panel:#121c26; --panel-lift:#1a2735; --panel-high:#223243;
+  --line:#2b3d4d; --line-soft:#1d2935;
+
+  --paper:#eef4f8; --muted:#9db0be; --subtle:#74899a; --faint:#55697a;
+
+  --accent:#7e9aae; --accent-bright:#a9c3d4; --accent-deep:#4f6d83; --action:#8fb2c8;
+  --spark:#4fe3b9; --spark-deep:#2aa88a;
+  --warning:#d9a961; --danger:#c26461;
+  --seg-b:#8b7fc2; --seg-b2:#5b5090;
+
+  --on-accent:#08131a; --on-spark:#04231b;
+  --sunk:rgba(7,9,12,.55); --sunk-2:rgba(18,28,38,.55);
+  --hair:rgba(255,255,255,.05); --shadow:rgba(0,0,0,.4);
+  --shadow-lift:rgba(0,0,0,.8);
+  --glass:rgba(14,20,27,.72);
+  --halo-1:rgba(79,109,131,.42); --halo-2:rgba(126,154,174,.16); --halo-3:rgba(79,109,131,.14);
+  --watermark:rgba(169,195,212,.045);
+  --grain:.035;
+}
+
+/* ── ٢ · شفق — نيلي عميق بلمسة مشمشية دافئة ────────────────────────
+   ما تعالجه: لوحة «حبر» كلها باردة، فكل الحالات في حرارة شعورية
+   واحدة.  هنا القاعدة نيلية والفعل مشمشي دافئ، فينشأ تباين حرارة
+   يفصل «اقرأ» عن «افعل» بلا الاعتماد على السطوع وحده.
+   النعناع باقٍ للتقدّم — والتباين معه هو المقصود. */
+html[data-theme="dusk"]{
+  --ink:#0a0813; --ink-lift:#0f0c1c;
+  --panel:#191430; --panel-lift:#221b40; --panel-high:#2c2352;
+  --line:#3a2f63; --line-soft:#241d44;
+
+  --paper:#f1ecfa; --muted:#b5aacf; --subtle:#8b80a9; --faint:#685e85;
+
+  --accent:#d99a6c; --accent-bright:#f2c49d; --accent-deep:#a76d46; --action:#e8ae7e;
+  --spark:#4fe3b9; --spark-deep:#2aa88a;
+  --warning:#e0b45f; --danger:#d0655f;
+  --seg-b:#7c6ad0; --seg-b2:#4f3fa0;
+
+  --on-accent:#2a1607; --on-spark:#04231b;
+  --sunk:rgba(10,8,19,.6); --sunk-2:rgba(25,20,48,.6);
+  --hair:rgba(255,255,255,.055); --shadow:rgba(0,0,0,.45);
+  --shadow-lift:rgba(0,0,0,.82);
+  --glass:rgba(16,12,30,.74);
+  --halo-1:rgba(150,105,70,.30); --halo-2:rgba(120,95,200,.20); --halo-3:rgba(90,70,170,.16);
+  --watermark:rgba(242,196,157,.05);
+  --grain:.03;
+}
+
+/* ── ٣ · ورق — الرهان المضادّ: فاتح دافئ كورق الكتاب ────────────────
+   لماذا يستحق التجربة: العربية نشأت على الورق، والنص الطويل يُقرأ
+   عليه أريح.  وهو عكس كل منصّة داكنة متشابهة.
+   وأين يضعف: المنصة تُشاهَد فيها فيديوهات طويلة، والداكن أرحم للعين
+   في جلسة مساء — وشعار مسار نفسه بادج كحلي داكن. */
+html[data-theme="paper"]{
+  --ink:#f1ece1; --ink-lift:#f7f3ea;
+  --panel:#fffdf9; --panel-lift:#fffefc; --panel-high:#ffffff;
+  --line:#dcd2c0; --line-soft:#e9e2d5;
+
+  /* `subtle` عُتِّم درجتين: عند #6d7784 كان تباينه على البطاقة 4.47 —
+     أي دون عتبة AA بقليل، وهو لون التسميات في كل مكان. */
+  --paper:#1b232e; --muted:#4e5966; --subtle:#646d7a; --faint:#98a1ac;
+
+  --accent:#2f6f8f; --accent-bright:#1d5670; --accent-deep:#7ea7bd; --action:#2f6f8f;
+  --spark:#0e8f6e; --spark-deep:#0a7156;
+  --warning:#a8722a; --danger:#b0413c;
+  --seg-b:#6a5bb5; --seg-b2:#9a8fd0;
+
+  --on-accent:#ffffff; --on-spark:#ffffff;
+  --sunk:rgba(27,35,46,.045); --sunk-2:rgba(27,35,46,.035);
+  --hair:rgba(255,255,255,.9); --shadow:rgba(27,35,46,.09);
+  --shadow-lift:rgba(27,35,46,.20);
+  --glass:rgba(247,243,234,.82);
+  --halo-1:rgba(47,111,143,.10); --halo-2:rgba(168,114,42,.07); --halo-3:rgba(47,111,143,.05);
+  --watermark:rgba(47,111,143,.055);
+  --grain:.02;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -73,13 +128,13 @@ body{
 body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(70% 44% at 82% -6%, rgba(79,109,131,.42), transparent 62%),
-    radial-gradient(52% 38% at 8% 2%,  rgba(126,154,174,.16), transparent 60%),
-    radial-gradient(90% 46% at 50% 104%, rgba(79,109,131,.14), transparent 72%);
+    radial-gradient(70% 44% at 82% -6%, var(--halo-1), transparent 62%),
+    radial-gradient(52% 38% at 8% 2%,  var(--halo-2), transparent 60%),
+    radial-gradient(90% 46% at 50% 104%, var(--halo-3), transparent 72%);
 }
 /* حبيبات تكسر تدرّج الخلفية فلا تظهر أشرطة لونية */
 body::after{
-  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:var(--grain);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 #app{position:relative;z-index:1}
@@ -101,7 +156,9 @@ body::after{
 
 .spark{color:var(--spark)}
 .grad{
-  background:linear-gradient(155deg,#d5e6f2 0%,var(--accent-bright) 44%,var(--accent-deep) 100%);
+  /* بداية التدرّج مشتقّة من النصّ نفسه لا لونًا مكتوبًا — وإلا اختفى
+     العنوان في الوضع الفاتح لأن البداية شبه بيضاء. */
+  background:linear-gradient(155deg,var(--paper) 0%,var(--accent-bright) 46%,var(--accent-deep) 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 
@@ -109,7 +166,7 @@ body::after{
 .card{
   background:linear-gradient(168deg,var(--panel-lift) 0%,var(--panel) 62%);
   border:1px solid var(--line);border-radius:var(--r-card);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 4px rgba(0,0,0,.4);
+  box-shadow:inset 0 1px 0 var(--hair),0 2px 4px var(--shadow);
 }
 .glass{
   background:var(--glass);
@@ -118,8 +175,8 @@ body::after{
 }
 .lift{transition:transform var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease),box-shadow var(--dur-base) var(--ease)}
 @media(hover:hover){
-  .lift:hover{transform:translateY(-3px);border-color:rgba(79,109,131,.9);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 22px 48px -20px rgba(0,0,0,.8),0 0 38px -16px rgba(169,195,212,.18)}
+  .lift:hover{transform:translateY(-3px);border-color:var(--accent-deep);
+    box-shadow:inset 0 1px 0 var(--hair),0 22px 48px -20px var(--shadow-lift),0 0 38px -16px color-mix(in srgb,var(--accent-bright) 20%,transparent)}
 }
 .press{transition:transform var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
 .press:active{transform:scale(.975)}
@@ -129,23 +186,23 @@ body::after{
   display:inline-flex;align-items:center;justify-content:center;gap:.55rem;
   min-height:44px;padding:0 1.15rem;border-radius:var(--r-field);
   font-size:.9rem;font-weight:500;border:1px solid var(--line);
-  background:rgba(7,9,12,.5);color:var(--paper);cursor:pointer;
+  background:var(--sunk);color:var(--paper);cursor:pointer;
 }
 .btn:hover{border-color:var(--accent-deep);background:var(--panel-lift)}
 .btn-primary{
-  border-color:transparent;color:#08131a;font-weight:600;
+  border-color:transparent;color:var(--on-accent);font-weight:600;
   background:linear-gradient(180deg,var(--accent-bright),var(--action));
 }
 .btn-primary:hover{background:linear-gradient(180deg,#c3daea,var(--accent-bright))}
 .btn-spark{
-  border-color:transparent;color:#04231b;font-weight:600;
+  border-color:transparent;color:var(--on-spark);font-weight:600;
   background:linear-gradient(180deg,var(--spark),var(--spark-deep));
 }
 
 .pill{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);
-  background:rgba(7,9,12,.55);border-radius:999px;padding:.28rem .68rem;font-size:.7rem;font-weight:500;color:var(--subtle)}
-.pill-free{border-color:rgba(79,227,185,.42);background:rgba(79,227,185,.09);color:var(--spark)}
-.pill-warn{border-color:rgba(217,169,97,.4);background:rgba(217,169,97,.09);color:var(--warning)}
+  background:var(--sunk);border-radius:999px;padding:.28rem .68rem;font-size:.7rem;font-weight:500;color:var(--subtle)}
+.pill-free{border-color:color-mix(in srgb,var(--spark) 45%,transparent);background:color-mix(in srgb,var(--spark) 10%,transparent);color:var(--spark)}
+.pill-warn{border-color:color-mix(in srgb,var(--warning) 42%,transparent);background:color-mix(in srgb,var(--warning) 10%,transparent);color:var(--warning)}
 
 .wrap{max-width:1180px;margin-inline:auto;padding-inline:clamp(1rem,3vw,2rem)}
 
@@ -154,15 +211,19 @@ body::after{
 .top-in{display:flex;align-items:center;gap:1rem;height:66px}
 .brand{display:flex;align-items:center;gap:.7rem;font-weight:700;letter-spacing:-.02em}
 .mark{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
-  background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep));color:#08131a;font-weight:700;font-size:.95rem}
+  background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep));color:var(--on-accent);font-weight:700;font-size:.95rem}
 
 /* مبدّل الشاشات — أداة معاينة، ليست جزءًا من التصميم المقترح */
+.themes{margin-inline-start:.6rem}
+.themes button{display:flex;align-items:center;gap:.42rem}
+.themes i{width:13px;height:13px;border-radius:999px;display:block;border:1px solid var(--line)}
+@media(max-width:860px){.themes button span,.screens button{font-size:.72rem;padding:.4rem .55rem}}
 .screens{margin-inline-start:auto;display:flex;gap:2px;padding:4px;border-radius:999px;
-  background:rgba(7,9,12,.6);border:1px solid var(--line-soft)}
+  background:var(--sunk);border:1px solid var(--line-soft)}
 .screens button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
   font:inherit;font-size:.78rem;font-weight:500;padding:.42rem .8rem;border-radius:999px;transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
 .screens button:hover{color:var(--paper)}
-.screens button[aria-current]{background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a;font-weight:600}
+.screens button[aria-current]{background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent);font-weight:600}
 
 .screen{display:none;animation:rise var(--dur-slow) var(--ease) both}
 .screen.on{display:block}
@@ -178,16 +239,16 @@ body::after{
   display:grid;place-items:center;font-size:.72rem;font-weight:600;
   border:1px solid var(--line);background:var(--ink);color:var(--subtle);
   box-shadow:0 0 0 5px var(--ink);transition:all var(--dur-base) var(--ease)}
-.node-done{border-color:transparent;background:linear-gradient(180deg,var(--spark),var(--spark-deep));color:#04231b}
+.node-done{border-color:transparent;background:linear-gradient(180deg,var(--spark),var(--spark-deep));color:var(--on-spark)}
 /* «أنا هنا» موقعٌ لا إنجاز — فيأخذ لون الاختيار لا لون الشرارة.
    الشرارة محجوزة للتقدّم وحده، وصرفها على الموقع يستهلك أثرها. */
-.node-here{border-color:transparent;background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a}
-.node-live{border-color:rgba(79,227,185,.55);color:var(--spark);animation:breathe 3.4s ease-in-out infinite}
+.node-here{border-color:transparent;background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent)}
+.node-live{border-color:color-mix(in srgb,var(--spark) 58%,transparent);color:var(--spark);animation:breathe 3.4s ease-in-out infinite}
 @keyframes breathe{
-  0%,100%{box-shadow:0 0 0 5px var(--ink),0 0 0 6px rgba(79,227,185,.18)}
-  50%{box-shadow:0 0 0 5px var(--ink),0 0 0 10px rgba(79,227,185,.07)}
+  0%,100%{box-shadow:0 0 0 5px var(--ink),0 0 0 6px color-mix(in srgb,var(--spark) 19%,transparent)}
+  50%{box-shadow:0 0 0 5px var(--ink),0 0 0 10px color-mix(in srgb,var(--spark) 8%,transparent)}
 }
-.node-wait{border-style:dashed;border-color:rgba(217,169,97,.45);color:var(--warning)}
+.node-wait{border-style:dashed;border-color:color-mix(in srgb,var(--warning) 48%,transparent);color:var(--warning)}
 .node-lock{color:var(--faint)}
 
 .stop{position:relative;margin-bottom:.6rem}
@@ -213,8 +274,8 @@ body::after{
 .station{display:flex;align-items:center;gap:.85rem;width:100%;text-align:start;background:transparent;
   border:0;border-radius:var(--r-field);padding:.55rem .7rem .55rem .4rem;cursor:pointer;font:inherit;
   transition:background-color var(--dur-base) var(--ease)}
-.station:hover{background:rgba(26,39,53,.55)}
-.station[aria-current]{background:rgba(26,39,53,.85)}
+.station:hover{background:color-mix(in srgb,var(--panel-lift) 62%,transparent)}
+.station[aria-current]{background:color-mix(in srgb,var(--panel-lift) 92%,transparent)}
 .station-name{font-size:.86rem;color:var(--muted);transition:color var(--dur-base) var(--ease)}
 .station[aria-current] .station-name{color:var(--paper);font-weight:600}
 .station-sub{font-size:.66rem;color:var(--subtle)}
@@ -224,10 +285,10 @@ body::after{
 
 .course{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:1.4rem;text-decoration:none;color:inherit;cursor:pointer}
 .course-code{position:absolute;inset-inline-end:-.4rem;top:-1.4rem;font-family:"IBM Plex Mono",monospace;
-  font-size:4.6rem;font-weight:600;color:rgba(169,195,212,.045);pointer-events:none;letter-spacing:-.05em}
+  font-size:4.6rem;font-weight:600;color:var(--watermark);pointer-events:none;letter-spacing:-.05em}
 .course-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
 .course-foot{margin-top:auto;padding-top:1.1rem;border-top:1px solid var(--line-soft);display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
-.avatar{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:#08131a;
+.avatar{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:var(--on-accent);
   background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep))}
 .price{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:600;letter-spacing:-.03em}
 
@@ -235,27 +296,27 @@ body::after{
 .player{position:relative;aspect-ratio:16/9;border-radius:var(--r-lg);overflow:hidden;
   border:1px solid var(--line);background:radial-gradient(120% 100% at 50% 0%,var(--panel-high),var(--ink) 78%);
   display:grid;place-items:center;cursor:pointer}
-.player::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 45%,rgba(79,227,185,.10),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
+.player::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--spark) 11%,transparent),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
 .player:hover::after{opacity:1}
 .play{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;position:relative;z-index:2;
-  background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a;
-  box-shadow:0 18px 50px -14px rgba(0,0,0,.85);transition:transform var(--dur-base) var(--ease)}
+  background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent);
+  box-shadow:0 18px 50px -14px var(--shadow-lift);transition:transform var(--dur-base) var(--ease)}
 .player:hover .play{transform:scale(1.07)}
 
 /* الشريط المقسَّم — قلب صفحة البيع: يُري الطالب ما الذي تغطّيه كل باقة */
 .segbar{display:flex;gap:3px;margin-block:1rem 1.6rem}
 .seg{height:7px;border-radius:999px;flex:1;position:relative;transition:transform var(--dur-base) var(--ease)}
 .seg-mid{background:linear-gradient(90deg,var(--accent-bright),var(--accent-deep))}
-.seg-fin{background:linear-gradient(90deg,#8b7fc2,#5b5090)}
+.seg-fin{background:linear-gradient(90deg,var(--seg-b),var(--seg-b2))}
 .seg.dim{opacity:.24}
 .segbar.hover-mid .seg-fin{opacity:.2}
 .segbar.hover-fin .seg-mid{opacity:.2}
 
 .tiers{display:grid;gap:1rem}
 .tier{position:relative;padding:1.3rem;cursor:pointer}
-.tier-best{border-color:rgba(169,195,212,.5);background:linear-gradient(168deg,var(--panel-high),var(--panel) 70%)}
+.tier-best{border-color:color-mix(in srgb,var(--accent-bright) 55%,transparent);background:linear-gradient(168deg,var(--panel-high),var(--panel) 70%)}
 .tier-badge{position:absolute;inset-inline-end:1.1rem;top:-.62rem;font-size:.64rem;font-weight:600;
-  padding:.2rem .6rem;border-radius:999px;color:#08131a;background:linear-gradient(180deg,var(--accent-bright),var(--action))}
+  padding:.2rem .6rem;border-radius:999px;color:var(--on-accent);background:linear-gradient(180deg,var(--accent-bright),var(--action))}
 .tier-price{display:flex;align-items:baseline;gap:.4rem;margin-top:.5rem}
 .strike{color:var(--faint);text-decoration:line-through;font-size:.9rem}
 .tier ul{list-style:none;margin-top:.9rem;display:grid;gap:.42rem}
@@ -279,24 +340,24 @@ body::after{
 @keyframes fill{from{width:0 !important}}
 
 .note{display:flex;gap:.7rem;padding:.9rem 1rem;border-radius:var(--r-field);
-  border:1px solid var(--line-soft);background:rgba(7,9,12,.4);font-size:.8rem;line-height:1.85;color:var(--subtle)}
+  border:1px solid var(--line-soft);background:var(--sunk);font-size:.8rem;line-height:1.85;color:var(--subtle)}
 
 /* ═══ لوحة التحكم ══════════════════════════════════════════════════ */
 .resume{position:relative;overflow:hidden;padding:1.6rem;border-radius:var(--r-lg);
-  border:1px solid rgba(79,227,185,.24);
-  background:linear-gradient(150deg,rgba(42,168,138,.14),var(--panel) 58%)}
+  border:1px solid color-mix(in srgb,var(--spark) 26%,transparent);
+  background:linear-gradient(150deg,color-mix(in srgb,var(--spark-deep) 16%,transparent),var(--panel) 58%)}
 .resume::before{content:"";position:absolute;inset-inline-end:-60px;top:-60px;width:240px;height:240px;border-radius:999px;
-  background:radial-gradient(circle,rgba(79,227,185,.16),transparent 68%);pointer-events:none}
+  background:radial-gradient(circle,color-mix(in srgb,var(--spark) 17%,transparent),transparent 68%);pointer-events:none}
 .dash-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
 .mini{padding:1.15rem}
 .mini b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.9rem;font-weight:600;letter-spacing:-.03em;line-height:1.2}
 
 .feed{display:grid;gap:.55rem}
 .feed-row{display:flex;gap:.85rem;align-items:flex-start;padding:.9rem 1.05rem;border-radius:var(--r-field);
-  border:1px solid var(--line-soft);background:rgba(18,28,38,.55);transition:border-color var(--dur-base) var(--ease)}
+  border:1px solid var(--line-soft);background:var(--sunk-2);transition:border-color var(--dur-base) var(--ease)}
 .feed-row:hover{border-color:var(--accent-deep)}
 .dot{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
-  background:rgba(7,9,12,.6);border:1px solid var(--line);color:var(--accent)}
+  background:var(--sunk);border:1px solid var(--line);color:var(--accent)}
 
 .sec-title{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
 .sec-title::before{content:"";width:3px;height:19px;border-radius:2px;background:linear-gradient(180deg,var(--accent-bright),var(--accent-deep))}
@@ -319,6 +380,11 @@ body::after{
       <button data-s="course">صفحة المقرر</button>
       <button data-s="study">الدراسة</button>
       <button data-s="dash">لوحة التحكم</button>
+    </nav>
+    <nav class="screens themes" id="themes" aria-label="الاتجاه اللوني">
+      <button data-t="ink" aria-current="true" title="حبر — الهوية الحالية"><i style="background:linear-gradient(135deg,#a9c3d4,#121c26)"></i>حبر</button>
+      <button data-t="dusk" title="شفق — نيلي بلمسة دافئة"><i style="background:linear-gradient(135deg,#f2c49d,#191430)"></i>شفق</button>
+      <button data-t="paper" title="ورق — فاتح دافئ"><i style="background:linear-gradient(135deg,#2f6f8f,#f1ece1)"></i>ورق</button>
     </nav>
   </div>
 </header>
@@ -684,6 +750,15 @@ $("#nav").addEventListener("click", e=>{
   history.replaceState(null,"","#"+b.dataset.s);
 });
 
+/* الاتجاه اللوني — سطر واحد على <html>، والباقي رموز */
+$("#themes").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-t]"); if(!b) return;
+  document.querySelectorAll("#themes button").forEach(x=>x.removeAttribute("aria-current"));
+  b.setAttribute("aria-current","true");
+  document.documentElement.dataset.theme = b.dataset.t;
+  try{ localStorage.setItem("masar-theme", b.dataset.t); }catch{}
+});
+
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
   t.setAttribute("aria-current","true");
@@ -693,6 +768,11 @@ stations(); catBody(); lessons("#lessons",true); lessons("#study-rail",false); t
 
 const h = location.hash.replace("#","");
 if(h){ const b=document.querySelector(`#nav button[data-s="${h}"]`); if(b) b.click(); }
+
+try{
+  const t = localStorage.getItem("masar-theme");
+  if(t){ const b=document.querySelector(`#themes button[data-t="${t}"]`); if(b) b.click(); }
+}catch{}
 </script>
 </body>
 </html>
