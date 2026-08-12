@@ -6,7 +6,9 @@
 <title>مسار — رؤية التصميم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Amiri خطّ نسخيّ للحروف الطافية في مشهد الآداب وحدها — لا للواجهة.
+     الواجهة تبقى IBM Plex Sans Arabic كما في الإنتاج. -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
 <style>
 /* ═══════════════════════════════════════════════════════════════════════
    مسار — معاينة بصرية معزولة.  بيانات تمثيلية، بلا قاعدة بيانات،
@@ -287,8 +289,20 @@ body::after{
   .lift:hover{transform:translateY(-3px);border-color:var(--accent-deep);
     box-shadow:inset 0 1px 0 var(--hair),0 22px 48px -20px var(--shadow-lift),0 0 38px -16px color-mix(in srgb,var(--accent-bright) 20%,transparent)}
 }
-.press{transition:transform var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.press:active{transform:scale(.975)}
+/* ══ الضغط ═════════════════════════════════════════════════════════
+   الضغط يهبط بسرعة (١٠٠ms) ويعود أبطأ (٢٤٠ms).  التماثل يجعل الزرّ
+   يبدو مطّاطًا؛ والنزول الأسرع من الصعود هو ما يُقرأ «استجاب لي».
+   و`:focus-visible` يأخذ نفس الحلقة فلا تُترك لوحة المفاتيح بلا أثر. */
+.press{transition:transform var(--dur-base) var(--ease),background-color var(--dur-fast) var(--ease),
+  border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),box-shadow var(--dur-base) var(--ease)}
+.press:active{transform:scale(.968);transition-duration:100ms}
+.btn:focus-visible,.press:focus-visible{outline:none;
+  box-shadow:0 0 0 2px var(--ink),0 0 0 4px color-mix(in srgb,var(--accent-bright) 70%,transparent)}
+/* الأزرار الأساسية ترتفع قليلًا عند التصويب — دعوة، لا مجرّد تلوين */
+@media(hover:hover){
+  .btn-primary:hover,.btn-spark:hover{transform:translateY(-1px);
+    box-shadow:0 10px 22px -12px var(--shadow-lift)}
+}
 
 /* ── الأزرار ──────────────────────────────────────────────────────── */
 .btn{
@@ -334,9 +348,20 @@ body::after{
 .screens button:hover{color:var(--paper)}
 .screens button[aria-current]{background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent);font-weight:600}
 
-.screen{display:none;animation:rise var(--dur-slow) var(--ease) both}
+/* الشاشة الداخلة ترتفع وتتّضح؛ والمؤشّر تحت التبويب ينزلق بينها.
+   الانزلاق يقول «هذه هي نفسها انتقلت» بدل «ظهرت واحدة واختفت أخرى». */
+.screen{display:none;animation:screenIn 420ms var(--ease) both}
 .screen.on{display:block}
-@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes screenIn{from{opacity:0;transform:translateY(14px) scale(.995)}to{opacity:1;transform:none}}
+
+/* المؤشّر المنزلق لمبدّل الشاشات وحده — مبدّل الثيم يحتفظ بحبّته
+   المملوءة، وإلا فقد أثر الاختيار فيه. */
+#nav{position:relative}
+#nav .glide{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;z-index:0;
+  background:linear-gradient(180deg,var(--accent-bright),var(--action));
+  transition:transform var(--dur-base) var(--ease),width var(--dur-base) var(--ease)}
+#nav button{position:relative;z-index:1}
+#nav button[aria-current]{background:transparent}
 
 /* ═══ السكّة — العمود الفقري للمنتج ════════════════════════════════
    رأسية دائمًا: المسار الرأسي بلا اتجاه أفقي، فلا ينقلب في RTL. */
@@ -377,15 +402,31 @@ body::after{
 .stat-row{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:3rem;padding-top:1.8rem;border-top:1px solid var(--line-soft)}
 .stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.65rem;font-weight:600;letter-spacing:-.03em}
 
-/* ══ الموجة ════════════════════════════════════════════════════════
-   أعمدة بارتفاعات متغيّرة تتنفّس بإيقاعات مختلفة، فلا تبدو حلقة
-   مكرّرة.  `transform: scaleY` فقط — على المُركِّب، بلا إعادة تخطيط. */
-.wave{display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:3.2rem;
-  opacity:.55;mask-image:linear-gradient(to left,#000 55%,transparent)}
-.wave span{flex:0 0 4px;border-radius:99px;background:var(--accent-deep);
-  transform-origin:bottom;animation:waveBeat var(--d) ease-in-out var(--o) infinite}
-@keyframes waveBeat{0%,100%{transform:scaleY(.28)}50%{transform:scaleY(1)}}
-@media(max-width:640px){.wave{height:48px;gap:4px}}
+/* ══ الطريق في الواجهة ═════════════════════════════════════════════
+   خمس محطّات وضوءٌ يقطعها.  حركة واحدة بطيئة جدًا (٩ ثوانٍ للدورة)
+   تكفي لتقول «حيّ» بلا أن تسرق القراءة. */
+.hero{display:grid;gap:clamp(2.5rem,5vw,4.5rem);align-items:center;grid-template-columns:1fr}
+@media(min-width:940px){.hero{grid-template-columns:1.05fr .95fr}}
+
+.journey{position:relative;padding-inline-start:2.4rem;max-width:22rem;justify-self:center}
+.journey-line{position:absolute;inset-block:14px;inset-inline-start:11px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,transparent,var(--line) 12%,var(--line) 88%,transparent)}
+/* الضوء الجاري — يهبط من أول محطّة إلى آخرها ثم يعيد */
+.journey-run{position:absolute;inset-inline-start:10px;width:4px;height:64px;border-radius:99px;
+  background:linear-gradient(180deg,transparent,var(--spark),transparent);
+  filter:blur(.5px);animation:runDown 9s ease-in-out infinite}
+@keyframes runDown{0%{top:0;opacity:0}12%{opacity:.9}88%{opacity:.9}100%{top:calc(100% - 64px);opacity:0}}
+
+.journey-stops{list-style:none;display:grid;gap:1.45rem}
+.journey-stops li{position:relative;padding-inline-start:.2rem}
+.journey-stops i{position:absolute;inset-inline-start:-2.4rem;top:.42rem;width:11px;height:11px;
+  border-radius:99px;border:1.5px solid var(--line);background:var(--ink);
+  box-shadow:0 0 0 4px var(--ink);transition:all var(--dur-base) var(--ease)}
+.journey-stops li:first-child i,.journey-stops li:last-child i{border-color:var(--accent-deep)}
+.journey-stops li:last-child i{background:var(--spark);border-color:transparent}
+.journey-stops b{display:block;font-size:.9rem;font-weight:600;letter-spacing:-.012em}
+.journey-stops em{display:block;font-style:normal;font-size:.76rem;color:var(--subtle);margin-top:.1rem}
+@media(max-width:939px){.journey{max-width:none;justify-self:stretch}}
 
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
 @media(min-width:1000px){.split{grid-template-columns:16.5rem 1fr;gap:3rem}}
@@ -410,8 +451,11 @@ body::after{
    ويمتدّ لأي كلية جديدة بسطرين — والأهم أنه يبدو مقصودًا لا مستوردًا.
    ═══════════════════════════════════════════════════════════════════ */
 .scene{position:relative;isolation:isolate}
-.scene-art{position:absolute;inset-block:-2rem auto;inset-inline:-1rem;height:300px;z-index:-1;
-  pointer-events:none;opacity:0;mask-image:linear-gradient(to bottom,#000 20%,transparent 92%)}
+/* `meet` لا `slice`: الاقتصاص كان يقطع البوّابات المنطقية فتُقرأ
+   خربشة.  والارتفاع أكبر ليظهر الرسم قبل أن تغطّيه البطاقات. */
+.scene-art{position:absolute;inset-block:-2.5rem auto;inset-inline:-1rem;height:360px;z-index:-1;
+  pointer-events:none;opacity:0;mask-image:linear-gradient(to bottom,#000 42%,transparent 96%)}
+.scene-art svg{preserve-aspect-ratio:none}
 .scene-art.in{animation:sceneIn 620ms var(--ease) both}
 .scene-art.out{animation:sceneOut 320ms var(--ease) both}
 @keyframes sceneIn{from{opacity:0;transform:translateY(-10px) scale(1.04)}to{opacity:.5;transform:none}}
@@ -441,6 +485,18 @@ body::after{
 @keyframes driftY{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 .scene-art .breathe{transform-origin:center;animation:artBreathe 14s ease-in-out infinite}
 @keyframes artBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+
+/* حروف عربية تطفو في مشهد الآداب — سبعة فقط، وبطيئة جدًا.
+   العدد مقصود: ثمانية تصير زحامًا، وثلاثة تصير صدفة. */
+.glyphs{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.glyphs span{position:absolute;font-family:"Amiri",serif;font-weight:700;color:var(--accent);
+  opacity:0;animation:floatGlyph var(--d) ease-in-out var(--o) infinite}
+@keyframes floatGlyph{
+  0%{opacity:0;transform:translateY(14px) rotate(var(--r))}
+  22%{opacity:.30}
+  78%{opacity:.30}
+  100%{opacity:0;transform:translateY(-26px) rotate(var(--r))}
+}
 
 .grid-courses{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))}
 /* دخول البطاقات متتاليًا بعد تبدّل المشهد */
@@ -601,27 +657,40 @@ body::after{
            هذه تقول المسافة التي يقطعها الطالب معنا: من أول محاضرة لم
            يفهمها، إلى الليلة التي يمتحن في صباحها.  لا مفارقة، ولا
            ادّعاء — والاسم «مسار» يقولها معها. -->
-      <span class="hero-tag">جامعة البحرين</span>
-      <h1 class="display" style="margin-top:1rem;max-width:14ch">
-        من أول محاضرة<br /><span class="grad">إلى ليلة الامتحان.</span>
-      </h1>
-      <p class="body">
-        دروس قصيرة بالعربية، مبنية على توصيف مقرَّرك نفسه —
-        وحداته، ومصطلحات أستاذه، وما يُسأل عنه فعلًا.
-      </p>
-      <div class="hero-cta">
-        <button class="btn btn-primary press">شاهد درسًا كاملًا مجانًا</button>
-        <button class="btn press">كيف يُبنى الشرح؟</button>
+      <div class="hero-text">
+        <span class="hero-tag">جامعة البحرين</span>
+        <h1 class="display" style="margin-top:1rem;max-width:11ch">
+          مقرَّرك،<br /><span class="grad">مفهومًا.</span>
+        </h1>
+        <p class="body" style="max-width:38ch">
+          دروس قصيرة بالعربية، مبنية على توصيف مقرَّرك نفسه —
+          وحداته، ومصطلحات أستاذه، وما يُسأل عنه فعلًا.
+        </p>
+        <div class="hero-cta">
+          <button class="btn btn-primary press">شاهد درسًا كاملًا مجانًا</button>
+          <button class="btn press">كيف يُبنى الشرح؟</button>
+        </div>
       </div>
 
-      <!-- ══ الموجة — مأخوذة من اللوغو نفسه ═══════════════════════════
-           في اللوغو موجة صوتية صغيرة عند طرف الكلمة.  هي أفضل أصل بصري
-           في الهوية ولم يكن مستعملًا: الدرس صوتٌ يمتدّ في الزمن،
-           والموجة تقوله بلا أيقونة ولا صورة.
+      <!-- ══ الفراغ على اليسار ═══════════════════════════════════════
+           كان نصف الواجهة فارغًا.  والحلّ ليس زخرفة تملؤه، بل أن يحمل
+           ما لا يقدر العنوان على قوله: **الطريق نفسه**.
 
-           تتنفّس دائمًا — لا تُرسم مرة ثم تجمد.  هذا هو الفارق الذي
-           جعل «كلية العلوم» تبدو حيّة والبقية ميتة. -->
-      <div class="wave" id="wave" aria-hidden="true"></div>
+           العنوان صار وعدًا من كلمتين، والرسم يشرح كيف يتحقّق: خمس
+           محطّات من المحاضرة الأولى إلى ليلة الامتحان، وضوءٌ يقطعها
+           ببطء بلا توقّف.  هذا ليس حشوًا — هو المنتج مرسومًا، واسمه
+           «مسار».  ولأنه رأسي فلا اتجاه فيه ينقلب في RTL. -->
+      <div class="journey" aria-hidden="true">
+        <span class="journey-line"></span>
+        <span class="journey-run"></span>
+        <ol class="journey-stops">
+          <li><i></i><b>المحاضرة الأولى</b><em>لم تفهمها كاملة</em></li>
+          <li><i></i><b>وحدات المقرر</b><em>درسًا بعد درس</em></li>
+          <li><i></i><b>الاختبار النصفي</b><em>مراجعة مركّزة</em></li>
+          <li><i></i><b>ما بعد النصفي</b><em>حتى آخر وحدة</em></li>
+          <li><i></i><b>ليلة الامتحان</b><em>وأنت مستعدّ</em></li>
+        </ol>
+      </div>
     </div>
 
     <div class="sec-title"><h2 class="h2">اختر كليتك</h2></div>
@@ -753,26 +822,14 @@ body::after{
       <button class="btn btn-spark press">أكمل الدرس</button>
     </div>
 
-    <!-- ── لماذا حُذف صفّ الإحصاءات ─────────────────────────────────
-         كان هنا ثلاث بطاقات: «دروس أنهيتها ٢ من ٥»، و«معدّل اختباراتك
-         ٨٧٪»، و«موعد قادم».
+    <!-- ── لوحة التحكّم بلا أرقام ولا مواعيد ─────────────────────────
+         حُذف صفّ الإحصاءات أولًا (معدّل لا يقود إلى فعل، وعدّاد مكرَّر)،
+         ثم حُذف تنبيه الموعد بعده: المنصة ليست تقويمًا، ولا تعرف جدول
+         امتحانات الجامعة أصلًا — فادّعاؤه يَعِد بما لا تملكه.
 
-         المعدّل رقم زهو: ماذا يفعل به الطالب؟ لا شيء.  لا يغيّر قرارًا
-         ولا يقود إلى فعل، ووجوده يزاحم ما يقود.
-         وعدد الدروس المنتهية مكرَّر — شريط التقدّم في بطاقة الاستئناف
-         فوقه يقوله بالفعل.
-         الموعد وحده قابل للفعل ومحكوم بوقت، فبقي — وكبر.
+         ما بقي هو الجواب الوحيد الصادق على «ماذا أفعل الآن؟»:
+         تابع من حيث وقفت. -->
 
-         لوحة التحكّم تجيب سؤالًا واحدًا: ماذا أفعل الآن؟  كل ما لا
-         يجيبه زحام. -->
-    <div class="deadline">
-      <span class="deadline-mark" aria-hidden="true">◷</span>
-      <span style="flex:1;min-width:0">
-        <b style="display:block;font-size:.95rem;font-weight:600">الاختبار النصفي — الأحد القادم</b>
-        <span class="small">يغطّي الاستفهام والصرف · لم تُنهِ درس الصرف بعد</span>
-      </span>
-      <button class="btn press" style="flex:0 0 auto">راجِع الصرف</button>
-    </div>
 
     <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">مقرراتي</h2></div>
     <div class="grid-courses" id="my-courses"></div>
@@ -892,7 +949,7 @@ function courseCard(c,i=0){
 const ART = {
   /* الآداب: خطّ متّصل يسيل بلا انقطاع — كالخطّ العربي، وصلٌ لا حروف
      منفصلة.  الحركة الدائمة ضوءٌ يجري داخل المسار نفسه. */
-  arts:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  arts:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
     <g class="drift">
       <path class="draw" stroke-width="1.4" d="M40,210 C170,60 300,250 430,140 S690,40 860,170"/>
       <path class="draw" stroke-width="1" opacity=".55" d="M40,250 C200,120 320,270 470,180 S720,90 860,215"/>
@@ -904,19 +961,35 @@ const ART = {
             d="M40,250 C200,120 320,270 470,180 S720,90 860,215"/>
     </g>
   </svg>`,
-  /* التقنية: شبكة تسري فيها إشارات — لا شبكة ساكنة */
-  it:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <g stroke-width="1" opacity=".4">
-      ${[0,1,2,3,4].map(r=>`<line class="draw" x1="30" y1="${50+r*52}" x2="870" y2="${50+r*52}"/>`).join("")}
-      ${[0,1,2,3,4,5,6,7].map(c=>`<line class="draw" x1="${60+c*110}" y1="30" x2="${60+c*110}" y2="270"/>`).join("")}
+  /* التقنية: بوّابات منطقية حقيقية (AND · OR · NOT) تصلها أسلاك
+     تسري فيها إشارة.  ثلاث فقط — البوّابة تُقرأ حين تُرى وحدها. */
+  it:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <g stroke-width="1" opacity=".22">
+      ${[0,1,2,3,4].map(r=>`<line x1="30" y1="${50+r*52}" x2="870" y2="${50+r*52}"/>`).join("")}
     </g>
-    ${[[50,154],[102,50],[206,102]].map((y,i)=>
-      `<line class="flow" x1="30" y1="${y[0]}" x2="870" y2="${y[0]}" stroke="var(--spark)" stroke-width="2"
-             stroke-linecap="round" style="animation-duration:${16+i*7}s;animation-delay:-${i*5}s"/>`).join("")}
-    ${[[170,102],[390,154],[610,102],[720,206]].map((p,i)=>
-      `<circle class="pulse" cx="${p[0]}" cy="${p[1]}" r="4.5" fill="var(--spark)" stroke="none" style="animation-delay:${i*1.1}s"/>`).join("")}
+    <g stroke-width="1.3" opacity=".7">
+      <!-- AND -->
+      <path class="draw" d="M150,96 L150,164 L184,164 A34,34 0 0 0 184,96 Z"/>
+      <line class="draw" x1="104" y1="112" x2="150" y2="112"/><line class="draw" x1="104" y1="148" x2="150" y2="148"/>
+      <line class="draw" x1="218" y1="130" x2="300" y2="130"/>
+      <!-- OR -->
+      <path class="draw" d="M340,96 Q372,130 340,164 Q392,164 414,130 Q392,96 340,164"/>
+      <path class="draw" d="M340,96 Q372,130 340,164"/>
+      <line class="draw" x1="300" y1="112" x2="344" y2="112"/><line class="draw" x1="300" y1="148" x2="344" y2="148"/>
+      <line class="draw" x1="414" y1="130" x2="520" y2="130"/>
+      <!-- NOT -->
+      <path class="draw" d="M560,100 L560,160 L610,130 Z"/>
+      <circle class="draw" cx="617" cy="130" r="7"/>
+      <line class="draw" x1="520" y1="130" x2="560" y2="130"/>
+      <line class="draw" x1="624" y1="130" x2="760" y2="130"/>
+    </g>
+    <!-- الإشارة تعبر السلك من المدخل إلى المخرج -->
+    <path class="flow" d="M104,112 L150,112 M218,130 L300,130 M414,130 L520,130 M624,130 L760,130"
+          stroke="var(--spark)" stroke-width="2.4" stroke-linecap="round" style="animation-duration:14s"/>
+    ${[[300,130],[520,130],[760,130]].map((p,i)=>
+      `<circle class="pulse" cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--spark)" stroke="none" style="animation-delay:${i*1.6}s"/>`).join("")}
   </svg>`,
-  sci:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  sci:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
     <g class="spin" style="transform-origin:450px 150px">
       <ellipse class="draw" cx="450" cy="150" rx="300" ry="96" stroke-width="1.2"/>
       <ellipse class="draw" cx="450" cy="150" rx="300" ry="96" stroke-width="1" opacity=".6" transform="rotate(60 450 150)"/>
@@ -925,7 +998,7 @@ const ART = {
     <circle class="pulse" cx="450" cy="150" r="7" fill="var(--spark)" stroke="none"/>
   </svg>`,
   /* الهندسة: جمالون يتنفّس تحت الحمل، وقوّة تسري في أوتاره */
-  eng:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  eng:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
     <g class="breathe" style="transform-origin:250px 260px">
       <g stroke-width="1.1" opacity=".55">
         <path class="draw" d="M80,260 L250,60 L420,260 Z"/>
@@ -963,6 +1036,20 @@ function catBody(prev){
   const art = document.createElement("div");
   art.className = "scene-art in";
   art.innerHTML = ART[active] || "";
+  /* حروف طافية للآداب وحدها — سبعة، بمواضع وإيقاعات مختلفة */
+  if (active === "arts") {
+    const G = ["ب","ن","ر","ك","ع","م","ه"];
+    const layer = document.createElement("div");
+    layer.className = "glyphs";
+    layer.innerHTML = G.map((g,i)=>{
+      const top = [12,58,26,72,40,16,64][i];
+      const start = [8,22,38,52,66,80,92][i];
+      const size = [2.5,1.7,3.1,1.9,2.2,1.6,2.8][i];
+      return `<span style="top:${top}%;inset-inline-start:${start}%;font-size:${size}rem;
+        --d:${(15+i*3.4).toFixed(1)}s;--o:-${(i*2.7).toFixed(1)}s;--r:${(i%2?-6:7)}deg">${g}</span>`;
+    }).join("");
+    art.appendChild(layer);
+  }
   stage.appendChild(art);
 
   box.innerHTML = `
@@ -1095,12 +1182,30 @@ function dash(){
 }
 
 /* ── التنقّل بين الشاشات ──────────────────────────────────────────── */
+/* المؤشّر المنزلق: يُقاس بالبكسل من `offsetLeft`، فهو محايد اتجاهيًا
+   ولا يحتاج قلبًا في RTL. */
+const glide = document.createElement("span");
+glide.className = "glide";
+$("#nav").appendChild(glide);
+function moveGlide(btn, animate){
+  if(!animate) glide.style.transition = "none";
+  glide.style.width = btn.offsetWidth + "px";
+  glide.style.transform = `translateX(${btn.offsetLeft}px)`;
+  if(!animate) requestAnimationFrame(()=>{ glide.style.transition = ""; });
+}
+moveGlide($('#nav button[aria-current]'), false);
+window.addEventListener("resize", ()=>moveGlide($('#nav button[aria-current]'), false));
+
 $("#nav").addEventListener("click", e=>{
   const b = e.target.closest("button[data-s]"); if(!b) return;
   document.querySelectorAll("#nav button").forEach(x=>x.removeAttribute("aria-current"));
   b.setAttribute("aria-current","true");
+  moveGlide(b, true);
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
-  $("#s-"+b.dataset.s).classList.add("on");
+  const next = $("#s-"+b.dataset.s);
+  next.classList.add("on");
+  /* إعادة تشغيل حركة الدخول عند كل تبديل، لا مرة واحدة */
+  next.style.animation = "none"; void next.offsetWidth; next.style.animation = "";
   window.scrollTo({top:0,behavior:"instant"});
   history.replaceState(null,"","#"+b.dataset.s);
 });
@@ -1118,15 +1223,6 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
   t.setAttribute("aria-current","true");
 }));
-
-/* الموجة: أعمدة بإيقاعات مختلفة فلا تُقرأ حلقة مكرَّرة */
-(function wave(){
-  const box = $("#wave"); if(!box) return;
-  const H=[.35,.62,.28,.85,.5,1,.42,.72,.33,.9,.55,.25,.68,.44,.8,.3,.58,.38,.75,.26,.62,.34,.48,.29];
-  box.innerHTML = H.map((h,i)=>
-    `<span style="height:${Math.round(h*100)}%;--d:${(2.4+(i%5)*.55).toFixed(2)}s;--o:-${(i*.17).toFixed(2)}s"></span>`
-  ).join("");
-})();
 
 /* الأقسام تظهر عند بلوغها — لا تهبط كلها دفعة واحدة */
 (function reveal(){
