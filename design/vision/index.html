@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="ink">
+<html lang="ar" dir="rtl" data-theme="masar">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -112,6 +112,55 @@ html[data-theme="paper"]{
   --halo-1:rgba(47,111,143,.10); --halo-2:rgba(168,114,42,.07); --halo-3:rgba(47,111,143,.05);
   --watermark:rgba(47,111,143,.055);
   --grain:.02;
+}
+
+/* ══ ٠ · مسار — الاتجاه المعتمد، مقتبس من اللوغو ═══════════════════
+   اللوغو أبيض صافٍ على رمادي دافئ محايد — لا أزرق فيه إطلاقًا.  هذا
+   يقلب الأساس: كل ما سبق كان باردًا، والهوية دافئة.
+
+   ── نظام أحادي بإشارة واحدة ─────────────────────────────────────────
+   اللوغو نفسه أحادي اللون، فالأصدق أن يكون النظام كذلك: الفعل الأساسي
+   أبيضُ عظميّ مملوء، والنصّ أبيض أهدأ غير مملوء.  التمييز بالامتلاء لا
+   باللون — وهو ما يجعل اللون الوحيد المتبقّي مسموعًا.
+
+   ── ولماذا العنبر للتقدّم ───────────────────────────────────────────
+   على قاعدة دافئة، النعناع البارد يبدو غريبًا مستوردًا.  العنبر يرث
+   دفء الهوية، و«الذهبي = إنجاز» قراءة عالمية لا تحتاج تعليمًا.
+   ⚠ هذا يخالف قاعدة «لا ذهب» الموروثة من هوية مركز حساب — وهي هوية
+   استُبدلت باللوغو الجديد.  اذكرها لي إن أردت العودة عنها.
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-theme="masar"]{
+  --ink:#1a1817; --ink-lift:#201e1c;
+  --panel:#262322; --panel-lift:#302c2a; --panel-high:#3a3634; /* الأخيرة خلفية اللوغو نفسها */
+  --line:#453f3b; --line-soft:#2e2a28;
+
+  --paper:#f4f1ec; --muted:#b5aca2; --subtle:#8e867d; --faint:#6b645d;
+
+  /* «التمييز» أبيض عظميّ — لون اللوغو مخفَّفًا */
+  --accent:#cfc6b8; --accent-bright:#eae4d9; --accent-deep:#8d857a; --action:#e8e2d6;
+  --spark:#e0a94a; --spark-deep:#a87a28;
+  --warning:#d79a52; --danger:#c4675f;
+  --seg-b:#9c8f7d; --seg-b2:#6f6558;
+
+  --on-accent:#1a1817; --on-spark:#241703;
+  --sunk:rgba(14,13,12,.5); --sunk-2:rgba(38,35,34,.6);
+  --hair:rgba(255,255,255,.045); --shadow:rgba(0,0,0,.32);
+  --shadow-lift:rgba(0,0,0,.58);
+  --glass:rgba(26,24,23,.78);
+  --halo-1:rgba(180,160,130,.13); --halo-2:rgba(224,169,74,.07); --halo-3:rgba(160,145,125,.06);
+  --watermark:rgba(234,228,217,.04);
+  --grain:.026;
+}
+/* نفس ليونة «هدوء» — الراحة ليست ترفًا في منصّة يُقرأ فيها طويلًا */
+html[data-theme="masar"] body{line-height:1.85}
+html[data-theme="masar"] .body{font-size:1.02rem;line-height:2.05}
+html[data-theme="masar"] .card{background:var(--panel)}
+html[data-theme="masar"] .stop-body{background:var(--panel);padding:1rem 1.2rem}
+html[data-theme="masar"] .course{padding:1.7rem}
+html[data-theme="masar"]{--r-field:12px;--r-card:18px;--r-lg:24px}
+@media(hover:hover){
+  html[data-theme="masar"] .lift:hover{transform:translateY(-2px);
+    box-shadow:inset 0 1px 0 var(--hair),0 14px 30px -18px var(--shadow-lift)}
 }
 
 /* ── ٤ · هدوء — راحة العين قبل أي شيء ══════════════════════════════
@@ -328,6 +377,16 @@ body::after{
 .stat-row{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:3rem;padding-top:1.8rem;border-top:1px solid var(--line-soft)}
 .stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.65rem;font-weight:600;letter-spacing:-.03em}
 
+/* ══ الموجة ════════════════════════════════════════════════════════
+   أعمدة بارتفاعات متغيّرة تتنفّس بإيقاعات مختلفة، فلا تبدو حلقة
+   مكرّرة.  `transform: scaleY` فقط — على المُركِّب، بلا إعادة تخطيط. */
+.wave{display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:3.2rem;
+  opacity:.55;mask-image:linear-gradient(to left,#000 55%,transparent)}
+.wave span{flex:0 0 4px;border-radius:99px;background:var(--accent-deep);
+  transform-origin:bottom;animation:waveBeat var(--d) ease-in-out var(--o) infinite}
+@keyframes waveBeat{0%,100%{transform:scaleY(.28)}50%{transform:scaleY(1)}}
+@media(max-width:640px){.wave{height:48px;gap:4px}}
+
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
 @media(min-width:1000px){.split{grid-template-columns:16.5rem 1fr;gap:3rem}}
 
@@ -367,6 +426,21 @@ body::after{
 @keyframes scenePulse{0%,100%{opacity:.35}50%{opacity:.85}}
 .scene-art .spin{transform-origin:center;animation:sceneSpin 34s linear infinite}
 @keyframes sceneSpin{to{transform:rotate(360deg)}}
+
+/* ══ لماذا بدت «العلوم» حيّة والبقية ميتة ══════════════════════════
+   لأنها وحدها تتحرّك **باستمرار** (المدارات تدور).  البقية كانت ترسم
+   نفسها مرّة عند الدخول ثم تجمد — ومشهدٌ جامد خلف محتوى جامد يعطي
+   الانطباع الذي وصفتَه بالضبط.
+
+   فلكل رسم الآن حركة دائمة بطيئة جدًا، مختلفة بطبيعته:
+   الخطّ يسيل، والشبكة تنبض بنقاط تسري فيها، والبنية تتنفّس.
+   كلها `transform`/`opacity` فقط، وكلها أبطأ من أن تسرق الانتباه. */
+.scene-art .flow{stroke-dasharray:26 340;animation:flowRun 26s linear infinite}
+@keyframes flowRun{to{stroke-dashoffset:-1464}}
+.scene-art .drift{animation:driftY 18s ease-in-out infinite}
+@keyframes driftY{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.scene-art .breathe{transform-origin:center;animation:artBreathe 14s ease-in-out infinite}
+@keyframes artBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
 
 .grid-courses{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))}
 /* دخول البطاقات متتاليًا بعد تبدّل المشهد */
@@ -478,6 +552,15 @@ body::after{
 
 .footnote{margin-block:4rem 3rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);font-size:.76rem;color:var(--faint);line-height:1.9}
 
+/* ظهور عند التمرير — الحالة الافتراضية مرئية، والصنف يخفيها فقط بعد
+   أن يعمل JS.  فلو تعطّل السكربت لا يختفي المحتوى. */
+.rise{opacity:0;transform:translateY(16px);transition:opacity 620ms var(--ease),transform 620ms var(--ease)}
+.rise.seen{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  .rise{opacity:1 !important;transform:none !important}
+  .wave span,.scene-art .flow,.scene-art .drift,.scene-art .breathe,.scene-art .spin{animation:none !important}
+}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
@@ -496,7 +579,8 @@ body::after{
       <button data-s="dash">لوحة التحكم</button>
     </nav>
     <nav class="screens themes" id="themes" aria-label="الاتجاه اللوني">
-      <button data-t="ink" aria-current="true" title="حبر — الهوية الحالية"><i style="background:linear-gradient(135deg,#a9c3d4,#121c26)"></i>حبر</button>
+      <button data-t="masar" aria-current="true" title="مسار — مقتبس من اللوغو"><i style="background:linear-gradient(135deg,#eae4d9,#3a3634)"></i>مسار</button>
+      <button data-t="ink" title="حبر — الهوية السابقة"><i style="background:linear-gradient(135deg,#a9c3d4,#121c26)"></i>حبر</button>
       <button data-t="dusk" title="شفق — نيلي بلمسة دافئة"><i style="background:linear-gradient(135deg,#f2c49d,#191430)"></i>شفق</button>
       <button data-t="paper" title="ورق — فاتح دافئ"><i style="background:linear-gradient(135deg,#2f6f8f,#f1ece1)"></i>ورق</button>
       <button data-t="calm" title="هدوء — تباين مخفَّف ومساحة أوسع"><i style="background:linear-gradient(135deg,#a6c4d6,#1e252f)"></i>هدوء</button>
@@ -507,27 +591,37 @@ body::after{
 <!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
 <section class="screen on" id="s-cat">
   <div class="wrap">
-    <div class="hero">
+    <div class="hero" id="hero">
+      <!-- ── لماذا تغيّر النصّ مرّتين ───────────────────────────────────
+           «مشروحًا خطوة بخطوة» وصفٌ يقوله كل موقع تعليمي.
+           و«شرحٌ لمقرَّرك، لا لموضوعه» ذكاءٌ لفظي: يطلب من الزائر أن
+           يحلّ مفارقة قبل أن يعرف ما هذا الموقع أصلًا.  الجملة التي
+           تحتاج تفكيرًا ليست جملة واجهة.
+
+           هذه تقول المسافة التي يقطعها الطالب معنا: من أول محاضرة لم
+           يفهمها، إلى الليلة التي يمتحن في صباحها.  لا مفارقة، ولا
+           ادّعاء — والاسم «مسار» يقولها معها. -->
       <span class="hero-tag">جامعة البحرين</span>
-      <!-- العنوان يقول الفارق لا الوصف.  «مشروحًا خطوة بخطوة» يقولها
-           كل موقع تعليمي؛ أما أن الشرح مبنيّ على توصيف مقرَّرك أنت —
-           بوحداته ورمزه وأسئلة امتحانه — فهو ما لا يقوله غيرنا. -->
-      <h1 class="display" style="margin-top:1rem;max-width:15ch">
-        شرحٌ لمقرَّرك،<br /><span class="grad">لا لموضوعه.</span>
+      <h1 class="display" style="margin-top:1rem;max-width:14ch">
+        من أول محاضرة<br /><span class="grad">إلى ليلة الامتحان.</span>
       </h1>
       <p class="body">
-        الفرق أن «<span style="color:var(--paper)">ARAB110</span>» ليس «اللغة العربية».
-        نتبع توصيف مقرَّرك نفسه — وحداته، ومصطلحات أستاذه، وما يُسأل عنه في الامتحان فعلًا.
+        دروس قصيرة بالعربية، مبنية على توصيف مقرَّرك نفسه —
+        وحداته، ومصطلحات أستاذه، وما يُسأل عنه فعلًا.
       </p>
       <div class="hero-cta">
         <button class="btn btn-primary press">شاهد درسًا كاملًا مجانًا</button>
         <button class="btn press">كيف يُبنى الشرح؟</button>
       </div>
-      <!-- ── لماذا لا صفّ إحصاءات هنا ─────────────────────────────────
-           كان هنا «٤ كليات · ١٢ مقررًا · ٨٤٠+ طالبًا».  الأخير رقم
-           مخترع، ولو نُشر لكان كذبًا على زائر يقرّر أن يدفع.  والأولان
-           يعلنان صغر الكتالوج في أول ما تقع عليه العين.  وضعتُها أصلًا
-           لأن التخطيط بدا فارغًا — وهو أسوأ سبب لإضافة أي شيء. -->
+
+      <!-- ══ الموجة — مأخوذة من اللوغو نفسه ═══════════════════════════
+           في اللوغو موجة صوتية صغيرة عند طرف الكلمة.  هي أفضل أصل بصري
+           في الهوية ولم يكن مستعملًا: الدرس صوتٌ يمتدّ في الزمن،
+           والموجة تقوله بلا أيقونة ولا صورة.
+
+           تتنفّس دائمًا — لا تُرسم مرة ثم تجمد.  هذا هو الفارق الذي
+           جعل «كلية العلوم» تبدو حيّة والبقية ميتة. -->
+      <div class="wave" id="wave" aria-hidden="true"></div>
     </div>
 
     <div class="sec-title"><h2 class="h2">اختر كليتك</h2></div>
@@ -796,20 +890,31 @@ function courseCard(c,i=0){
    كل رسم يقول شيئًا عن الكلية بلا صورة: حروف متصلة للآداب، شبكة
    للتقنية، مدارات للعلوم، بنية هندسية للهندسة. */
 const ART = {
+  /* الآداب: خطّ متّصل يسيل بلا انقطاع — كالخطّ العربي، وصلٌ لا حروف
+     منفصلة.  الحركة الدائمة ضوءٌ يجري داخل المسار نفسه. */
   arts:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <path class="draw" stroke-width="1.4" d="M40,210 C170,60 300,250 430,140 S690,40 860,170"/>
-    <path class="draw" stroke-width="1" opacity=".6" d="M40,250 C200,120 320,270 470,180 S720,90 860,215"/>
-    <path class="draw" stroke-width=".8" opacity=".4" d="M60,150 C200,40 330,180 480,90 S700,10 850,120"/>
-    <circle class="pulse" cx="430" cy="140" r="4" fill="var(--spark)" stroke="none"/>
-    <circle class="pulse" cx="170" cy="112" r="2.5" fill="var(--accent-bright)" stroke="none" style="animation-delay:1.4s"/>
+    <g class="drift">
+      <path class="draw" stroke-width="1.4" d="M40,210 C170,60 300,250 430,140 S690,40 860,170"/>
+      <path class="draw" stroke-width="1" opacity=".55" d="M40,250 C200,120 320,270 470,180 S720,90 860,215"/>
+      <path class="draw" stroke-width=".8" opacity=".35" d="M60,150 C200,40 330,180 480,90 S700,10 850,120"/>
+      <path class="flow" stroke-width="2.2" stroke="var(--spark)" stroke-linecap="round"
+            d="M40,210 C170,60 300,250 430,140 S690,40 860,170"/>
+      <path class="flow" stroke-width="1.6" stroke="var(--accent-bright)" stroke-linecap="round" opacity=".5"
+            style="animation-duration:34s;animation-delay:-9s"
+            d="M40,250 C200,120 320,270 470,180 S720,90 860,215"/>
+    </g>
   </svg>`,
+  /* التقنية: شبكة تسري فيها إشارات — لا شبكة ساكنة */
   it:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <g stroke-width="1" opacity=".55">
+    <g stroke-width="1" opacity=".4">
       ${[0,1,2,3,4].map(r=>`<line class="draw" x1="30" y1="${50+r*52}" x2="870" y2="${50+r*52}"/>`).join("")}
       ${[0,1,2,3,4,5,6,7].map(c=>`<line class="draw" x1="${60+c*110}" y1="30" x2="${60+c*110}" y2="270"/>`).join("")}
     </g>
+    ${[[50,154],[102,50],[206,102]].map((y,i)=>
+      `<line class="flow" x1="30" y1="${y[0]}" x2="870" y2="${y[0]}" stroke="var(--spark)" stroke-width="2"
+             stroke-linecap="round" style="animation-duration:${16+i*7}s;animation-delay:-${i*5}s"/>`).join("")}
     ${[[170,102],[390,154],[610,102],[720,206]].map((p,i)=>
-      `<circle class="pulse" cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--spark)" stroke="none" style="animation-delay:${i*1.1}s"/>`).join("")}
+      `<circle class="pulse" cx="${p[0]}" cy="${p[1]}" r="4.5" fill="var(--spark)" stroke="none" style="animation-delay:${i*1.1}s"/>`).join("")}
   </svg>`,
   sci:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <g class="spin" style="transform-origin:450px 150px">
@@ -819,16 +924,24 @@ const ART = {
     </g>
     <circle class="pulse" cx="450" cy="150" r="7" fill="var(--spark)" stroke="none"/>
   </svg>`,
+  /* الهندسة: جمالون يتنفّس تحت الحمل، وقوّة تسري في أوتاره */
   eng:`<svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <g stroke-width="1.1" opacity=".6">
-      <path class="draw" d="M80,260 L250,60 L420,260 Z"/>
-      <path class="draw" d="M250,60 L250,260"/>
-      <path class="draw" d="M165,160 L335,160"/>
-      <path class="draw" d="M480,260 L650,60 L820,260 Z" opacity=".55"/>
-      <path class="draw" d="M650,60 L650,260" opacity=".55"/>
-      <path class="draw" d="M565,160 L735,160" opacity=".55"/>
+    <g class="breathe" style="transform-origin:250px 260px">
+      <g stroke-width="1.1" opacity=".55">
+        <path class="draw" d="M80,260 L250,60 L420,260 Z"/>
+        <path class="draw" d="M250,60 L250,260"/><path class="draw" d="M165,160 L335,160"/>
+      </g>
+      <path class="flow" d="M80,260 L250,60 L420,260 Z" stroke="var(--spark)" stroke-width="2.2"
+            stroke-linecap="round" style="animation-duration:20s"/>
     </g>
-    <circle class="pulse" cx="250" cy="60" r="4.5" fill="var(--spark)" stroke="none"/>
+    <g class="breathe" style="transform-origin:650px 260px;animation-delay:-7s">
+      <g stroke-width="1.1" opacity=".38">
+        <path class="draw" d="M480,260 L650,60 L820,260 Z"/>
+        <path class="draw" d="M650,60 L650,260"/><path class="draw" d="M565,160 L735,160"/>
+      </g>
+      <path class="flow" d="M480,260 L650,60 L820,260 Z" stroke="var(--accent-bright)" stroke-width="1.8"
+            stroke-linecap="round" opacity=".6" style="animation-duration:26s;animation-delay:-11s"/>
+    </g>
   </svg>`,
 };
 
@@ -1005,6 +1118,25 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
   t.setAttribute("aria-current","true");
 }));
+
+/* الموجة: أعمدة بإيقاعات مختلفة فلا تُقرأ حلقة مكرَّرة */
+(function wave(){
+  const box = $("#wave"); if(!box) return;
+  const H=[.35,.62,.28,.85,.5,1,.42,.72,.33,.9,.55,.25,.68,.44,.8,.3,.58,.38,.75,.26,.62,.34,.48,.29];
+  box.innerHTML = H.map((h,i)=>
+    `<span style="height:${Math.round(h*100)}%;--d:${(2.4+(i%5)*.55).toFixed(2)}s;--o:-${(i*.17).toFixed(2)}s"></span>`
+  ).join("");
+})();
+
+/* الأقسام تظهر عند بلوغها — لا تهبط كلها دفعة واحدة */
+(function reveal(){
+  const io = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("seen"); io.unobserve(e.target); } });
+  },{ threshold:.12, rootMargin:"0px 0px -8% 0px" });
+  document.querySelectorAll(".sec-title,.deadline,.resume,.feed-row,.bundle").forEach(n=>{
+    n.classList.add("rise"); io.observe(n);
+  });
+})();
 
 stations(); catBody(); lessonGroups("#lessons"); lessons("#study-rail",false); tiers(); dash();
 
