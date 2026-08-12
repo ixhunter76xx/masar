@@ -114,6 +114,66 @@ html[data-theme="paper"]{
   --grain:.02;
 }
 
+/* ── ٤ · هدوء — راحة العين قبل أي شيء ══════════════════════════════
+   الاتجاهات الثلاثة السابقة تشترك في ثلاثة أسباب إجهاد، وكلها مقيسة
+   لا مذوَّقة:
+
+   ١ · تباين المتن ١٨:١ — أبيض شبه صافٍ على أسود شبه صافٍ.  هذا يُنتج
+       «الهالة» (halation): تتوهّج الحروف وتتسايل عند العين المتعبة أو
+       ذات اللابؤرية.  المريح في الواجهات الداكنة ١٠–١٣:١.
+   ٢ · القاعدة #07090c أي أسود عمليًا.  آبل وماتيريال يوصيان بتجنّبه:
+       يضاعف الهالة، ويجعل الارتفاع غير مقروء لأن لا شيء تحته.
+   ٣ · خمس درجات أسطح + تدرّج على كل بطاقة + حبيبات + هالات + زجاج،
+       كلها تعمل في وقت واحد.  الراحة تأتي من الهدوء لا من الطبقات.
+
+   العلاج هنا: القاعدة تُرفع عن الأسود، والنصّ يُخفَّف، والسلّم يُختصر
+   إلى ثلاث درجات، والبطاقات تُسطَّح، والمتن يكبر ويتنفّس.
+   ═══════════════════════════════════════════════════════════════════ */
+html[data-theme="calm"]{
+  --ink:#151b23; --ink-lift:#1a2029;
+  --panel:#1e252f; --panel-lift:#252d38; --panel-high:#2c3541;
+  --line:#333d4a; --line-soft:#262e39;
+
+  /* نصّ مخفَّف: ١٢:١ بدل ١٨:١ — يبقى واضحًا ويكفّ عن التوهّج */
+  --paper:#d6dee6; --muted:#9fadba; --subtle:#8394a2; --faint:#66757f;
+
+  --accent:#86a8bd; --accent-bright:#a6c4d6; --accent-deep:#5b7f96; --action:#8fb4cb;
+  /* نعناع أهدأ: #4fe3b9 مشبَع جدًا ويصرخ على لوحة ساكنة */
+  --spark:#6fc9a8; --spark-deep:#48a184;
+  --warning:#cba468; --danger:#c0716d;
+  --seg-b:#8f86bd; --seg-b2:#645b92;
+
+  --on-accent:#0f1720; --on-spark:#08231b;
+  --sunk:rgba(12,16,21,.5); --sunk-2:rgba(30,37,47,.6);
+  --hair:rgba(255,255,255,.04); --shadow:rgba(0,0,0,.28);
+  --shadow-lift:rgba(0,0,0,.5);
+  --glass:rgba(21,27,35,.78);
+  /* هالات أخفت بكثير — الخلفية تهدأ فيرتاح المحتوى */
+  --halo-1:rgba(91,127,150,.20); --halo-2:rgba(134,168,189,.08); --halo-3:rgba(91,127,150,.07);
+  --watermark:rgba(166,196,214,.04);
+  --grain:.018;
+}
+
+/* ── والراحة ليست ألوانًا وحدها: مساحة وحجم وسكون ─────────────────── */
+html[data-theme="calm"] body{line-height:1.85}
+html[data-theme="calm"] .body{font-size:1.02rem;line-height:2.05}
+html[data-theme="calm"] .small{font-size:.84rem}
+html[data-theme="calm"] .eyebrow{font-size:.74rem}
+/* بطاقات مسطّحة: التدرّج على كل سطح ضجيج بصري متكرّر */
+html[data-theme="calm"] .card{background:var(--panel)}
+html[data-theme="calm"] .stop-body{background:var(--panel);padding:1rem 1.2rem}
+html[data-theme="calm"] .course{padding:1.7rem}
+html[data-theme="calm"] .mini{padding:1.4rem}
+/* زوايا أكثر ليونة تُقرأ أهدأ */
+html[data-theme="calm"]{--r-field:13px;--r-card:20px;--r-lg:26px}
+/* ارتفاع أخفّ عند التصويب — القفزة الكبيرة تشدّ العين */
+@media(hover:hover){
+  html[data-theme="calm"] .lift:hover{transform:translateY(-2px);
+    box-shadow:inset 0 1px 0 var(--hair),0 14px 30px -18px var(--shadow-lift)}
+}
+/* العقدة تتنفّس أبطأ وأخفت */
+html[data-theme="calm"] .node-live{animation-duration:5s}
+
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
@@ -385,6 +445,7 @@ body::after{
       <button data-t="ink" aria-current="true" title="حبر — الهوية الحالية"><i style="background:linear-gradient(135deg,#a9c3d4,#121c26)"></i>حبر</button>
       <button data-t="dusk" title="شفق — نيلي بلمسة دافئة"><i style="background:linear-gradient(135deg,#f2c49d,#191430)"></i>شفق</button>
       <button data-t="paper" title="ورق — فاتح دافئ"><i style="background:linear-gradient(135deg,#2f6f8f,#f1ece1)"></i>ورق</button>
+      <button data-t="calm" title="هدوء — تباين مخفَّف ومساحة أوسع"><i style="background:linear-gradient(135deg,#a6c4d6,#1e252f)"></i>هدوء</button>
     </nav>
   </div>
 </header>
