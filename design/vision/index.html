@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>مسار — رؤية التصميم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   مسار — معاينة بصرية معزولة.  بيانات تمثيلية، بلا قاعدة بيانات،
+   وبلا أي صلة بكود الإنتاج.  ملف واحد يعمل بالنقر المزدوج.
+
+   القيد الذي التزمتُ به: كل ما هنا قابل للتنفيذ بالمكدّس الحقيقي
+   (Next.js + Tailwind v4 + IBM Plex Sans Arabic).  معاينة تَعِد بما
+   لا يستطيع المكدّس تنفيذه تجعل الموافقة عليها بلا قيمة.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── سلّم الأسطح — مدى أوسع مما في الإنتاج ──────────────────────────
+     الإنتاج اليوم أربع درجات في شريط ضيّق، فتبدو كل بطاقة ملصقة.
+     هنا القاعدة أعمق والأسطح أعلى، فيظهر ارتفاع حقيقي. */
+  --ink:        #07090c;
+  --ink-lift:   #0b0f14;
+  --panel:      #121c26;
+  --panel-lift: #1a2735;
+  --panel-high: #223243;
+  --line:       #2b3d4d;
+  --line-soft:  #1d2935;
+
+  --paper:  #eef4f8;
+  --muted:  #9db0be;
+  --subtle: #74899a;
+  --faint:  #55697a;
+
+  /* الأزرق الرمادي — هوية مسار، بلا تغيير */
+  --accent:        #7e9aae;
+  --accent-bright: #a9c3d4;
+  --accent-deep:   #4f6d83;
+  --action:        #8fb2c8;
+
+  /* الشرارة — للتقدّم والإنجاز حصرًا.  لا تُستعمل لأي شيء آخر. */
+  --spark:      #4fe3b9;
+  --spark-deep: #2aa88a;
+
+  --warning: #d9a961;
+  --danger:  #c26461;
+
+  --r-field: 11px;
+  --r-card:  16px;
+  --r-lg:    22px;
+
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --ease: cubic-bezier(.22,1,.36,1);
+
+  --glass: rgba(14,20,27,.72);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--ink);color:var(--paper);
+  font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  font-weight:400;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* الغلاف الضوئي — مصدر ضوء واحد أعلى جهة البداية */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(70% 44% at 82% -6%, rgba(79,109,131,.42), transparent 62%),
+    radial-gradient(52% 38% at 8% 2%,  rgba(126,154,174,.16), transparent 60%),
+    radial-gradient(90% 46% at 50% 104%, rgba(79,109,131,.14), transparent 72%);
+}
+/* حبيبات تكسر تدرّج الخلفية فلا تظهر أشرطة لونية */
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+#app{position:relative;z-index:1}
+
+/* ── الأرقام: لاتينية، ثابتة العرض، معزولة اتجاهيًا ───────────────────
+   `isolate` لا `embed` — رقمان متجاوران في سياق RTL يندمجان بلا عزل. */
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+
+/* ── سلّم النصوص ──────────────────────────────────────────────────────
+   ⚠ لا `letter-spacing` موجب على العربية أبدًا: الخطّ متّصل والتباعد
+   يفكّ الوصل بصريًا.  التتبّع السالب على العناوين الكبيرة مطلوب. */
+.display{font-size:clamp(2.2rem,6vw,4.2rem);line-height:1.16;letter-spacing:-.04em;font-weight:700}
+.h1{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.3;letter-spacing:-.032em;font-weight:700}
+.h2{font-size:clamp(1.25rem,2.2vw,1.6rem);line-height:1.38;letter-spacing:-.026em;font-weight:600}
+.h3{font-size:1.06rem;line-height:1.5;letter-spacing:-.018em;font-weight:600}
+.body{font-size:.95rem;line-height:1.95;font-weight:300;color:var(--muted)}
+.small{font-size:.8rem;line-height:1.8;color:var(--subtle)}
+.eyebrow{font-size:.7rem;font-weight:500;color:var(--subtle)}
+
+.spark{color:var(--spark)}
+.grad{
+  background:linear-gradient(155deg,#d5e6f2 0%,var(--accent-bright) 44%,var(--accent-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+
+/* ── الأسطح ───────────────────────────────────────────────────────── */
+.card{
+  background:linear-gradient(168deg,var(--panel-lift) 0%,var(--panel) 62%);
+  border:1px solid var(--line);border-radius:var(--r-card);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 4px rgba(0,0,0,.4);
+}
+.glass{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);
+  border-bottom:1px solid var(--line-soft);
+}
+.lift{transition:transform var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease),box-shadow var(--dur-base) var(--ease)}
+@media(hover:hover){
+  .lift:hover{transform:translateY(-3px);border-color:rgba(79,109,131,.9);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 22px 48px -20px rgba(0,0,0,.8),0 0 38px -16px rgba(169,195,212,.18)}
+}
+.press{transition:transform var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.press:active{transform:scale(.975)}
+
+/* ── الأزرار ──────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55rem;
+  min-height:44px;padding:0 1.15rem;border-radius:var(--r-field);
+  font-size:.9rem;font-weight:500;border:1px solid var(--line);
+  background:rgba(7,9,12,.5);color:var(--paper);cursor:pointer;
+}
+.btn:hover{border-color:var(--accent-deep);background:var(--panel-lift)}
+.btn-primary{
+  border-color:transparent;color:#08131a;font-weight:600;
+  background:linear-gradient(180deg,var(--accent-bright),var(--action));
+}
+.btn-primary:hover{background:linear-gradient(180deg,#c3daea,var(--accent-bright))}
+.btn-spark{
+  border-color:transparent;color:#04231b;font-weight:600;
+  background:linear-gradient(180deg,var(--spark),var(--spark-deep));
+}
+
+.pill{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);
+  background:rgba(7,9,12,.55);border-radius:999px;padding:.28rem .68rem;font-size:.7rem;font-weight:500;color:var(--subtle)}
+.pill-free{border-color:rgba(79,227,185,.42);background:rgba(79,227,185,.09);color:var(--spark)}
+.pill-warn{border-color:rgba(217,169,97,.4);background:rgba(217,169,97,.09);color:var(--warning)}
+
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:clamp(1rem,3vw,2rem)}
+
+/* ═══ الرأسية ═══════════════════════════════════════════════════════ */
+.top{position:sticky;top:0;z-index:50}
+.top-in{display:flex;align-items:center;gap:1rem;height:66px}
+.brand{display:flex;align-items:center;gap:.7rem;font-weight:700;letter-spacing:-.02em}
+.mark{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep));color:#08131a;font-weight:700;font-size:.95rem}
+
+/* مبدّل الشاشات — أداة معاينة، ليست جزءًا من التصميم المقترح */
+.screens{margin-inline-start:auto;display:flex;gap:2px;padding:4px;border-radius:999px;
+  background:rgba(7,9,12,.6);border:1px solid var(--line-soft)}
+.screens button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
+  font:inherit;font-size:.78rem;font-weight:500;padding:.42rem .8rem;border-radius:999px;transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
+.screens button:hover{color:var(--paper)}
+.screens button[aria-current]{background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a;font-weight:600}
+
+.screen{display:none;animation:rise var(--dur-slow) var(--ease) both}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ═══ السكّة — العمود الفقري للمنتج ════════════════════════════════
+   رأسية دائمًا: المسار الرأسي بلا اتجاه أفقي، فلا ينقلب في RTL. */
+.rail{position:relative;padding-inline-start:2.6rem}
+.rail-line{position:absolute;inset-block:14px;inset-inline-start:15px;width:2px;border-radius:2px;background:var(--line);
+  transform-origin:top;animation:draw 900ms var(--ease) 120ms both}
+@keyframes draw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.node{position:absolute;inset-inline-start:-2.6rem;top:14px;width:32px;height:32px;border-radius:999px;
+  display:grid;place-items:center;font-size:.72rem;font-weight:600;
+  border:1px solid var(--line);background:var(--ink);color:var(--subtle);
+  box-shadow:0 0 0 5px var(--ink);transition:all var(--dur-base) var(--ease)}
+.node-done{border-color:transparent;background:linear-gradient(180deg,var(--spark),var(--spark-deep));color:#04231b}
+/* «أنا هنا» موقعٌ لا إنجاز — فيأخذ لون الاختيار لا لون الشرارة.
+   الشرارة محجوزة للتقدّم وحده، وصرفها على الموقع يستهلك أثرها. */
+.node-here{border-color:transparent;background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a}
+.node-live{border-color:rgba(79,227,185,.55);color:var(--spark);animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{
+  0%,100%{box-shadow:0 0 0 5px var(--ink),0 0 0 6px rgba(79,227,185,.18)}
+  50%{box-shadow:0 0 0 5px var(--ink),0 0 0 10px rgba(79,227,185,.07)}
+}
+.node-wait{border-style:dashed;border-color:rgba(217,169,97,.45);color:var(--warning)}
+.node-lock{color:var(--faint)}
+
+.stop{position:relative;margin-bottom:.6rem}
+.stop-body{display:flex;align-items:center;gap:.9rem;padding:.85rem 1.1rem;border-radius:var(--r-field);
+  border:1px solid var(--line-soft);background:linear-gradient(168deg,var(--panel-lift),var(--panel) 70%);
+  transition:transform var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
+@media(hover:hover){.stop:hover .stop-body{transform:translateY(-2px);border-color:var(--accent-deep)}}
+.stop-title{flex:1;font-size:.92rem;font-weight:500;min-width:0}
+
+/* ═══ الكتالوج ═════════════════════════════════════════════════════ */
+.hero{padding-block:clamp(3rem,8vw,6rem) clamp(2rem,5vw,3.5rem);position:relative}
+.hero-tag{display:inline-flex;align-items:center;gap:.6rem;color:var(--accent);font-size:.78rem;font-weight:500}
+.hero-tag::before{content:"";width:16px;height:2px;border-radius:2px;background:var(--accent-deep)}
+.hero p.body{max-width:46ch;margin-top:1.3rem}
+.hero-cta{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:2rem}
+
+.stat-row{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:3rem;padding-top:1.8rem;border-top:1px solid var(--line-soft)}
+.stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.65rem;font-weight:600;letter-spacing:-.03em}
+
+.split{display:grid;gap:2.6rem;grid-template-columns:1fr}
+@media(min-width:1000px){.split{grid-template-columns:16.5rem 1fr;gap:3rem}}
+
+.station{display:flex;align-items:center;gap:.85rem;width:100%;text-align:start;background:transparent;
+  border:0;border-radius:var(--r-field);padding:.55rem .7rem .55rem .4rem;cursor:pointer;font:inherit;
+  transition:background-color var(--dur-base) var(--ease)}
+.station:hover{background:rgba(26,39,53,.55)}
+.station[aria-current]{background:rgba(26,39,53,.85)}
+.station-name{font-size:.86rem;color:var(--muted);transition:color var(--dur-base) var(--ease)}
+.station[aria-current] .station-name{color:var(--paper);font-weight:600}
+.station-sub{font-size:.66rem;color:var(--subtle)}
+.station-node{position:relative;inset:auto;box-shadow:0 0 0 5px var(--ink)}
+
+.grid-courses{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))}
+
+.course{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:1.4rem;text-decoration:none;color:inherit;cursor:pointer}
+.course-code{position:absolute;inset-inline-end:-.4rem;top:-1.4rem;font-family:"IBM Plex Mono",monospace;
+  font-size:4.6rem;font-weight:600;color:rgba(169,195,212,.045);pointer-events:none;letter-spacing:-.05em}
+.course-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.course-foot{margin-top:auto;padding-top:1.1rem;border-top:1px solid var(--line-soft);display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
+.avatar{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:.7rem;font-weight:700;color:#08131a;
+  background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep))}
+.price{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:600;letter-spacing:-.03em}
+
+/* ═══ صفحة المقرر ══════════════════════════════════════════════════ */
+.player{position:relative;aspect-ratio:16/9;border-radius:var(--r-lg);overflow:hidden;
+  border:1px solid var(--line);background:radial-gradient(120% 100% at 50% 0%,var(--panel-high),var(--ink) 78%);
+  display:grid;place-items:center;cursor:pointer}
+.player::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 45%,rgba(79,227,185,.10),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
+.player:hover::after{opacity:1}
+.play{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;position:relative;z-index:2;
+  background:linear-gradient(180deg,var(--accent-bright),var(--action));color:#08131a;
+  box-shadow:0 18px 50px -14px rgba(0,0,0,.85);transition:transform var(--dur-base) var(--ease)}
+.player:hover .play{transform:scale(1.07)}
+
+/* الشريط المقسَّم — قلب صفحة البيع: يُري الطالب ما الذي تغطّيه كل باقة */
+.segbar{display:flex;gap:3px;margin-block:1rem 1.6rem}
+.seg{height:7px;border-radius:999px;flex:1;position:relative;transition:transform var(--dur-base) var(--ease)}
+.seg-mid{background:linear-gradient(90deg,var(--accent-bright),var(--accent-deep))}
+.seg-fin{background:linear-gradient(90deg,#8b7fc2,#5b5090)}
+.seg.dim{opacity:.24}
+.segbar.hover-mid .seg-fin{opacity:.2}
+.segbar.hover-fin .seg-mid{opacity:.2}
+
+.tiers{display:grid;gap:1rem}
+.tier{position:relative;padding:1.3rem;cursor:pointer}
+.tier-best{border-color:rgba(169,195,212,.5);background:linear-gradient(168deg,var(--panel-high),var(--panel) 70%)}
+.tier-badge{position:absolute;inset-inline-end:1.1rem;top:-.62rem;font-size:.64rem;font-weight:600;
+  padding:.2rem .6rem;border-radius:999px;color:#08131a;background:linear-gradient(180deg,var(--accent-bright),var(--action))}
+.tier-price{display:flex;align-items:baseline;gap:.4rem;margin-top:.5rem}
+.strike{color:var(--faint);text-decoration:line-through;font-size:.9rem}
+.tier ul{list-style:none;margin-top:.9rem;display:grid;gap:.42rem}
+.tier li{display:flex;gap:.5rem;align-items:flex-start;font-size:.79rem;color:var(--muted)}
+.tick{color:var(--spark);flex:0 0 auto;margin-top:.28rem}
+
+/* ═══ صفحة الدراسة ═════════════════════════════════════════════════ */
+.study{display:grid;gap:1.6rem;grid-template-columns:1fr}
+@media(min-width:1060px){.study{grid-template-columns:1fr 20rem}}
+.tabs{display:flex;gap:.2rem;border-bottom:1px solid var(--line-soft);margin-bottom:1.4rem;overflow-x:auto}
+.tab{border:0;background:transparent;color:var(--subtle);font:inherit;font-size:.87rem;font-weight:500;
+  padding:.75rem 1rem;cursor:pointer;position:relative;white-space:nowrap;transition:color var(--dur-fast) var(--ease)}
+.tab:hover{color:var(--paper)}
+.tab[aria-current]{color:var(--paper)}
+.tab[aria-current]::after{content:"";position:absolute;inset-inline:.55rem;bottom:-1px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent-bright),var(--accent-deep))}
+
+.meter{height:6px;border-radius:999px;background:var(--line-soft);overflow:hidden}
+.meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--spark-deep),var(--spark));
+  animation:fill 1.1s var(--ease) 200ms both}
+@keyframes fill{from{width:0 !important}}
+
+.note{display:flex;gap:.7rem;padding:.9rem 1rem;border-radius:var(--r-field);
+  border:1px solid var(--line-soft);background:rgba(7,9,12,.4);font-size:.8rem;line-height:1.85;color:var(--subtle)}
+
+/* ═══ لوحة التحكم ══════════════════════════════════════════════════ */
+.resume{position:relative;overflow:hidden;padding:1.6rem;border-radius:var(--r-lg);
+  border:1px solid rgba(79,227,185,.24);
+  background:linear-gradient(150deg,rgba(42,168,138,.14),var(--panel) 58%)}
+.resume::before{content:"";position:absolute;inset-inline-end:-60px;top:-60px;width:240px;height:240px;border-radius:999px;
+  background:radial-gradient(circle,rgba(79,227,185,.16),transparent 68%);pointer-events:none}
+.dash-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.mini{padding:1.15rem}
+.mini b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.9rem;font-weight:600;letter-spacing:-.03em;line-height:1.2}
+
+.feed{display:grid;gap:.55rem}
+.feed-row{display:flex;gap:.85rem;align-items:flex-start;padding:.9rem 1.05rem;border-radius:var(--r-field);
+  border:1px solid var(--line-soft);background:rgba(18,28,38,.55);transition:border-color var(--dur-base) var(--ease)}
+.feed-row:hover{border-color:var(--accent-deep)}
+.dot{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(7,9,12,.6);border:1px solid var(--line);color:var(--accent)}
+
+.sec-title{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
+.sec-title::before{content:"";width:3px;height:19px;border-radius:2px;background:linear-gradient(180deg,var(--accent-bright),var(--accent-deep))}
+
+.footnote{margin-block:4rem 3rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);font-size:.76rem;color:var(--faint);line-height:1.9}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header class="top glass">
+  <div class="wrap top-in">
+    <div class="brand"><span class="mark">م</span><span>مسار</span></div>
+    <nav class="screens" id="nav" aria-label="شاشات المعاينة">
+      <button data-s="cat" aria-current="true">الكتالوج</button>
+      <button data-s="course">صفحة المقرر</button>
+      <button data-s="study">الدراسة</button>
+      <button data-s="dash">لوحة التحكم</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
+<section class="screen on" id="s-cat">
+  <div class="wrap">
+    <div class="hero">
+      <span class="hero-tag">جامعة البحرين · شرح مقرَّرك كما يُدرَّس</span>
+      <h1 class="display" style="margin-top:1.1rem;max-width:16ch">
+        مقرَّرك الجامعي<br /><span class="grad">مشروحًا خطوة بخطوة</span>
+      </h1>
+      <p class="body">نتبع توصيف مقرَّرك نفسه — بوحداته ومصطلحاته وما يُسأل عنه في الامتحان. لا مقررات عامة، ولا حشو.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary press">ابدأ بدرس مجاني</button>
+        <button class="btn press">كيف تعمل المنصة؟</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b class="num">٤</b><span class="small">كليات على المسار</span></div>
+        <div class="stat"><b class="num">١٢</b><span class="small">مقررًا مشروحًا</span></div>
+        <div class="stat"><b class="num spark">٨٤٠+</b><span class="small">طالبًا يدرسون الآن</span></div>
+      </div>
+    </div>
+
+    <div class="sec-title"><h2 class="h2">اختر كليتك</h2></div>
+    <div class="split">
+      <div>
+        <p class="eyebrow" style="margin-bottom:.9rem">المضاءة فيها مقررات الآن</p>
+        <div class="rail" style="padding-inline-start:0" id="stations"></div>
+      </div>
+      <div id="cat-body"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ٢ · صفحة المقرر ═══════════════ -->
+<section class="screen" id="s-course">
+  <div class="wrap" style="padding-block:2.4rem 0">
+    <span class="eyebrow">كلية الآداب · مقرر إجباري</span>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:1.2rem;margin-block:.7rem 1.4rem">
+      <h1 class="h1" style="flex:1;min-width:16ch">مهارات الاتصال باللغة العربية</h1>
+      <span class="pill num" style="font-size:.78rem">ARAB110</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:1.6rem;align-items:center;color:var(--subtle);font-size:.82rem">
+      <span style="display:flex;align-items:center;gap:.6rem"><span class="avatar">م</span>
+        <span><b style="display:block;color:var(--paper);font-size:.85rem;font-weight:600">د. منى عبدالله</b>أستاذة المقرر</span></span>
+      <span><span class="num">٥</span> دروس · <span class="num">٣</span> ساعات</span>
+      <span class="pill pill-free">درس مجاني كامل</span>
+    </div>
+
+    <div class="study" style="margin-top:2.2rem;align-items:start">
+      <div>
+        <div class="player">
+          <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <span class="pill pill-free" style="position:absolute;inset-inline-start:1rem;top:1rem">مجاني</span>
+          <span class="small num" style="position:absolute;inset-inline-end:1rem;bottom:1rem">١٢:٤٠</span>
+        </div>
+        <p class="small" style="margin-top:.8rem">الدرس الأول — الاستفهام. شاهده كاملًا قبل أن تدفع شيئًا.</p>
+
+        <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">مسار المقرر</h2></div>
+        <p class="body" style="margin-top:-.5rem;margin-bottom:1rem">الشريط أدناه يُري ما تغطّيه كل باقة. مرّر فوق باقة لترى دروسها.</p>
+        <div class="segbar" id="segbar">
+          <span class="seg seg-mid"></span><span class="seg seg-mid"></span>
+          <span class="seg seg-fin"></span><span class="seg seg-fin"></span><span class="seg seg-fin"></span>
+        </div>
+        <div class="rail" id="lessons"></div>
+      </div>
+
+      <aside>
+        <p class="eyebrow" style="margin-bottom:.8rem">اختر ما تحتاجه · وصول دائم</p>
+        <div class="tiers" id="tiers"></div>
+        <div class="note" style="margin-top:1rem">
+          <span style="color:var(--accent-deep)">◈</span>
+          بعد الطلب تصلك تعليمات الدفع عبر واتساب. ما إن يُؤكَّد التحويل حتى يُفتح وصولك — بلا انتهاء صلاحية.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ٣ · صفحة الدراسة ═══════════════ -->
+<section class="screen" id="s-study">
+  <div class="wrap" style="padding-block:2.2rem 0">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-bottom:1.4rem">
+      <div style="flex:1;min-width:14rem">
+        <span class="eyebrow">تدرس الآن</span>
+        <h1 class="h2" style="margin-top:.25rem">مهارات الاتصال باللغة العربية</h1>
+      </div>
+      <div style="min-width:12rem">
+        <div style="display:flex;justify-content:space-between;font-size:.74rem;color:var(--subtle);margin-bottom:.4rem">
+          <span>تقدّمك</span><span class="num spark">٤٠٪</span>
+        </div>
+        <div class="meter"><span style="width:40%"></span></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab" aria-current="true">المحتوى</button>
+      <button class="tab">الإعلانات</button>
+      <button class="tab">الدرجات</button>
+      <button class="tab">الرسائل</button>
+    </div>
+
+    <div class="study">
+      <div>
+        <div class="player" style="aspect-ratio:16/9">
+          <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <span class="small num" style="position:absolute;inset-inline-end:1rem;bottom:1rem">١٨:٢٢</span>
+        </div>
+        <h2 class="h3" style="margin-top:1.1rem">الدرس الثالث — النحو التطبيقي</h2>
+        <p class="body" style="margin-top:.4rem">تطبيق قواعد النحو على نصوص المقرر، مع إعراب نماذج من أسئلة الامتحانات السابقة.</p>
+
+        <div class="dash-grid" style="margin-top:1.6rem">
+          <div class="card mini lift" style="cursor:pointer">
+            <span class="eyebrow">اختبار قصير</span>
+            <div class="h3" style="margin-top:.3rem">اختبار النحو</div>
+            <p class="small"><span class="num">٤</span> أسئلة · <span class="num">١٠</span> دقائق</p>
+          </div>
+          <div class="card mini lift" style="cursor:pointer">
+            <span class="eyebrow">واجب</span>
+            <div class="h3" style="margin-top:.3rem">تحليل أسلوب</div>
+            <p class="small pill-warn" style="display:inline-block;margin-top:.4rem">يُسلَّم خلال يومين</p>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <p class="eyebrow" style="margin-bottom:.8rem">دروس المقرر</p>
+        <div class="rail" id="study-rail"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ٤ · لوحة التحكم ═══════════════ -->
+<section class="screen" id="s-dash">
+  <div class="wrap" style="padding-block:2.4rem 0">
+    <span class="eyebrow">مساء الخير</span>
+    <h1 class="h1" style="margin-block:.3rem 1.6rem">أهلًا، سيد علي</h1>
+
+    <div class="resume">
+      <span class="eyebrow spark">تابع من حيث وقفت</span>
+      <h2 class="h2" style="margin-block:.5rem .3rem">الدرس الثالث — النحو التطبيقي</h2>
+      <p class="small">مهارات الاتصال باللغة العربية · توقّفت عند <span class="num">٦:١٤</span> من <span class="num">١٨:٢٢</span></p>
+      <div class="meter" style="margin-block:1rem;max-width:22rem"><span style="width:34%"></span></div>
+      <button class="btn btn-spark press">أكمل الدرس</button>
+    </div>
+
+    <div class="dash-grid" style="margin-top:1.6rem">
+      <!-- ⚠ رقمان بينهما فاصل داخل مقطع رقمي واحد ينقلبان بصريًا في
+           RTL: «٢ / ٥» تُرسم «٥ / ٢». الفصل إلى مقطعين بينهما كلمة
+           عربية يزيل الالتباس ويقرأ أصحّ أصلًا. -->
+      <div class="card mini"><span class="eyebrow">دروس أنهيتها</span>
+        <b class="spark" style="font-size:1.9rem;font-weight:600;line-height:1.2;display:block">
+          <span class="num">٢</span> من <span class="num">٥</span>
+        </b></div>
+      <div class="card mini"><span class="eyebrow">معدّل اختباراتك</span><b class="num">٨٧٪</b></div>
+      <div class="card mini"><span class="eyebrow">موعد قادم</span><b style="font-size:1rem;line-height:1.5;font-family:inherit">الاختبار النصفي<br /><span class="small">الأحد القادم</span></b></div>
+    </div>
+
+    <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">مقرراتي</h2></div>
+    <div class="grid-courses" id="my-courses"></div>
+
+    <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">آخر النشاط</h2></div>
+    <div class="feed" id="feed"></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <p class="footnote">
+    معاينة بصرية معزولة · بيانات تمثيلية · لا اتصال بقاعدة بيانات ولا صلة بكود الإنتاج.<br />
+    كل ما هنا قابل للتنفيذ بالمكدّس الحالي: Next.js وTailwind وIBM Plex Sans Arabic — بلا مكتبات جديدة.
+  </p>
+</div>
+
+</div>
+
+<script>
+/* ── بيانات تمثيلية ───────────────────────────────────────────────── */
+const FACULTIES = [
+  { slug:"arts", name:"كلية الآداب", n:3, icon:"◈" },
+  { slug:"it",   name:"كلية تقنية المعلومات", n:5, icon:"◆" },
+  { slug:"sci",  name:"كلية العلوم", n:4, icon:"◇" },
+  { slug:"eng",  name:"كلية الهندسة", n:0, icon:"◉" },
+];
+
+const COURSES = {
+  arts:[
+    {code:"ARAB110",title:"مهارات الاتصال باللغة العربية",sum:"شرح مركّز لمقرر ARAB110 كما يُدرَّس في جامعة البحرين.",n:5,free:true,price:"٨٫٠٠٠",by:"د. منى عبدالله"},
+    {code:"ARAB120",title:"النحو التطبيقي",sum:"تطبيق القواعد على نصوص المقرر مع إعراب أسئلة سابقة.",n:8,free:false,price:"٩٫٠٠٠",by:"د. منى عبدالله"},
+    {code:"ARAB214",title:"الأدب العربي الحديث",sum:"قراءة في نصوص المقرر واتجاهاته النقدية.",n:6,free:false,price:"٩٫٠٠٠",by:"د. سارة الخليفة"},
+  ],
+  it:[
+    {code:"ITCS106",title:"مقدمة في البرمجة",sum:"أساسيات البرمجة بلغة Java من الصفر حتى المشروع.",n:12,free:true,price:"١٢٫٠٠٠",by:"أ. سيد علي"},
+    {code:"ITCS214",title:"هياكل البيانات",sum:"القوائم والأشجار والخرائط مع تمارين الامتحان.",n:10,free:false,price:"١٢٫٠٠٠",by:"أ. سيد علي"},
+    {code:"ITCS253",title:"قواعد البيانات",sum:"التصميم العلائقي وSQL كما يُسأل في الاختبار.",n:9,free:false,price:"١٠٫٠٠٠",by:"د. حسن الشيخ"},
+  ],
+  sci:[
+    {code:"MATHS101",title:"التفاضل والتكامل ١",sum:"النهايات والاشتقاق والتكامل بحلول مفصّلة.",n:14,free:true,price:"١٢٫٠٠٠",by:"د. أمل ناصر"},
+    {code:"PHYCS101",title:"الفيزياء العامة",sum:"الميكانيكا والحرارة مع مسائل الامتحانات.",n:11,free:false,price:"١١٫٠٠٠",by:"د. أمل ناصر"},
+  ],
+  eng:[],
+};
+
+const LESSONS = [
+  {t:"الاستفهام",       d:"١٢:٤٠", s:"done", seg:"mid"},
+  {t:"الصرف",           d:"١٥:٠٥", s:"done", seg:"mid"},
+  {t:"النحو التطبيقي",  d:"١٨:٢٢", s:"live", seg:"fin"},
+  {t:"البلاغة",         d:"١٦:٣٠", s:"lock", seg:"fin"},
+  {t:"مراجعة شاملة",    d:"٢٢:١٠", s:"wait", seg:"fin"},
+];
+
+const TIERS = [
+  {name:"دورة المنتصف", price:"٨٫٠٠٠", was:null, best:false, items:["الدرسان ١ و٢ · الاستفهام والصرف","اختبار قصير بعد كل درس","وصول دائم بلا انتهاء"]},
+  {name:"دورة النهائي", price:"٨٫٠٠٠", was:null, best:false, items:["الدروس ٣ إلى ٥ · النحو والبلاغة والمراجعة","اختبار قصير بعد كل درس","وصول دائم بلا انتهاء"]},
+  {name:"الدورة الكاملة", price:"١٤٫٠٠٠", was:"١٦٫٠٠٠", best:true, items:["الدروس الخمسة كاملة","كل الاختبارات والواجبات","أسئلة الامتحانات السابقة محلولة","وصول دائم بلا انتهاء"]},
+];
+
+const FEED = [
+  {i:"▤", t:"رُفعت محاضرة: النحو التطبيقي", s:"مهارات الاتصال باللغة العربية", w:"أمس"},
+  {i:"◈", t:"موعد الاختبار النصفي", s:"يوم الأحد القادم · يغطّي الاستفهام والصرف", w:"قبل ٤ أيام"},
+  {i:"✓", t:"نتيجة الاختبار: الاستفهام", s:"٤ من ٤ — ممتاز", w:"قبل ٦ أيام"},
+];
+
+/* ── الرسم ────────────────────────────────────────────────────────── */
+const $ = (s,r=document)=>r.querySelector(s);
+const el = (h)=>{const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild;};
+
+let active = "arts";
+
+function stations(){
+  const box = $("#stations");
+  box.innerHTML = `<span class="rail-line" style="inset-inline-start:15px"></span>`;
+  FACULTIES.forEach(f=>{
+    const on = f.slug===active, empty = f.n===0;
+    const b = el(`
+      <button class="station" ${on?'aria-current="true"':""} data-f="${f.slug}">
+        <span class="node station-node ${on?"node-here":empty?"node-wait":""}">${f.icon}</span>
+        <span style="min-width:0;flex:1">
+          <span class="station-name" style="display:block">${f.name}</span>
+          <span class="station-sub">${empty?"لم تُطرح بعد":`<span class="num">${f.n}</span> مقررات`}</span>
+        </span>
+      </button>`);
+    b.onclick = ()=>{ active=f.slug; stations(); catBody(); };
+    box.appendChild(b);
+  });
+}
+
+function courseCard(c){
+  return `
+  <article class="card course lift">
+    <span class="course-code">${c.code.replace(/[A-Z]/g,"")}</span>
+    <div class="course-top">
+      <h3 class="h3" style="max-width:20ch">${c.title}</h3>
+      <span class="pill num">${c.code}</span>
+    </div>
+    <p class="body" style="font-size:.82rem;margin-top:.6rem">${c.sum}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.9rem">
+      ${c.free?'<span class="pill pill-free">درس مجاني</span>':""}
+      <span class="pill"><span class="num">${c.n}</span> دروس</span>
+    </div>
+    <div class="course-foot">
+      <span style="display:flex;align-items:center;gap:.5rem;font-size:.74rem;color:var(--subtle)">
+        <span class="avatar">${c.by.replace(/^[^ ]+ /,"").charAt(0)}</span>${c.by}</span>
+      <span style="text-align:start">
+        <span class="small" style="display:block;font-size:.66rem">يبدأ من</span>
+        <span class="price">${c.price}</span> <span class="small">د.ب</span>
+      </span>
+    </div>
+  </article>`;
+}
+
+function catBody(){
+  const f = FACULTIES.find(x=>x.slug===active);
+  const list = COURSES[active] || [];
+  $("#cat-body").innerHTML = `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--line-soft);padding-bottom:.9rem;margin-bottom:1.3rem">
+      <h3 class="h2">${f.name}</h3>
+      <span class="small">${list.length?`<span class="num">${list.length}</span> مقررات`:"لا مقررات بعد"}</span>
+    </div>
+    ${list.length
+      ? `<div class="grid-courses">${list.map(courseCard).join("")}</div>`
+      : `<div class="card" style="padding:3.4rem 1.5rem;text-align:center;border-style:dashed">
+           <p class="body" style="margin:0">${f.name} محطّة على المسار لم تُطرح بعد.</p>
+           <p class="small" style="margin-top:.4rem">نضيف المقررات كلية بعد كلية، ولا نعِد بموعد.</p>
+         </div>`}`;
+}
+
+function lessons(targetSel, withSeg){
+  const box = $(targetSel);
+  box.innerHTML = `<span class="rail-line"></span>`;
+  LESSONS.forEach((l,i)=>{
+    const cls = l.s==="done"?"node-done":l.s==="live"?"node-live":l.s==="wait"?"node-wait":"node-lock";
+    const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"🔒":String(i+1);
+    const badge = l.s==="wait"?'<span class="pill pill-warn">قيد الرفع</span>'
+                : l.s==="live"?'<span class="pill pill-free">تدرسه الآن</span>'
+                : l.s==="lock"?'<span class="small" style="color:var(--faint)">يُفتح بالشراء</span>':"";
+    box.appendChild(el(`
+      <div class="stop" ${withSeg?`data-seg="${l.seg}"`:""}>
+        <span class="node ${cls}">${l.s==="lock"?"":mark}</span>
+        <div class="stop-body">
+          <span class="stop-title">${l.t}</span>
+          ${badge}
+          <span class="small num">${l.d}</span>
+        </div>
+      </div>`));
+  });
+}
+
+function tiers(){
+  $("#tiers").innerHTML = TIERS.map(t=>`
+    <div class="card tier lift ${t.best?"tier-best":""}" data-seg="${t.name.includes("المنتصف")?"mid":t.name.includes("النهائي")?"fin":"all"}">
+      ${t.best?'<span class="tier-badge">الأوفر</span>':""}
+      <div class="h3">${t.name}</div>
+      <div class="tier-price">
+        <span class="price">${t.price}</span><span class="small">د.ب</span>
+        ${t.was?`<span class="strike num">${t.was}</span>`:""}
+      </div>
+      <ul>${t.items.map(x=>`<li><span class="tick">✓</span>${x}</li>`).join("")}</ul>
+      <button class="btn ${t.best?"btn-primary":""} press" style="width:100%;margin-top:1rem">
+        ${t.best?"اطلب الدورة الكاملة":"اطلب هذه الباقة"}
+      </button>
+    </div>`).join("");
+
+  /* ربط الباقة بالشريط المقسَّم — المرور فوق باقة يُبرز دروسها */
+  document.querySelectorAll(".tier").forEach(card=>{
+    const seg = card.dataset.seg;
+    card.addEventListener("mouseenter",()=>{
+      const bar = $("#segbar");
+      bar.className = "segbar" + (seg==="mid"?" hover-mid":seg==="fin"?" hover-fin":"");
+      document.querySelectorAll("#lessons .stop").forEach(s=>{
+        s.style.opacity = (seg==="all"||s.dataset.seg===seg) ? "1" : ".34";
+      });
+    });
+    card.addEventListener("mouseleave",()=>{
+      $("#segbar").className="segbar";
+      document.querySelectorAll("#lessons .stop").forEach(s=>s.style.opacity="1");
+    });
+  });
+}
+
+function dash(){
+  $("#my-courses").innerHTML = [COURSES.arts[0], COURSES.it[0]].map(courseCard).join("");
+  $("#feed").innerHTML = FEED.map(f=>`
+    <div class="feed-row">
+      <span class="dot">${f.i}</span>
+      <span style="flex:1;min-width:0">
+        <b style="display:block;font-size:.87rem;font-weight:600">${f.t}</b>
+        <span class="small">${f.s}</span>
+      </span>
+      <span class="small" style="white-space:nowrap">${f.w}</span>
+    </div>`).join("");
+}
+
+/* ── التنقّل بين الشاشات ──────────────────────────────────────────── */
+$("#nav").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-s]"); if(!b) return;
+  document.querySelectorAll("#nav button").forEach(x=>x.removeAttribute("aria-current"));
+  b.setAttribute("aria-current","true");
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  $("#s-"+b.dataset.s).classList.add("on");
+  window.scrollTo({top:0,behavior:"instant"});
+  history.replaceState(null,"","#"+b.dataset.s);
+});
+
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
+  t.setAttribute("aria-current","true");
+}));
+
+stations(); catBody(); lessons("#lessons",true); lessons("#study-rail",false); tiers(); dash();
+
+const h = location.hash.replace("#","");
+if(h){ const b=document.querySelector(`#nav button[data-s="${h}"]`); if(b) b.click(); }
+</script>
+</body>
+</html>
