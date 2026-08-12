@@ -25,7 +25,7 @@ export default async function CourseContentPage({ params }: Params) {
 
   const [canManage, materials, quizzes, assignments] = await Promise.all([
     canManageCourse(courseId, user.id, user.role),
-    getCourseMaterials(courseId, user.id, user.role),
+    getCourseMaterials(courseId),
     getCourseQuizzes(courseId, user.id, user.role),
     getCourseAssignments(courseId, user.id, user.role),
   ]);

@@ -6,7 +6,7 @@ import { AppPage } from "@/components/shell/AppPage";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CourseCard } from "@/components/courses/CourseCard";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
-import { getMyCourses } from "@/lib/data/courses";
+import { getMyCourses, getCourseResume } from "@/lib/data/courses";
 import { Role } from "@/generated/prisma/enums";
 
 export const metadata: Metadata = { title: "مقرراتي" };
@@ -58,6 +58,12 @@ const COPY = {
 export default async function Page() {
   const [session, courses] = await Promise.all([auth(), getMyCourses()]);
 
+  /* الاستئناف لكل مقرر — استعلامات متوازية لا متسلسلة، وكلها
+     مُغلَّفة بـ`cache()` فلا تتكرّر داخل الطلب الواحد. */
+  const resumes = await Promise.all(
+    courses.map((course) => getCourseResume(course.id)),
+  );
+
   // الجلسة مضمونة هنا: تخطيط (app) يحرس المنطقة قبل تصيير الصفحة
   const copy = COPY[session!.user.role] ?? COPY[Role.STUDENT];
 
@@ -72,9 +78,9 @@ export default async function Page() {
         />
       ) : (
         <StaggerList as="ul" className="space-y-3">
-          {courses.map((course) => (
+          {courses.map((course, i) => (
             <StaggerItem key={course.id}>
-              <CourseCard course={course} />
+              <CourseCard course={course} resume={resumes[i]} />
             </StaggerItem>
           ))}
         </StaggerList>

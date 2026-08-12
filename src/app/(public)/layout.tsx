@@ -51,7 +51,7 @@ export default async function PublicLayout({
               href="/learn"
               className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
                 border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
-                transition-colors hover:border-accent-deep hover:bg-[#16212d]"
+                transition-colors hover:border-accent-deep hover:bg-panel-lift"
             >
               مقرراتي
             </Link>
@@ -68,7 +68,7 @@ export default async function PublicLayout({
                 href="/signup"
                 className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
                   border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
-                  transition-colors hover:border-accent-deep hover:bg-[#16212d]"
+                  transition-colors hover:border-accent-deep hover:bg-panel-lift"
               >
                 إنشاء حساب
               </Link>

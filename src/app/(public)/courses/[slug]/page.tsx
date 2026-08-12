@@ -271,7 +271,7 @@ function PreviewPlayer({
             hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_18px_52px_-10px_rgba(0,0,0,0.75),0_0_0_12px_color-mix(in_srgb,var(--color-action)_9%,transparent)]
             [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]"
         >
-          <Play size={26} fill="#0d1013" strokeWidth={0} className="ms-[3px]" aria-hidden="true" />
+          <Play size={26} className="fill-ink ms-[3px]" strokeWidth={0} aria-hidden="true" />
         </button>
 
         {duration && (
@@ -299,9 +299,13 @@ function LessonPath({
       {/* ── الخيط ────────────────────────────────────────────────────
           اسم المنصة "مسار". فالمنهج خطّ متصل بعُقد لا صناديق منفصلة —
           والعقدة الأولى مضيئة لأنها المجانية، أي بداية الطريق. */}
+      {/* السكّة تُرسم من الأعلى — نفس حركة مسار الدروس داخل المنصة.
+          كانت أقوى حركتين في المنتج (`track-draw` و`node-live`)
+          محبوستين خلف الدفع، أي غائبتين عن الصفحة الوحيدة التي
+          وظيفتها الإقناع. */}
       <span
         aria-hidden="true"
-        className="absolute inset-y-[18px_22px] start-[13px] w-0.5 rounded-sm
+        className="track-draw absolute inset-y-[18px_22px] start-[13px] w-0.5 origin-top rounded-sm
           [background:linear-gradient(180deg,color-mix(in_srgb,var(--color-success)_60%,transparent)_0%,var(--color-line)_16%,var(--color-line)_88%,transparent_100%)]"
       />
 
@@ -317,8 +321,10 @@ function LessonPath({
                 "absolute -start-[2.125rem] top-[15px] grid size-7 place-items-center rounded-full",
                 "border bg-ink text-[11px] shadow-[0_0_0_5px_var(--color-ink)]",
                 "transition-colors duration-200 ease-out",
+                /* العقدة المتاحة تتنفّس: هنا «المتاح» هو الدرس
+                   المجاني، فتأخذ نفس الحركة بلون `success`. */
                 lesson.isFreePreview
-                  ? "border-success/65 text-success shadow-[0_0_0_5px_var(--color-ink),0_0_0_8px_color-mix(in_srgb,var(--color-success)_12%,transparent)]"
+                  ? "node-live node-live-success border-success/65 text-success"
                   : "border-line text-subtle group-hover:border-accent-deep group-hover:text-accent",
               )}
             >
@@ -330,7 +336,12 @@ function LessonPath({
                 "flex items-center gap-3.5 rounded-[10px] border bg-panel px-[1.125rem] py-[0.9375rem]",
                 "shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]",
                 "transition-[border-color,background-color,transform] duration-200 ease-out",
-                "group-hover:-translate-x-[3px] group-hover:border-accent-deep/70",
+                /* ⚠ كان `-translate-x-[3px]`. الإزاحة الأفقية تتحرّك
+                   نحو اليسار الفيزيائي مهما كان اتجاه الصفحة، فمعناها
+                   ينقلب بين LTR وRTL: «للأمام» في إحداهما و«للخلف» في
+                   الأخرى. الإزاحة الرأسية بلا اتجاه، وهي نفس لغة
+                   `.lift` في نظام التصميم. */
+                "group-hover:-translate-y-[2px] group-hover:border-accent-deep/70",
                 lesson.isFreePreview ? "border-success/30" : "border-line",
               )}
             >

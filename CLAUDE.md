@@ -29,12 +29,31 @@ Project path is `C:\dev\hisab-lms\hisab-lms` and **must stay outside OneDrive sy
 
 Built around the client's actual logo (dark navy circular badge, white bird/wing motif, Arabic text).
 
-- Primary background: `#0D1013`
+- Primary background: ~~`#0D1013`~~ → **`#0a0e12`** (widened 2026-08-09, see below)
 - Secondary: `#7E9AAE`
 - Accent-bright / action: `#8FB2C8` (action-active: `#7FA8C2`)
 - Light background: `#EEF3F7`
 - **No gold accents**
-- **Important**: `#A9C3D4` (accent-bright) must NOT be darkened on dark backgrounds — darkening reduces contrast. The correct fix for contrast issues is increasing saturation, which is how `#8FB2C8`/`#7FA8C2` were derived.
+- **Important**: `#A9C3D4` (accent-bright) must NOT be darkened on dark backgrounds — darkening reduces contrast. The correct fix for contrast issues is increasing saturation, which is how `#8FB2C8`/`#7FA8C2` were derived. **Still binding — the 2026-08-09 pass moved surfaces only and left every accent untouched.**
+
+### The surface ladder was widened — 2026-08-09
+
+The four surfaces were `#0d1013` → `#111a24` → `#16212d` → `#26333f`: four steps inside a very narrow band, then a jump straight to near-white text. Every card therefore looked pasted onto the background rather than resting above it, and the whole product read as one flat sheet. **That flatness, not a shortage of ornament, is what read as "bland".**
+
+The base dropped a step and the panels rose two, roughly doubling the range. No new colour entered — it is the same cold blue-grey family:
+
+| token | was | now |
+|---|---|---|
+| `--color-ink` | `#0d1013` | `#0a0e12` |
+| `--color-ink-lift` | `#10151b` | `#0e141a` |
+| `--color-panel` | `#111a24` | `#131e29` |
+| `--color-panel-lift` | `#16212d` | `#1a2836` |
+| `--color-line` | `#26333f` | `#2c3d4c` |
+| `--color-line-soft` | — | `#1f2c38` (new) |
+
+**The trap this sprang, and the rule it leaves behind.** Five files hard-coded `#16212d` as a hover background — the *old* `panel-lift`. After the ladder moved, those hovers became **darker** than the surface they sat on, so every affected control sank on hover instead of lifting. `manifest.ts` and `viewport.themeColor` held the old `#0d1013` too, which would have shown a browser chrome colour that no longer matched the page.
+
+**Never hard-code a surface hex. Use the token.** After changing any surface value, run `git grep` for every old literal — the compiler cannot catch this class of drift, and the symptom (hover feels wrong) is easy to dismiss as taste.
 
 ## What Changed: Hesab Center LMS → Masar
 
@@ -178,9 +197,15 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
-## ⇢ START HERE — State as of 2026-08-08
+## ⇢ START HERE — State as of 2026-08-09
 
-**Branch `masar-design-pass`, 17 commits ahead of `master`, nothing merged, nothing deployed.** Typecheck and `build:local` are green at HEAD. The working tree is clean apart from untracked `.claude/` (editor config — `launch.json` is referenced by this file, `settings.local.json` is local permissions; neither has ever been committed).
+**`master` is live.** It carries the whole Masar application layer, deploys itself on every push (Netlify is git-connected), and production serves it. `masar-design-pass` is merged and historical.
+
+**The open branch is `masar-design-2` — five commits ahead of `master`, not merged.** It is the design pass: faculty stations, the widened surface ladder, the type scale, the always-visible syllabus, resume, and the catalogue navigation. Full reasoning in "The Design Pass" below. Typecheck is green; `.claude/` stays untracked and gitignored.
+
+**⚠ Merging to `master` publishes.** Since `c1afb92` the Netlify site builds and deploys from git on every push to `master`. There is no separate staging step and one database behind everything — treat a merge as a production release.
+
+> The 2026-08-08 note that stood here — "branch `masar-design-pass`, 17 commits ahead, nothing merged, nothing deployed" — is obsolete on every clause.
 
 ### The six-phase plan — where it stands
 
@@ -661,6 +686,85 @@ npx next start -p 3100
 ```
 
 **The rule:** run one or the other, not both. Diagnose from the **browser console and the server log**, not from `curl` — the HTML is a 200 either way, and the status code tells you nothing. If the two ever need to run together, give them separate build dirs (`distDir` in `next.config.ts`, driven by an env var, with the same value set for build and start) — not done today.
+
+## The Design Pass — Branch `masar-design-2`, 2026-08-09
+
+Five commits on top of `master @ c1afb92`. Public-facing design and navigation only: **no schema, no Prisma model, no payment code, no bundle-access logic, and `PageTransition.tsx` untouched.** One read query was added and one read filter relaxed; both are recorded below with the evidence that the paid boundary survived.
+
+### Faculties are stations on the path — the catalogue's organising idea
+
+The catalogue grouped courses under muted faculty headings. At the real data volume — one faculty holding one course — the `auto-fit` grid rendered a single card in a three-column row, so two thirds of the page read as something that had failed to load. And the faculties themselves were `<h3>` labels nobody could act on.
+
+Faculties are now **stations on the path the platform is named after** (`FacultyStations.tsx`). The lit ones have courses; the rest are stations further along. Choice and content share the first frame — the first lit station is selected on load — so nothing gates the catalogue. The page fills with colleges rather than courses, which is what lets it look deliberate while holding one course.
+
+Three constraints drove the shape, and each is worth keeping:
+
+- **Vertical, and not for taste.** A vertical rail has no horizontal direction, so the marker moves by measured `offsetTop` and no rule has to be flipped for RTL. In a codebase with a documented history of direction bugs, this removes the whole class rather than dodging it.
+- **No `spark`.** The bold colour is reserved by an explicit rule for progress and achievement. "Where I am standing" is a location, not an achievement, and spending `spark` on it would consume its meaning. Active stations use `accent-bright`/`action`.
+- **Reuses `track-draw`, does not reinvent it.** Same primitive as the lesson paths.
+
+### Four faculties, and the wording rule that goes with them
+
+`src/lib/faculties.ts` lists **four** colleges — الآداب، تقنية المعلومات، العلوم، الهندسة — by the owner's explicit decision. The University of Bahrain has nine (uob.edu.bh/colleges-2; Arabic Wikipedia says ten because it still separates physical education from health sciences, merged today).
+
+**This list is a roadmap, not a directory.** An unlit station asserts the college is coming. Nine of them promised a breadth the owner does not intend; four states it honestly. Narrowing the list *strengthens* the claim.
+
+**The empty label is «لم تُطرح بعد», never «قريبًا».** Exported as `NOT_OFFERED_LABEL` so the phrasing cannot drift. «قريبًا» promises a timetable the owner does not control, and a promise not kept is worse than silence. Apply this to any new copy about an unserved faculty.
+
+**It lives in the presentation layer, not the `Faculty` table**, keyed by `slug`. Rows nothing points at are not data, and this needs no migration. Any faculty that appears in the database outside the four is appended by `buildStations`, so an editorial list can never hide a published course.
+
+### Visibility is ownership; playability is readiness
+
+`getCourseMaterials` filtered lectures to `status = READY`, so a student who owned a course whose videos were not uploaded yet saw **an entirely empty page** — which reads as broken, not as organised and pending.
+
+The status filter is gone. The `viewable` (ownership) filter is untouched. A planned lesson is a title and a position in a syllabus the student already bought: information *for* them, not *about* them.
+
+**Dropping `publishedAt` alongside it was safe, and this is the part worth remembering because it looks like a draft gate.** `CourseMaterial.publishedAt` is written in exactly two places, both in the video routes — set when an upload completes, cleared when the video is deleted. **There is no publish control for a lesson**, so the column means "has a file" and merely duplicated `status = READY`. No draft was being protected. (`Announcement.publishedAt` *is* editorial — do not confuse the two.)
+
+`MaterialList` already had the pending state — a warning-toned clock node and the label «قيد الرفع» — and only mounts `VideoPlayer` when `ready`. The component was built for this; the query was starving it.
+
+**Proof the boundary held**, over HTTP with two sessions:
+
+| account | owns | sees | `<video>` |
+|---|---|---|---|
+| `student.test` | 4 lessons | exactly those 4 | 0 |
+| `fresh.visitor` | الاستفهام, الصرف | exactly those 2 | 0 |
+
+The `READY` lesson that belongs to no bundle is invisible to both.
+
+### Resume in «مقرراتي» — honest about what is not measured yet
+
+`getCourseResume` reads `LessonProgress` when rows exist and says «تابع من»; otherwise it falls back to the first ready lesson the student owns and says «ابدأ من». **Nothing writes `LessonProgress` yet** — no player records a position — so a resume built on it alone would render empty forever and look broken. This is correct today and upgrades itself the day playback starts recording, with no change to the function.
+
+For the same reason the completion bar appears only once something is complete. A permanent 0% would assert "you have made no progress" on every visit, which is false — nobody is measuring.
+
+Ownership comes from `accessibleLessonIds`, the gate the lists and pages already use. A second ownership query here would be a second source of truth, which is what cost this project its bundle boundary once.
+
+### Navigation — the catalogue had no way back
+
+Nothing linked to `/courses` from inside the app, so a signed-in student had no route to browse or buy another course: the main commercial path in the product.
+
+- **In `SidebarContent`**, which serves the desktop sidebar *and* the mobile drawer, so it appears on every page.
+- **Deliberately not a seventh `NAV_ITEM`.** The design system caps root navigation at six and a student already has six. This is a different class of action — exploration, not internal navigation — so it takes a different position and tone.
+- **Plus an icon-only entry in `Topbar`, `lg:hidden`.** Below 1024px the sidebar collapses behind the hamburger, which put the commercial path behind a menu open. Verified: exactly one catalogue link is visible at any width.
+- The brand block is now a link to `/dashboard`.
+
+### Arabic typography — one rule above all the rest
+
+**Never apply positive `letter-spacing` to Arabic.** Arabic is a joined script and tracking pulls the letters apart, breaking the joins visually. It is easy to ship by accident because `tracking-wide` travels with `uppercase` from Latin design — and `uppercase` does nothing in Arabic at all. Differentiate with size, weight and colour. **Negative** tracking on large headings is fine and wanted; it tightens rather than breaks.
+
+The scale lives in `globals.css` as `.text-display` / `.text-title-lg|md|sm` / `.text-body|body-sm` / `.text-eyebrow`.
+
+### RTL — the defect class, and where it stood
+
+`group-hover:-translate-x-[3px]` appeared on the storefront lesson rows and in `MaterialList`. **A horizontal translate moves toward physical left whatever the page direction**, so it meant "forward" in LTR and "backward" here. Both are vertical lifts now, matching `.lift`.
+
+**There are now zero raw horizontal transforms in the source.** The only `-translate-x-1` instances left are on arrow icons, where the direction is the point. Audited at the end of the pass; re-audit with `grep -rn "translate-x-\[" src/` after any motion work.
+
+### Two testing notes worth keeping
+
+- **`document.cookie` cannot switch users.** Auth.js re-issues the session cookie **HttpOnly**, so once the server has set it, JS can neither read nor replace it — a second `document.cookie` write silently does nothing and you keep testing as the first user. This produced a false "ownership leak" alarm mid-pass. Drive multi-account tests over HTTP with an explicit `Cookie` header instead, as the bundle-boundary test does.
+- **A `NUL` byte was found inside a string literal in `courses.ts`.** Harmless at runtime — it was only a `Map` key — but it made ripgrep treat the file as binary, so **every code search silently skipped it**. That is how it was found. If a file mysteriously never appears in search results, check for control characters.
 
 ## Installed Skills — Reviewed 2026-08-09, With Standing Limits
 

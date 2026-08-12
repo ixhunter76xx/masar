@@ -21,7 +21,7 @@ const variants: Record<Variant, string> = {
   // ثانوي: سطح داكن بحدود
   secondary:
     "bg-panel text-paper border border-line hover:border-accent-deep " +
-    "hover:bg-[#16212d] active:bg-panel disabled:text-disabled disabled:hover:border-line",
+    "hover:bg-panel-lift active:bg-panel disabled:text-disabled disabled:hover:border-line",
   // هادئ: بلا خلفية
   quiet:
     "bg-transparent text-muted hover:text-paper hover:bg-panel " +
