@@ -70,7 +70,10 @@
   /* «التمييز» أبيض عظميّ — لون اللوغو مخفَّفًا */
   --accent:#cfc6b8; --accent-bright:#eae4d9; --accent-deep:#8d857a; --action:#e8e2d6;
   --spark:#e0a94a; --spark-deep:#a87a28;
-  --warning:#d79a52; --danger:#c4675f;
+  /* ⚠ `--danger` أُفتح: عند #c4675f كان ٤٫٠٥ على `--panel` — ونصّ
+     الخطأ أحوج نصٍّ في الواجهة إلى أن يُقرأ.  الآن ٥٫٦٥ على `--ink`
+     و٤٫٩٨ على `--panel`، ويبقى أحمرَ لا يُلتبس. */
+  --warning:#d79a52; --danger:#d07a72;
 
   --on-accent:#1a1817; --on-spark:#241703;
   --sunk:rgba(14,13,12,.5); --sunk-2:rgba(38,35,34,.6);
@@ -454,6 +457,206 @@ body::after{
   .pw,.board-steps li{opacity:1;transform:none;animation:none}
 }
 
+/* ═══ إطار التطبيق ══════════════════════════════════════════════════
+   الفجوة الأكبر في المعاينة السابقة: الشاشات المحمية كلها مؤطَّرة في
+   المنتج بشريط جانبي، ولم يظهر ولا مرّة — فما اعتُمد كان شكل الصفحات
+   العامّة وحدها، ولم يُرَ التطبيق من الداخل قطّ.
+
+   البنية مأخوذة من `src/components/shell/`: عرض ٢٦٠px، `start-0` أي
+   يمين في RTL، وحدٌّ على الوجه المقابل للمحتوى، وستة عناصر تنقّل
+   بعدّادات، وشريحة المستخدم في القاع. */
+.appframe{display:none}
+html[data-shell="app"] .appframe{display:block}
+@media(min-width:1060px){
+  html[data-shell="app"] .appframe{display:grid;grid-template-columns:260px 1fr;align-items:start}
+}
+
+.side{display:none;position:sticky;top:0;align-self:start;height:100dvh;
+  background:var(--panel);border-inline-end:1px solid var(--line);
+  flex-direction:column}
+@media(min-width:1060px){.side{display:flex}}
+.side-id{display:flex;align-items:center;gap:.75rem;padding:1.25rem}
+.side-id b{display:block;font-size:.87rem;font-weight:700;line-height:1.4}
+.side-id span{display:block;font-size:.69rem;color:var(--muted)}
+.side-rule{margin-inline:1.25rem;border-top:1px solid var(--line)}
+.side-nav{flex:1;overflow-y:auto;padding:1rem .75rem}
+.side-foot{padding:1rem 1.25rem}
+
+.navlist{list-style:none;display:grid;gap:.25rem}
+/* العنصر النشط: خطّ رأسي عند الحدّ الفاصل بين القائمة والمحتوى، مع
+   خلفية خفيفة — بلا لون نصّ صاخب.  نفس قاعدة `SidebarNav`. */
+.navlink{position:relative;display:flex;align-items:center;gap:.75rem;
+  min-height:44px;padding-inline:.75rem 1rem;border-radius:10px;
+  font-size:.87rem;color:var(--muted);text-decoration:none;cursor:pointer;
+  background:transparent;border:0;width:100%;font-family:inherit;
+  transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
+.navlink::before{content:"";position:absolute;inset-block:.5rem;inset-inline-end:0;
+  width:3px;border-radius:99px;background:transparent;transform:scaleY(0);
+  transition:background-color var(--dur-base) var(--ease),transform var(--dur-base) var(--ease)}
+.navlink svg{flex:0 0 auto;color:var(--subtle);transition:color var(--dur-fast) var(--ease)}
+/* ⚠ الاسم وحده يتمدّد.  `span` مجرّدة كانت تطابق العدّاد أيضًا فيرث
+   `flex:1` ويتمدّد إلى ٨٨px بدل ٢٤ — شارةٌ بحجم زرّ. */
+.navlink .navlabel{flex:1;text-align:start}
+.navlink .countbadge{flex:0 0 auto}
+@media(hover:hover){.navlink:hover{color:var(--paper);background:var(--panel-lift)}}
+.navlink[aria-current]{background:var(--panel-lift);color:var(--paper);font-weight:500}
+.navlink[aria-current]::before{background:var(--accent-bright);transform:scaleY(1)}
+.navlink[aria-current] svg{color:var(--accent-bright)}
+
+/* عدّاد: محايد أو مُنبّه.  الرقم يعني «شيءٌ ينتظرك» لا زينة. */
+.countbadge{min-width:20px;height:20px;padding-inline:.35rem;border-radius:99px;
+  display:grid;place-items:center;font-size:.66rem;font-weight:600;
+  font-variant-numeric:tabular-nums;background:var(--panel-high);color:var(--muted)}
+.countbadge.danger{background:color-mix(in srgb,var(--danger) 22%,transparent);
+  color:var(--danger)}
+
+.userchip{display:flex;align-items:center;gap:.65rem;width:100%;
+  padding:.55rem;border-radius:12px;background:transparent;border:0;
+  font-family:inherit;cursor:pointer;text-align:start;
+  transition:background-color var(--dur-fast) var(--ease)}
+@media(hover:hover){.userchip:hover{background:var(--panel-lift)}}
+.userchip b{display:block;font-size:.81rem;font-weight:600}
+.userchip span{display:block;font-size:.68rem;color:var(--subtle)}
+
+/* رأسية التطبيق — لاصقة، وتحمل عنوان الصفحة وزرّ الخروج */
+.apptop{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:.75rem;
+  height:64px;padding-inline:1rem;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--ink) 90%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.apptop h1{flex:1;font-size:1rem;font-weight:500;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+/* زرّ القائمة للجوّال: الشريط الجانبي مخفيّ تحت ١٠٦٠px */
+.menubtn{display:grid;place-items:center;width:44px;height:44px;border-radius:11px;
+  border:1px solid var(--line);background:var(--sunk);color:var(--paper);cursor:pointer;flex:0 0 auto}
+@media(min-width:1060px){.menubtn{display:none}}
+
+/* اللوحة المنسحبة على الجوّال — نفس محتوى الشريط الجانبي */
+.drawer{position:fixed;inset:0;z-index:60;display:none}
+.drawer[data-open="true"]{display:block}
+.drawer-veil{position:absolute;inset:0;background:rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.drawer-panel{position:absolute;inset-block:0;inset-inline-start:0;width:min(300px,86vw);
+  background:var(--panel);border-inline-end:1px solid var(--line);
+  display:flex;flex-direction:column;
+  animation:drawerIn 260ms var(--ease) both}
+/* ⚠ الانزلاق منطقيّ لا فيزيائي: `translateX(30px)` يدخل من اليسار
+   في RTL، أي من الجهة الخطأ.  النسبة المئوية على المحور المنطقي عبر
+   `inset-inline-start` مع `translate` موجب تعمل في الاتجاهين. */
+@keyframes drawerIn{from{opacity:0;transform:translateX(calc(var(--dir,1) * 24px))}
+                    to{opacity:1;transform:none}}
+html[dir="rtl"]{--dir:1}
+
+/* ═══ الحقول ════════════════════════════════════════════════════════
+   لم يكن في المعاينة حقلٌ واحد، بينما في المنتج **١٣ ملفًّا فيه
+   `<form>`** — وأول شاشة يراها أي مستخدم كلّها حقول.  هذه المجموعة
+   تُثبّت الحالات التي تُشتقّ منها بقية النماذج، فلا يُخترع تصميم
+   الحقل أثناء كتابة كل نموذج.  مطابقة لبنية `src/components/ui/Field.tsx`:
+   تسمية، حقل، ثم نصّ مساعدة أو خطأ مربوط بـ`aria-describedby`. */
+.field{display:grid;gap:.4rem}
+.label{font-size:.8rem;font-weight:500;color:var(--muted)}
+.input{width:100%;min-height:46px;padding:.6rem .9rem;border-radius:var(--r-field);
+  background:var(--sunk);border:1px solid var(--line);color:var(--paper);
+  font:inherit;font-size:.92rem;
+  transition:border-color var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease),
+             background-color var(--dur-fast) var(--ease)}
+.input::placeholder{color:var(--faint)}
+@media(hover:hover){.input:hover:not(:disabled){border-color:var(--accent-deep)}}
+/* التركيز حلقةٌ داخل الحدّ لا `outline` خارجه: الحقل عنصرٌ محاطٌ
+   بحدّ أصلًا، فحلقتان متداخلتان تُقرأان ضجيجًا. */
+.input:focus{outline:none;border-color:var(--accent-bright);
+  background:var(--sunk-2);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-bright) 20%,transparent)}
+.input[aria-invalid="true"]{border-color:var(--danger)}
+.input[aria-invalid="true"]:focus{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
+.input:disabled{opacity:.5;cursor:not-allowed;background:var(--panel);border-color:var(--line-soft)}
+.help{font-size:.74rem;line-height:1.7;color:var(--subtle)}
+/* ⚠ الخطأ لا يُقال باللون وحده — يسبقه رمز، ويحمل `role="alert"`.
+   من لا يميّز الأحمر يجب أن يعرف أن هذا خطأ لا تلميح. */
+.help.danger{color:var(--danger);display:flex;align-items:flex-start;gap:.35rem}
+.help.danger::before{content:"!";flex:0 0 auto;width:14px;height:14px;margin-top:.15rem;
+  border-radius:99px;display:grid;place-items:center;font-size:.6rem;font-weight:700;
+  background:var(--danger);color:var(--on-accent)}
+
+/* كلمة المرور: زرّ الكشف داخل الحقل */
+.pwwrap{position:relative}
+.pwwrap .input{padding-inline-end:3.1rem}
+.pwbtn{position:absolute;inset-inline-end:.3rem;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:10px;border:0;background:transparent;
+  color:var(--subtle);cursor:pointer;display:grid;place-items:center}
+@media(hover:hover){.pwbtn:hover{color:var(--paper);background:var(--panel-lift)}}
+
+/* مربّع الاختيار: المربّع ١٨px بصريًا، والتسمية تحمله فتصير هي منطقة
+   اللمس (٤٤px).  و`margin-block` السالب يلغي الزيادة من التدفّق. */
+.check{display:inline-flex;align-items:center;gap:.65rem;min-height:44px;
+  margin-block:-.5rem;cursor:pointer;user-select:none}
+.check input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:5px;
+  flex:0 0 auto;position:relative;cursor:pointer;
+  background:var(--ink);border:1px solid var(--line);
+  transition:background-color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
+@media(hover:hover){.check input:hover{border-color:var(--accent-deep)}}
+.check input:checked{background:var(--action);border-color:var(--action)}
+/* علامة الصحّ رسمٌ داخل مربّع ثابت، فالقيم الفيزيائية هنا صحيحة
+   ولا تنقلب مع الاتجاه. */
+.check input:checked::after{content:"";position:absolute;left:5px;top:1px;
+  width:5px;height:10px;border:solid var(--on-accent);border-width:0 2px 2px 0;
+  transform:rotate(45deg)}
+.check span{font-size:.82rem;color:var(--muted)}
+
+/* ═══ صفحة المصادقة ═════════════════════════════════════════════════ */
+.authwrap{min-height:calc(100dvh - 66px);display:grid;place-items:center;padding:2.5rem 1rem}
+.authcard{width:min(430px,100%);padding:clamp(1.6rem,4vw,2.3rem)}
+.authhead{display:grid;justify-items:center;gap:.9rem;margin-bottom:1.8rem;text-align:center}
+.authalert{display:flex;gap:.6rem;align-items:flex-start;padding:.8rem .95rem;border-radius:var(--r-field);
+  font-size:.8rem;line-height:1.7;margin-bottom:1.3rem;
+  border:1px solid color-mix(in srgb,var(--danger) 40%,transparent);
+  background:color-mix(in srgb,var(--danger) 10%,transparent);color:var(--danger)}
+
+/* ═══ الجداول ═══════════════════════════════════════════════════════
+   سطحٌ كثيف البيانات لم يكن في المعاينة أصلًا.  الجدول يُمرَّر أفقيًا
+   داخل غلافه ولا يدفع الصفحة — والقاعدة نفسها التي أنقذت `.tiers`. */
+.tablewrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);
+  border-radius:var(--r-card);background:var(--panel);scrollbar-width:thin}
+.gt{width:100%;border-collapse:collapse;font-size:.86rem;min-width:32rem}
+.gt caption{text-align:start;padding:1rem 1.15rem .2rem;font-size:.74rem;color:var(--subtle)}
+.gt th{text-align:start;font-weight:600;font-size:.73rem;color:var(--subtle);
+  padding:.85rem 1.15rem;border-bottom:1px solid var(--line);white-space:nowrap}
+.gt td{padding:.9rem 1.15rem;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.gt tbody tr:last-child td{border-bottom:0}
+@media(hover:hover){.gt tbody tr:hover{background:var(--panel-lift)}}
+.gt .t-num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* حلقة الدرجة — نسبة تُقرأ قبل الرقم */
+.ring{position:relative;width:104px;height:104px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.ring .ring-bg{stroke:var(--line)}
+.ring .ring-on{stroke:var(--spark);transition:stroke-dashoffset var(--dur-slow) var(--ease)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ═══ الحالة الفارغة ════════════════════════════════════════════════
+   كانت في المعاينة جملةً واحدة داخل سطر، وفي المنتج مكوّنٌ قائم.
+   القاعدة: تقول ما الذي سيملأ الفراغ، لا «لا يوجد» وحدها. */
+.empty{display:grid;justify-items:center;gap:.7rem;padding:3.2rem 1.5rem;text-align:center}
+.empty-mark{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;
+  background:var(--sunk);border:1px solid var(--line);color:var(--subtle)}
+.empty p{max-width:34ch}
+
+/* ═══ الهيكل العظمي ═════════════════════════════════════════════════
+   ⚠ اتجاه اللمعة منطقيّ: في RTL تمسح من اليمين إلى اليسار، أي عكس
+   الافتراضي.  لمعةٌ تسير ضدّ القراءة تُقرأ خطأً في الرسم. */
+.sk{border-radius:8px;background:var(--panel-lift);position:relative;overflow:hidden}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,
+    color-mix(in srgb,var(--paper) 7%,transparent),transparent);
+  animation:skwave 1.5s ease-in-out infinite}
+html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
+@keyframes skwave{100%{transform:translateX(100%)}}
+@keyframes skwaveRtl{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.sk-row{display:flex;align-items:center;gap:1rem;padding:.9rem 1.15rem;
+  border-bottom:1px solid var(--line-soft)}
+
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
 @media(min-width:1000px){.split{grid-template-columns:16.5rem 1fr;gap:3rem}}
 
@@ -749,8 +952,10 @@ body::after{
     <nav class="screens" id="nav" aria-label="شاشات المعاينة">
       <button data-s="cat" aria-current="true">الكتالوج</button>
       <button data-s="course">صفحة المقرر</button>
-      <button data-s="study">الدراسة</button>
+      <button data-s="login">الدخول</button>
       <button data-s="dash">لوحة التحكم</button>
+      <button data-s="study">الدراسة</button>
+      <button data-s="grades">الدرجات</button>
     </nav>
   </div>
 </header>
@@ -758,7 +963,7 @@ body::after{
 <main id="main">
 
 <!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
-<section class="screen on" id="s-cat">
+<section class="screen on" id="s-cat" data-shell="public">
   <div class="wrap">
     <div class="hero" id="hero">
       <!-- ── لماذا تغيّر النصّ مرّتين ───────────────────────────────────
@@ -812,7 +1017,7 @@ body::after{
 </section>
 
 <!-- ═══════════════ ٢ · صفحة المقرر ═══════════════ -->
-<section class="screen" id="s-course">
+<section class="screen" id="s-course" data-shell="public">
   <div class="wrap" style="padding-block:2.4rem 0">
     <span class="eyebrow">كلية الآداب · مقرر إجباري</span>
     <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:1.2rem;margin-block:.7rem 1.4rem">
@@ -880,7 +1085,151 @@ body::after{
 </section>
 
 <!-- ═══════════════ ٣ · صفحة الدراسة ═══════════════ -->
-<section class="screen" id="s-study">
+<!-- ═══════════════ ٣ · الدخول ═══════════════
+     أول شاشة يراها أي مستخدم، وكلّها حقول — ولم يكن في المعاينة حقلٌ
+     واحد.  تحتها معرضُ الحالات، لأن صفحةً واحدة تُري الشكل ولا تُري
+     النظام: النماذج الـ١٣ الباقية تُشتقّ من الحالات لا من هذه الصفحة. -->
+<section class="screen" id="s-login" data-shell="auth">
+  <div class="authwrap">
+    <div style="width:min(430px,100%)">
+      <div class="card authcard">
+        <div class="authhead">
+          <span class="brand-logo" role="img" aria-label="مسار"></span>
+          <div>
+            <h1 class="h2" style="margin-bottom:.3rem">أهلًا بعودتك</h1>
+            <p class="small">ادخل لتتابع من حيث توقّفت.</p>
+          </div>
+        </div>
+
+        <!-- خطأ على مستوى النموذج: عامٌّ لا يخصّ حقلًا بعينه -->
+        <div class="authalert" role="alert">
+          <span aria-hidden="true">✕</span>
+          <span>البريد أو كلمة المرور غير صحيحة. بقيت لك <span class="num">٣</span> محاولات.</span>
+        </div>
+
+        <form style="display:grid;gap:1.15rem" onsubmit="return false">
+          <div class="field">
+            <label class="label" for="lg-mail">البريد الجامعي</label>
+            <input class="input" id="lg-mail" type="email" inputmode="email"
+                   dir="ltr" placeholder="you@stu.uob.edu.bh"
+                   aria-describedby="lg-mail-hint" />
+            <p class="help" id="lg-mail-hint">استعمل بريدك الجامعي إن وُجد.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="lg-pw">كلمة المرور</label>
+            <div class="pwwrap">
+              <input class="input" id="lg-pw" type="password" dir="ltr" value="········"
+                     aria-describedby="lg-pw-err" aria-invalid="true" />
+              <button type="button" class="pwbtn" data-pw="lg-pw"
+                      aria-label="إظهار كلمة المرور" aria-pressed="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.7" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <p class="help danger" id="lg-pw-err" role="alert">كلمة المرور غير صحيحة.</p>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+            <label class="check">
+              <input type="checkbox" checked />
+              <span>أبقني داخلًا</span>
+            </label>
+            <a href="#s-login" class="small" style="color:var(--accent-bright)">نسيت كلمة المرور؟</a>
+          </div>
+
+          <button class="btn btn-primary press" style="width:100%">دخول</button>
+        </form>
+
+        <p class="small" style="margin-top:1.4rem;text-align:center">
+          ليس لك حساب؟ <a href="#s-login" style="color:var(--accent-bright)">أنشئ واحدًا</a>
+        </p>
+      </div>
+
+      <!-- ══ معرض حالات الحقل ══════════════════════════════════════
+           هذا هو المُنتَج الحقيقي لهذه الشاشة.  صفحةٌ واحدة تُري
+           الشكل؛ والحالات هي ما يُنقل إلى النماذج الثلاثة عشر. -->
+      <div class="card" style="margin-top:1.4rem;padding:1.4rem">
+        <p class="eyebrow" style="margin-bottom:1.1rem">حالات الحقل — المرجع للنماذج كلها</p>
+        <div style="display:grid;gap:1.1rem">
+          <div class="field">
+            <label class="label" for="st-1">عادي</label>
+            <input class="input" id="st-1" placeholder="نصّ إرشادي" />
+          </div>
+          <div class="field">
+            <label class="label" for="st-2">مع تلميح</label>
+            <input class="input" id="st-2" value="قيمة مكتوبة" aria-describedby="st-2-h" />
+            <p class="help" id="st-2-h">التلميح يشرح، والخطأ يصحّح — ولا يظهران معًا.</p>
+          </div>
+          <div class="field">
+            <label class="label" for="st-3">خطأ</label>
+            <input class="input" id="st-3" value="قيمة مرفوضة" aria-invalid="true" aria-describedby="st-3-e" />
+            <p class="help danger" id="st-3-e" role="alert">هذا الحقل مطلوب.</p>
+          </div>
+          <div class="field">
+            <label class="label" for="st-4">معطَّل</label>
+            <input class="input" id="st-4" value="لا يُحرَّر" disabled />
+          </div>
+          <div class="field">
+            <label class="label" for="st-5">منطقة نصّ</label>
+            <textarea class="input" id="st-5" rows="3" style="min-height:auto;resize:vertical"
+                      placeholder="نصّ متعدّد الأسطر"></textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="st-6">قائمة</label>
+            <select class="input" id="st-6">
+              <option>كلية الآداب</option><option>كلية تقنية المعلومات</option><option>كلية العلوم</option>
+            </select>
+          </div>
+          <label class="check"><input type="checkbox" /><span>مربّع اختيار</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ إطار التطبيق — يلفّ كل شاشة محمية ═══════════════
+     مأخوذ من `src/components/shell/`.  الشريط الجانبي يحمل الهوية
+     والتنقّل وشريحة المستخدم، والرأسية تحمل عنوان الصفحة والخروج.
+     يظهر هذا الإطار للشاشات المحمية وحدها عبر `html[data-shell]`. -->
+<div class="appframe" id="appframe">
+
+  <aside class="side">
+    <div class="side-id">
+      <span class="brand-logo" role="img" aria-label="مسار"></span>
+      <span class="min-w-0">
+        <b>مسار</b>
+        <span>مقرَّرك، مفهومًا</span>
+      </span>
+    </div>
+    <div class="side-rule"></div>
+    <div class="side-nav"><nav aria-label="التنقّل الرئيسي" id="sidenav"></nav></div>
+    <div class="side-rule"></div>
+    <div class="side-foot">
+      <button class="userchip">
+        <span class="avatar">س</span>
+        <span style="flex:1;min-width:0">
+          <b>سيد علي</b>
+          <span>طالب</span>
+        </span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="appcol">
+    <header class="apptop">
+      <button class="menubtn press" id="menubtn" aria-label="فتح القائمة" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <h1 id="apptitle">سجل النشاط</h1>
+      <button class="btn btn-sm press">تسجيل الخروج</button>
+    </header>
+
+<section class="screen" id="s-study" data-shell="app">
   <div class="wrap" style="padding-block:2.2rem 0">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-bottom:1.4rem">
       <div style="flex:1;min-width:14rem">
@@ -954,7 +1303,7 @@ body::after{
 </section>
 
 <!-- ═══════════════ ٤ · لوحة التحكم ═══════════════ -->
-<section class="screen" id="s-dash">
+<section class="screen" id="s-dash" data-shell="app">
   <div class="wrap" style="padding-block:2.4rem 0">
     <span class="eyebrow">مساء الخير</span>
     <h1 class="h1" style="margin-block:.3rem 1.6rem">أهلًا، سيد علي</h1>
@@ -983,6 +1332,137 @@ body::after{
     <div class="feed" id="feed"></div>
   </div>
 </section>
+
+<!-- ═══════════════ ٦ · الدرجات ═══════════════
+     السطح الكثيف البيانات.  يُثبّت الجدول والحلقة والحالة الفارغة
+     والهيكل العظمي — وهي أربعة أنماط لم يكن منها شيء في المعاينة،
+     وتخدم صفحات الدرجات والطلبات والمستخدمين وطابور الطلبات. -->
+<section class="screen" id="s-grades" data-shell="app">
+  <div class="wrap" style="padding-block:2rem 3rem">
+
+    <div class="card" style="padding:1.6rem;display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap">
+      <div class="ring">
+        <svg width="104" height="104" viewBox="0 0 104 104" aria-hidden="true">
+          <circle class="ring-bg" cx="52" cy="52" r="44"/>
+          <!-- المحيط ٢π×٤٤ ≈ ٢٧٦٫٥ — والإزاحة تمثّل ٨٤٪ -->
+          <circle class="ring-on" cx="52" cy="52" r="44"
+                  stroke-dasharray="276.5" stroke-dashoffset="44.2"/>
+        </svg>
+        <b><span class="num">٨٤٪</span></b>
+      </div>
+      <div style="flex:1;min-width:14rem">
+        <h2 class="h3" style="margin-bottom:.35rem">مهارات الاتصال باللغة العربية</h2>
+        <p class="body" style="font-size:.85rem;margin:0">
+          <span class="num">٤</span> بنود مُصحَّحة من <span class="num">٦</span>.
+          البندان الباقيان لم يُسلَّما بعد.
+        </p>
+      </div>
+    </div>
+
+    <div class="sec-title" style="margin-top:2.2rem"><h2 class="h2">تفصيل الدرجات</h2></div>
+
+    <div class="tablewrap">
+      <table class="gt">
+        <caption>الدرجات مرتّبة بحسب تاريخ التصحيح</caption>
+        <thead>
+          <tr>
+            <th scope="col">البند</th>
+            <th scope="col">النوع</th>
+            <th scope="col">الدرجة</th>
+            <th scope="col">الوزن</th>
+            <th scope="col">التاريخ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>اختبار الاستفهام</td>
+            <td><span class="pill">اختبار قصير</span></td>
+            <td class="t-num"><span class="num">٤</span> من <span class="num">٤</span></td>
+            <td class="t-num"><span class="num">١٠٪</span></td>
+            <td class="t-num"><span class="num">٦</span> أغسطس</td>
+          </tr>
+          <tr>
+            <td>تحليل أسلوب</td>
+            <td><span class="pill">واجب</span></td>
+            <td class="t-num"><span class="num">١٧</span> من <span class="num">٢٠</span></td>
+            <td class="t-num"><span class="num">٢٥٪</span></td>
+            <td class="t-num"><span class="num">٤</span> أغسطس</td>
+          </tr>
+          <tr>
+            <td>اختبار الصرف</td>
+            <td><span class="pill">اختبار قصير</span></td>
+            <td class="t-num"><span class="num">٣</span> من <span class="num">٥</span></td>
+            <td class="t-num"><span class="num">١٠٪</span></td>
+            <td class="t-num"><span class="num">١</span> أغسطس</td>
+          </tr>
+          <tr>
+            <td>إعراب نصّ</td>
+            <td><span class="pill">واجب</span></td>
+            <td class="t-num"><span class="num">١٨</span> من <span class="num">٢٠</span></td>
+            <td class="t-num"><span class="num">٢٥٪</span></td>
+            <td class="t-num"><span class="num">٢٨</span> يوليو</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ الحالة الفارغة ══ -->
+    <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">مقدمة في البرمجة</h2></div>
+    <div class="card">
+      <div class="empty">
+        <span class="empty-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="2" width="8" height="4" rx="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        </span>
+        <h3 class="h3">لا درجات بعد</h3>
+        <!-- تقول ما الذي سيملأ الفراغ، لا «لا يوجد» وحدها -->
+        <p class="body" style="font-size:.85rem;margin:0">
+          أول اختبار في هذا المقرر بعد الدرس الثاني. تظهر درجتك هنا فور تصحيحه.
+        </p>
+      </div>
+    </div>
+
+    <!-- ══ الهيكل العظمي — شكل الانتظار، لا دوّامة تدور في الفراغ ══ -->
+    <div class="sec-title" style="margin-top:2.6rem"><h2 class="h2">أثناء التحميل</h2></div>
+    <div class="tablewrap" aria-hidden="true">
+      <div class="sk-row"><span class="sk" style="height:12px;flex:1;max-width:11rem"></span>
+        <span class="sk" style="height:22px;width:5.5rem;border-radius:99px"></span>
+        <span class="sk" style="height:12px;width:4rem"></span></div>
+      <div class="sk-row"><span class="sk" style="height:12px;flex:1;max-width:8rem"></span>
+        <span class="sk" style="height:22px;width:5.5rem;border-radius:99px"></span>
+        <span class="sk" style="height:12px;width:4rem"></span></div>
+      <div class="sk-row" style="border-bottom:0"><span class="sk" style="height:12px;flex:1;max-width:13rem"></span>
+        <span class="sk" style="height:22px;width:5.5rem;border-radius:99px"></span>
+        <span class="sk" style="height:12px;width:4rem"></span></div>
+    </div>
+
+  </div>
+</section>
+
+  </div><!-- /.appcol -->
+</div><!-- /.appframe -->
+
+<!-- اللوحة المنسحبة: نفس التنقّل، للجوّال -->
+<div class="drawer" id="drawer" data-open="false">
+  <div class="drawer-veil" data-close></div>
+  <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="التنقّل">
+    <div class="side-id">
+      <span class="brand-logo" role="img" aria-label="مسار"></span>
+      <span style="min-width:0"><b>مسار</b><span>مقرَّرك، مفهومًا</span></span>
+    </div>
+    <div class="side-rule"></div>
+    <div class="side-nav"><nav aria-label="التنقّل الرئيسي" id="drawernav"></nav></div>
+    <div class="side-rule"></div>
+    <div class="side-foot">
+      <button class="userchip">
+        <span class="avatar">س</span>
+        <span style="flex:1;min-width:0"><b>سيد علي</b><span>طالب</span></span>
+      </button>
+    </div>
+  </div>
+</div>
 
 </main>
 
@@ -1395,18 +1875,108 @@ function moveGlide(btn, animate){
 moveGlide($('#nav button[aria-current]'), false);
 window.addEventListener("resize", ()=>moveGlide($('#nav button[aria-current]'), false));
 
-$("#nav").addEventListener("click", e=>{
-  const b = e.target.closest("button[data-s]"); if(!b) return;
+/* ══ التنقّل الجانبي — ستة عناصر بحدّ أقصى لأي مستخدم ═══════════════
+   منقولة عن `src/lib/navigation.ts` كما هي، بما فيها قاعدة الأدوار:
+     الطالب  ٦: نشاط · مقرراتي · درجات · رسائل · طلباتي · ملفّي
+     الإدارة ٦: نشاط · مقرراتي · درجات · رسائل · ملفّي · إعدادات
+     الأستاذ ٥: بلا طلبات ولا إعدادات — لا يشتري ولا يدير
+   والترشيح بالدور إخفاءٌ بصريّ لا حماية؛ الصفحات نفسها تتحقّق. */
+const I = {
+  history:'<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/>',
+  library:'<path d="M4 4h5v16H4z"/><path d="M11 4h4v16h-4z"/><path d="m17.5 4.5 3.5 15"/>',
+  clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 13h6M9 17h4"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
+  receipt:'<path d="M4 2v20l2.5-1.5L9 22l2.5-1.5L14 22l2.5-1.5L19 22V2l-2.5 1.5L14 2l-2.5 1.5L9 2 6.5 3.5Z"/><path d="M8 8h8M8 12h6"/>',
+  user:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 19a6 6 0 0 1 11 0"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 11 4a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 20 11a2 2 0 1 1 0 4Z"/>',
+};
+const NAV_ITEMS = [
+  {s:"dash",   label:"سجل النشاط",   icon:"history"},
+  {s:"study",  label:"مقرراتي",      icon:"library",   count:2},
+  {s:"grades", label:"الدرجات",      icon:"clipboard", count:1},
+  {s:null,     label:"الرسائل",      icon:"mail",      count:3, tone:"danger"},
+  {s:null,     label:"طلباتي",       icon:"receipt",   roles:["student"]},
+  {s:null,     label:"الملف الشخصي", icon:"user"},
+  {s:null,     label:"الإعدادات",    icon:"settings",  tone:"danger", roles:["admin"]},
+];
+const ROLE = "student";
+
+function navHTML(activeScreen){
+  const items = NAV_ITEMS.filter(n=>!n.roles || n.roles.includes(ROLE));
+  return `<ul class="navlist">${items.map(n=>{
+    const on = n.s && n.s===activeScreen;
+    /* العناصر بلا شاشة مصمَّمة تبقى معروضة لأن الهيكل يعرضها فعلًا —
+       إخفاؤها يجعل الشريط يكذب على عدد الأبواب. */
+    return `<li><button class="navlink" ${on?'aria-current="page"':""}
+      ${n.s?`data-goto="${n.s}"`:'data-todo="1"'}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">${I[n.icon]}</svg>
+      <span class="navlabel">${n.label}</span>
+      ${n.count?`<span class="countbadge ${n.tone==="danger"?"danger":""}">${AR(n.count)}</span>`:""}
+    </button></li>`;}).join("")}</ul>`;
+}
+
+/* عنوان الرأسية يتبع الشاشة — هو ما يقوله `AppPage({title})` */
+const SCREEN_TITLE = {dash:"سجل النشاط", study:"مقرراتي", grades:"الدرجات"};
+
+function showScreen(key){
   document.querySelectorAll("#nav button").forEach(x=>x.removeAttribute("aria-current"));
-  b.setAttribute("aria-current","true");
-  moveGlide(b, true);
+  const b = document.querySelector(`#nav button[data-s="${key}"]`);
+  if(b){ b.setAttribute("aria-current","true"); moveGlide(b, true); }
+
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
-  const next = $("#s-"+b.dataset.s);
+  const next = $("#s-"+key); if(!next) return;
   next.classList.add("on");
+
+  /* الإطار يتبع نوع الشاشة: عامّة، أو مصادقة، أو محمية داخل الهيكل */
+  document.documentElement.dataset.shell = next.dataset.shell || "public";
+  const t = SCREEN_TITLE[key]; if(t) $("#apptitle").textContent = t;
+  $("#sidenav").innerHTML   = navHTML(key);
+  $("#drawernav").innerHTML = navHTML(key);
+
   /* إعادة تشغيل حركة الدخول عند كل تبديل، لا مرة واحدة */
   next.style.animation = "none"; void next.offsetWidth; next.style.animation = "";
   window.scrollTo({top:0,behavior:"instant"});
-  history.replaceState(null,"","#"+b.dataset.s);
+  history.replaceState(null,"","#"+key);
+}
+
+$("#nav").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-s]"); if(!b) return;
+  showScreen(b.dataset.s);
+});
+
+/* التنقّل الجانبي ينقل فعلًا حيث توجد شاشة، ويقول الحقيقة حيث لا توجد */
+document.addEventListener("click", e=>{
+  const g = e.target.closest("[data-goto]");
+  if(g){ showScreen(g.dataset.goto); closeDrawer(); return; }
+  const t = e.target.closest("[data-todo]");
+  if(t){ t.animate([{transform:"translateX(0)"},{transform:"translateX(3px)"},
+                    {transform:"translateX(0)"}],{duration:180}); }
+});
+
+/* ── اللوحة المنسحبة ─────────────────────────────────────────────── */
+function closeDrawer(){
+  const d=$("#drawer"); if(!d) return;
+  d.dataset.open="false"; $("#menubtn")?.setAttribute("aria-expanded","false");
+}
+$("#menubtn")?.addEventListener("click", ()=>{
+  const d=$("#drawer"); const open = d.dataset.open==="true";
+  d.dataset.open = open?"false":"true";
+  $("#menubtn").setAttribute("aria-expanded", String(!open));
+  if(!open) d.querySelector(".navlink")?.focus();
+});
+$("#drawer")?.addEventListener("click", e=>{ if(e.target.closest("[data-close]")) closeDrawer(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDrawer(); });
+
+/* كشف كلمة المرور — الحالة على الزرّ (`aria-pressed`) لا على أيقونة وحدها */
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".pwbtn"); if(!b) return;
+  const inp = document.getElementById(b.dataset.pw); if(!inp) return;
+  const show = inp.type === "password";
+  inp.type = show ? "text" : "password";
+  b.setAttribute("aria-pressed", String(show));
+  b.setAttribute("aria-label", show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
 });
 
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
