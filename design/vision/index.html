@@ -332,6 +332,18 @@ body::after{
 /* ═══ الرأسية ═══════════════════════════════════════════════════════ */
 .top{position:sticky;top:0;z-index:50}
 .top-in{display:flex;align-items:center;gap:1rem;height:66px}
+/* ⚠ شريط المعاينة وحده كان يفيض أفقيًا تحت ٧٦٠px: مبدّل الشاشات
+   ومبدّل السمات والشعار في صفّ واحد لا يتّسع، فيدفع `scrollWidth`
+   إلى ٧٤٠ على شاشة ٣٩٠.  و`overflow-x:hidden` على body يُخفي الفيضان
+   ولا يمنعه، فتظهر الصفحة كلّها مزاحة في كل لقطة هاتف — أي أن مراجعة
+   الهاتف كانت مستحيلة لا سيّئة.
+   هذا شريط أدوات المعاينة لا المنتج، فيُمرَّر أفقيًا ولا يُعاد تصميمه. */
+@media(max-width:760px){
+  .top-in{height:auto;padding-block:.6rem;gap:.6rem;
+    overflow-x:auto;scrollbar-width:none}
+  .top-in::-webkit-scrollbar{display:none}
+  .top-in > *{flex:0 0 auto}
+}
 .brand{display:flex;align-items:center;text-decoration:none;flex:0 0 auto;border-radius:10px}
 .brand:focus-visible{outline:2px solid var(--accent-bright);outline-offset:3px}
 /* اللوغو مقصوص بالخلفية: الملف ٥٨٦×٥٨٥ والعلامة تشغل وسطه فقط،
@@ -411,7 +423,8 @@ body::after{
 
 /* الواجهة عمودان فوق ٩٤٠px: النصّ، والمشهد. */
 .hero{display:grid;gap:clamp(2rem,4vw,3.5rem);align-items:center;grid-template-columns:1fr}
-@media(min-width:940px){.hero{grid-template-columns:1.02fr .98fr}}
+/* اللوح يحمل نصًّا مقروءًا، فيأخذ أوسع قليلًا من عمود العنوان */
+@media(min-width:940px){.hero{grid-template-columns:.92fr 1.08fr}}
 /* ══ الطاولة ثلاثية الأبعاد ═════════════════════════════════════════
    المنظور يحسبه المتصفّح: حاوية perspective، ومستوى مائل بـpreserve-3d،
    وكل غرض يرقد عليه أو يقف فوقه.  فزاوية «من فوق الكتف» تنشأ من
@@ -531,6 +544,142 @@ body::after{
   .deskplane,.dp-light,.desk-lamp,.steam i{animation:none}
   .screen-steps li{opacity:1;transform:none;animation:none}
   .shoulder{transition:none}
+}
+
+/* ══ اللوح — الشرح نفسه معروضًا، لا صورةَ مكانٍ يُشرح فيه ═══════════
+   المكتب كان يبيع الجوّ: ليلٌ ومصباحٌ وطالب.  والجوّ لا يقول ماذا
+   نبيع، والزائر يعرف شكل مكتبه أصلًا فلا جديد فيه.
+
+   والأهمّ: الشيء الوحيد في ذلك المشهد الذي كان يقول شيئًا هو ما على
+   الشاشة — وكان أصغر عنصر في الإطار وأشدّه انحرافًا عن العين، بينما
+   الأوراق البيضاء، وهي بلا معنى، أكبرها وأسطعها.  الترتيب مقلوب.
+
+   فالعلاج قلبُه: يصير الشرح هو الصورة، بحجمه الكامل ومقروءًا.  يبقى
+   الجوّ — بركة ضوء دافئة وليلٌ حولها — ويذهب رسم الأشياء، لأن رسم
+   الأشياء بالصناديق هو ما كان يبدو قصاصات جاهزة.
+
+   ومكسبٌ ثانٍ غير بصريّ: المكتب كان `aria-hidden` لأنه زينة.  اللوح
+   محتوى حقيقي، فهو مقروء للقارئ الشاشيّ كما هو للعين. */
+.hero-visual{display:flex;flex-direction:column;gap:.7rem}
+.boardwrap{position:relative;perspective:1400px;perspective-origin:60% 30%}
+/* بركة ضوء المصباح — أنجح ما في المشهد السابق، فتبقى وحدها.
+   ومصدرها أعلى جهة البداية، موافقًا لهالة `body::before` نفسها: ضوءان
+   من جهتين يفضحان أن لا شيء هنا مصوَّر. */
+/* ⚠ الإزاحة الأفقية صفر عن قصد.  عنصر مطلق يتجاوز أباه أفقيًا يزيد
+   `scrollWidth` للصفحة كلها، و`overflow-x:hidden` يُخفي ذلك ولا يمنعه
+   — فتُزاح كل لقطة هاتف ٣٥px وتصير المراجعة على الهاتف مستحيلة.
+   والانسكاب لا يضيع: `filter:blur` يرسم خارج الصندوق بلا أثر تخطيطي،
+   فالتوهّج يتجاوز الحافّة والحساب لا يتجاوزها. */
+.boardwrap::before{content:"";position:absolute;inset:-18% 0 -26%;pointer-events:none;
+  background:
+    radial-gradient(58% 46% at 78% -8%, color-mix(in srgb,var(--warning) 32%,transparent), transparent 68%),
+    radial-gradient(92% 66% at 52% 44%, color-mix(in srgb,var(--panel-high) 55%,transparent), transparent 74%);
+  filter:blur(12px);animation:lampBreathe 11s ease-in-out infinite}
+
+.board{position:relative;display:flex;flex-direction:column;
+  /* سالب مقصود: البداية في RTL هي اليمين، فالحافّة القريبة يجب أن
+     تكون حيث تبدأ العين.  الموجب يدفع اليمين بعيدًا فينقلب المعنى —
+     وهذه من عائلة أخطاء الاتجاه المذكورة في CLAUDE.md. */
+  transform:rotateY(-7deg) rotateX(5.5deg);
+  transform-style:preserve-3d;border-radius:var(--r-lg);
+  padding:clamp(1.4rem,2.8vw,2rem) clamp(1.4rem,2.8vw,2.1rem) clamp(1.2rem,2.2vw,1.5rem);
+  /* ⚠ ارتفاع ثابت.  الحالات الثلاث تختلف ٧٣px، فبدونه يقفز الأبطل
+     كلّه كلّ ٧ ثوانٍ — وقفزة دورية تُقرأ رخيصة مهما حَسُن ما داخلها. */
+  min-height:clamp(390px,44vw,480px);
+  /* الضوء يأتي من أعلى جهة البداية ويسقط نحو أسفل النهاية */
+  background:
+    radial-gradient(120% 92% at 80% -12%, color-mix(in srgb,var(--warning) 12%,transparent), transparent 58%),
+    linear-gradient(166deg, var(--panel-high) 0%, var(--panel) 58%, var(--ink-lift) 100%);
+  /* رموز لا rgba خام: المشهد السابق ثبّت السواد فانكسر في وضع «ورق» */
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,var(--warning) 24%,transparent),
+    0 46px 68px -36px var(--shadow-lift),
+    0 12px 28px -18px var(--shadow)}
+.board.swap{animation:boardSwap 620ms var(--ease)}
+@keyframes boardSwap{
+  0%  {opacity:.2;transform:rotateY(-7deg) rotateX(5.5deg) translateZ(-30px)}
+  100%{opacity:1; transform:rotateY(-7deg) rotateX(5.5deg) translateZ(0)}
+}
+
+.board-head{display:flex;align-items:center;gap:.55rem;font-size:.7rem;
+  padding-bottom:.75rem;margin-bottom:1.05rem;
+  box-shadow:0 1px 0 color-mix(in srgb,var(--paper) 9%,transparent)}
+.board-dot{width:6px;height:6px;border-radius:99px;background:var(--accent);flex:0 0 auto;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 15%,transparent)}
+.board-code{color:var(--accent);font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+.board-fac{color:var(--subtle)}
+.board-topic{margin-inline-start:auto;color:var(--subtle)}
+.board-lead{font-size:.78rem;color:var(--subtle);margin-bottom:1.1rem}
+/* المتن يملأ ما بين الترويسة والتذييل ويتوسّطه بصريًا.  بدونه كان
+   الارتفاع الثابت يفتح فراغًا أسفل الإعراب يبدو نقصًا لا سعة. */
+.board-body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+
+/* ── الإعراب: الكلمة كبيرة، وتحتها حكمها ───────────────────────────
+   هذا أثمن ما تعرضه الواجهة، لأنه الشيء الذي لا يملكه منافس بالإنجليزية.
+   والخطّ نسخيّ (Amiri) هنا وحده — الواجهة تبقى IBM Plex.
+   والتقسيم على المسافات لا داخل الكلمة، فلا وصل ينكسر. */
+.parse{display:flex;flex-wrap:wrap;gap:1.4rem 2rem;align-items:flex-start}
+.pw{display:grid;justify-items:center;gap:.5rem;
+  opacity:0;transform:translateY(7px);animation:pwIn 520ms var(--ease) forwards}
+@keyframes pwIn{to{opacity:1;transform:none}}
+/* كبيرة عن قصد.  العربية المنضودة جيّدًا هي أثمن ما تملكه هذه الواجهة
+   بصريًا، وتصغيرها يهدر الورقة الرابحة الوحيدة على منافس بالإنجليزية. */
+.pw-w{font-family:"Amiri",serif;font-size:clamp(2.2rem,4.8vw,3.5rem);line-height:1.18;color:var(--paper)}
+/* خيط يربط الكلمة بحكمها — أرقّ من أن يُقرأ حدًّا، وكافٍ ليصل */
+.pw-tie{width:1px;height:.95rem;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--paper) 32%,transparent),transparent)}
+.pw-p{font-size:.72rem;line-height:1.7;color:var(--muted);text-align:center;max-width:11ch}
+.board-tail{margin-top:1.7rem;font-size:.8rem;line-height:1.95;color:var(--muted)}
+
+/* ── الخطوات: المسألة، ثم كشفها خطوة خطوة، ثم الناتج ───────────────── */
+.board-expr{display:block;font-family:"IBM Plex Mono",monospace;
+  direction:ltr;unicode-bidi:isolate;font-size:clamp(.95rem,1.9vw,1.2rem);
+  color:var(--paper);background:var(--sunk);border-radius:var(--r-field);padding:.75rem .9rem}
+.board-steps{list-style:none;margin-top:1.05rem;display:grid;gap:.55rem}
+.board-steps li{display:flex;gap:.6rem;align-items:flex-start;
+  font-size:.82rem;line-height:1.8;color:var(--muted);
+  opacity:0;transform:translateY(5px);animation:pwIn 460ms var(--ease) forwards}
+.board-steps li::before{content:"";flex:0 0 auto;width:5px;height:5px;border-radius:99px;
+  background:var(--accent-deep);margin-top:.66rem}
+.board-steps code,.board-tail code{font-family:"IBM Plex Mono",monospace;font-size:.92em;
+  direction:ltr;unicode-bidi:isolate;background:var(--sunk);padding:.08em .34em;border-radius:6px}
+/* ⚠ الناتج بلون التمييز لا بالعنبر: العنبر محجوز للتقدّم والإنجاز
+   وحدهما، وهو قرار مثبَّت.  «نتيجة صحيحة» ليست تقدّمًا. */
+.board-out{margin-top:1.15rem;padding-top:.9rem;display:flex;align-items:center;gap:.6rem;
+  box-shadow:0 -1px 0 color-mix(in srgb,var(--paper) 8%,transparent)}
+.board-out-k{font-size:.7rem;color:var(--subtle)}
+.board-out-v{font-family:"IBM Plex Mono",monospace;direction:ltr;unicode-bidi:isolate;
+  color:var(--accent-bright);font-size:.95rem;font-weight:600}
+
+/* ما يمنعه من أن يكون عرضًا تجريديًا: سطرٌ يقول من أيّ درس هو.
+   و`auto` تثبّته في القاع، فيستقرّ السطر نفسه في الحالات الثلاث بدل
+   أن يطفو حيث انتهى المحتوى. */
+.board-foot{margin-top:auto;padding-top:1.1rem;font-size:.7rem;color:var(--faint);
+  box-shadow:0 -1px 0 color-mix(in srgb,var(--paper) 7%,transparent)}
+
+/* مؤشّر الدوران — ولأنها أزرار، لا ينتظر أحد ٧ ثوانٍ ليرى التالي */
+.board-rota{display:flex;gap:.45rem;justify-content:center}
+.board-rota button{border:0;padding:.5rem .25rem;background:transparent;cursor:pointer;line-height:0}
+.board-rota i{display:block;width:6px;height:6px;border-radius:99px;background:var(--line);
+  transition:width var(--dur-base) var(--ease),background var(--dur-base) var(--ease)}
+.board-rota button[aria-current] i{width:18px;background:var(--accent)}
+
+/* مبدّل المشهد — أداة معاينة للمقارنة، تُحذف مع الخاسر منهما */
+.hero-swap{align-self:center;display:inline-flex;gap:.15rem;padding:.2rem;border-radius:99px;
+  background:color-mix(in srgb,var(--panel) 72%,transparent)}
+.hero-swap button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
+  font:inherit;font-size:.68rem;padding:.34rem .8rem;border-radius:99px;
+  transition:background var(--dur-base) var(--ease),color var(--dur-base) var(--ease)}
+.hero-swap button[aria-pressed="true"]{background:var(--panel-high);color:var(--paper)}
+
+.hero[data-hero="board"] .desk{display:none}
+.hero[data-hero="desk"] .boardwrap{display:none}
+
+@media(prefers-reduced-motion:reduce){
+  .boardwrap::before{animation:none}
+  .board.swap{animation:none}
+  .pw,.board-steps li{opacity:1;transform:none;animation:none}
 }
 
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
@@ -758,7 +907,7 @@ body::after{
 <!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
 <section class="screen on" id="s-cat">
   <div class="wrap">
-    <div class="hero" id="hero">
+    <div class="hero" id="hero" data-hero="board">
       <!-- ── لماذا تغيّر النصّ مرّتين ───────────────────────────────────
            «مشروحًا خطوة بخطوة» وصفٌ يقوله كل موقع تعليمي.
            و«شرحٌ لمقرَّرك، لا لموضوعه» ذكاءٌ لفظي: يطلب من الزائر أن
@@ -782,6 +931,15 @@ body::after{
           <button class="btn press">كيف يُبنى الشرح؟</button>
         </div>
       </div>
+
+      <div class="hero-visual">
+      <!-- ══ اللوح — الشرح نفسه، بحجمه ═══════════════════════════════
+           هذا هو الاتجاه الجديد.  المكتب أسفله باقٍ خلف مبدّل للمقارنة
+           وحدها، ويُحذف الخاسر منهما فور اختيارك. -->
+      <div class="boardwrap">
+        <article class="board" id="board"></article>
+      </div>
+      <div class="board-rota" id="board-rota"></div>
 
       <!-- ══ مكتب في الليل — والشاشة تعمل ════════════════════════════
            المحاولة السابقة (خمس محطّات) فشلت لأنها **نصٌّ متنكّر في
@@ -841,6 +999,12 @@ body::after{
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="hero-swap" id="hero-swap">
+        <button data-h="board" aria-pressed="true">اللوح</button>
+        <button data-h="desk"  aria-pressed="false">المكتب</button>
+      </div>
       </div>
     </div>
 
@@ -1375,46 +1539,139 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   t.setAttribute("aria-current","true");
 }));
 
-/* ══ ما تعرضه الشاشة ═══════════════════════════════════════════════
+/* ══ ما يعرضه اللوح ════════════════════════════════════════════════
    مسائل حقيقية من كليات مختلفة، تُحلّ خطوة خطوة.  التبديل بين
    الكليات مقصود: واجهة تعرض إعرابًا فقط تبدو منصّة لغة عربية، وهذا
-   يناقض «اختر كليتك» أسفلها مباشرة. */
-const WORK = [
-  { code:"ARAB110", topic:"النحو",
-    q:'ما أجملَ <span class="hl">العلمَ</span>!',
-    steps:["ما: تعجّبية، مبتدأ","أجملَ: فعل ماضٍ للتعجّب","العلمَ: مفعول به منصوب"] },
-  { code:"ITCS106", topic:"البرمجة",
-    q:'<code>for (i = 0; i &lt; 3; i++)</code>',
-    steps:["يبدأ العدّاد من الصفر","يتوقّف قبل ٣ لا عندها","المخرج: <code>0 1 2</code>"] },
-  { code:"MATHS101", topic:"التفاضل",
-    q:'<code>d/dx (x²·sin x)</code>',
-    steps:["قاعدة الضرب: <code>u′v + uv′</code>","<code>u = x² → u′ = 2x</code>","الناتج: <code>2x·sin x + x²·cos x</code>"] },
-  { code:"ENGG201", topic:"الاستاتيكا",
-    q:'جسم متّزن، <span class="hl">ΣF = 0</span>',
-    steps:["حلّل القوى أفقيًا ورأسيًا","مجموع كلٍّ منهما يساوي صفرًا","<code>T = W / 2</code>"] },
+   يناقض «اختر كليتك» أسفلها مباشرة.
+
+   ⚠ ثلاثٌ لا أربع.  كان هنا مثال هندسيّ (ENGG201) بينما «كلية
+   الهندسة» تقول «لم تُطرح بعد» على بُعد شاشة واحدة أسفله — الصفحة
+   كانت تناقض نفسها.  المعروض هنا الآن هو المُضاء هناك بالضبط.
+
+   والصيغتان مقصودتان: الإعراب لا يُقرأ قائمةَ خطوات، والاشتقاق لا
+   يُقرأ كلماتٍ معلَّقًا تحتها حكمها.  شكل العرض يتبع شكل المعرفة. */
+const BOARD = [
+  { code:"ARAB110", faculty:"كلية الآداب", topic:"أسلوب التعجّب", type:"parse",
+    lead:"ما إعراب كلّ كلمة؟",
+    words:[
+      { w:"ما",     p:"تعجّبية، مبتدأ" },
+      { w:"أجملَ",  p:"فعل ماضٍ جامد" },
+      { w:"العلمَ", p:"مفعول به منصوب" },
+    ],
+    tail:"وجملة «أجملَ العلمَ» في محلّ رفع خبر المبتدأ.",
+    foot:"من الدرس الثالث · مهارات الاتصال باللغة العربية" },
+
+  { code:"ITCS106", faculty:"كلية تقنية المعلومات", topic:"حلقة for", type:"steps",
+    lead:"ماذا يطبع هذا؟",
+    expr:"for (i = 0; i &lt; 3; i++)",
+    steps:[
+      "العدّاد يبدأ من الصفر، لا من واحد",
+      "والشرط <code>i &lt; 3</code> يتوقّف قبلها لا عندها",
+      "فالدورات ثلاث: صفر، ثم واحد، ثم اثنان",
+    ],
+    outLabel:"المخرج", out:"0 1 2",
+    foot:"من الدرس الخامس · مقدمة في البرمجة" },
+
+  { code:"MATHS101", faculty:"كلية العلوم", topic:"قاعدة الضرب", type:"steps",
+    lead:"اشتقّ بالنسبة إلى x:",
+    expr:"d/dx ( x² · sin x )",
+    steps:[
+      "الدالّة حاصل ضرب دالّتين، فالقاعدة <code>u′v + uv′</code>",
+      "<code>u = x²</code> ومنه <code>u′ = 2x</code>",
+      "<code>v = sin x</code> ومنه <code>v′ = cos x</code>",
+    ],
+    outLabel:"الناتج", out:"2x·sin x + x²·cos x",
+    foot:"من الدرس الثاني · التفاضل والتكامل ١" },
 ];
 
-(function screenLoop(){
+function boardHTML(w){
+  const head =
+    `<div class="board-head">
+       <span class="board-dot"></span>
+       <span class="board-code">${w.code}</span>
+       <span class="board-fac">${w.faculty}</span>
+       <span class="board-topic">${w.topic}</span>
+     </div>
+     <p class="board-lead">${w.lead}</p>`;
+
+  const mid = w.type === "parse"
+    ? `<div class="parse">${w.words.map((x,k)=>
+         `<span class="pw" style="animation-delay:${200 + k*280}ms">
+            <span class="pw-w">${x.w}</span>
+            <span class="pw-tie"></span>
+            <span class="pw-p">${x.p}</span>
+          </span>`).join("")}</div>
+       ${w.tail ? `<p class="board-tail">${w.tail}</p>` : ""}`
+    : `<code class="board-expr">${w.expr}</code>
+       <ol class="board-steps">${w.steps.map((s,k)=>
+         `<li style="animation-delay:${420 + k*300}ms">${s}</li>`).join("")}</ol>
+       ${w.out ? `<div class="board-out">
+            <span class="board-out-k">${w.outLabel}</span>
+            <span class="board-out-v">${w.out}</span>
+          </div>` : ""}`;
+
+  return head + `<div class="board-body">${mid}</div>`
+              + `<p class="board-foot">${w.foot}</p>`;
+}
+
+/* المكتب القديم يبقى مغذًّى ما دام معروضًا للمقارنة — بصيغته هو،
+   فشاشته أصغر من أن تحمل ما يحمله اللوح. */
+function lapRender(w, i){
   const box = $("#lap"); if(!box) return;
-  const cEl=box.querySelector(".screen-course"), tEl=box.querySelector(".screen-topic"),
-        qEl=box.querySelector(".screen-q"), sEl=box.querySelector(".screen-steps");
-  let i = 0;
-  function render(){
-    const w = WORK[i];
-    cEl.textContent = w.code;
-    tEl.textContent = w.topic;
-    qEl.innerHTML = w.q;
-    /* الخطوات تتكشّف واحدة بعد أخرى — هذا هو «الشرح» مرئيًا */
-    sEl.innerHTML = w.steps.map((s,k)=>
-      `<li style="animation-delay:${700 + k*620}ms">${s}</li>`).join("");
-    box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
-    /* الوضعية تتبع المقرر: الجلسة تتغيّر مع ما يدرسه */
-    const desk = document.querySelector(".desk");
-    if (desk) desk.dataset.pose = String(i);
-    i = (i + 1) % WORK.length;
+  box.querySelector(".screen-course").textContent = w.code;
+  box.querySelector(".screen-topic").textContent  = w.topic;
+  box.querySelector(".screen-q").innerHTML = w.type === "parse"
+    ? w.words.map(x=>x.w).join(" ")
+    : `<code>${w.expr}</code>`;
+  box.querySelector(".screen-steps").innerHTML = (w.type === "parse"
+    ? w.words.map(x=>`${x.w}: ${x.p}`)
+    : w.steps
+  ).map((s,k)=>`<li style="animation-delay:${700 + k*620}ms">${s}</li>`).join("");
+  box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
+  const desk = document.querySelector(".desk");
+  if (desk) desk.dataset.pose = String(i);
+}
+
+(function boardLoop(){
+  const board = $("#board"), rota = $("#board-rota");
+  if(!board) return;
+  let i = 0, timer = 0;
+
+  rota.innerHTML = BOARD.map((w,k)=>
+    `<button data-k="${k}" aria-label="${w.faculty}"><i></i></button>`).join("");
+
+  function render(k){
+    i = (k + BOARD.length) % BOARD.length;
+    const w = BOARD[i];
+    board.innerHTML = boardHTML(w);
+    board.classList.remove("swap"); void board.offsetWidth; board.classList.add("swap");
+    rota.querySelectorAll("button").forEach((b,n)=>
+      n === i ? b.setAttribute("aria-current","true") : b.removeAttribute("aria-current"));
+    lapRender(w, i);
   }
-  render();
-  setInterval(render, 7200);
+  /* كلّ تدخّل يدويّ يعيد ضبط المؤقّت، وإلا قفز اللوح بعد نقرك بلحظة */
+  function arm(){ clearInterval(timer); timer = setInterval(()=>render(i+1), 7200); }
+
+  rota.querySelectorAll("button").forEach(b=>
+    b.addEventListener("click", ()=>{ render(+b.dataset.k); arm(); }));
+
+  render(0); arm();
+})();
+
+/* مبدّل المشهد — للمقارنة وحدها */
+(function heroSwap(){
+  const bar = $("#hero-swap"), hero = $("#hero");
+  if(!bar || !hero) return;
+  bar.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    hero.dataset.hero = b.dataset.h;
+    bar.querySelectorAll("button").forEach(x=>
+      x.setAttribute("aria-pressed", String(x === b)));
+    try{ localStorage.setItem("masar-hero", b.dataset.h); }catch{}
+  }));
+  try{
+    const saved = localStorage.getItem("masar-hero");
+    if(saved){ const b = bar.querySelector(`button[data-h="${saved}"]`); if(b) b.click(); }
+  }catch{}
 })();
 
 /* الأقسام تظهر عند بلوغها — لا تهبط كلها دفعة واحدة */
