@@ -56,13 +56,21 @@
   --panel:#262322; --panel-lift:#302c2a; --panel-high:#3a3634; /* الأخيرة خلفية اللوغو نفسها */
   --line:#453f3b; --line-soft:#2e2a28;
 
-  --paper:#f4f1ec; --muted:#b5aca2; --subtle:#8e867d; --faint:#6b645d;
+  /* ⚠ `--subtle` أُفتح درجة: عند #8e867d كان تباينه ٤٫٣٥ على `--panel`
+     — أي دون عتبة AA بقليل — وهو لون التسميات الصغيرة في كل مكان
+     («٥ دروس»، «اختبار قصير»، «د.ب»)، أي أن أكثر الألوان استعمالًا كان
+     يرسب على أكثر الأسطح استعمالًا.  الآن ٥٫٤٨ على `--ink` و٤٫٨٣ على
+     `--panel`.  ولم أُفتحه أكثر عمدًا: عند #a8a096 يبلغ ٦٫٨٥ فيقترب من
+     `--muted` (٧٫٩١) حتى تذوب التفرقة بينهما، والسلّم أربع درجات لا ثلاث.
+
+     `--faint` (٣٫٠٤) دون AA بوضوح، فلم يعد يحمل نصًّا يُقرأ — انظر
+     `.strike` و«يُفتح بالشراء» أدناه.  بقي للحدود والرموز غير النصّية. */
+  --paper:#f4f1ec; --muted:#b5aca2; --subtle:#968e84; --faint:#6b645d;
 
   /* «التمييز» أبيض عظميّ — لون اللوغو مخفَّفًا */
   --accent:#cfc6b8; --accent-bright:#eae4d9; --accent-deep:#8d857a; --action:#e8e2d6;
   --spark:#e0a94a; --spark-deep:#a87a28;
   --warning:#d79a52; --danger:#c4675f;
-  --seg-b:#9c8f7d; --seg-b2:#6f6558;
 
   --on-accent:#1a1817; --on-spark:#241703;
   --sunk:rgba(14,13,12,.5); --sunk-2:rgba(38,35,34,.6);
@@ -164,6 +172,28 @@ body::after{
 .press:active{transform:scale(.968);transition-duration:100ms}
 .btn:focus-visible,.press:focus-visible{outline:none;
   box-shadow:0 0 0 2px var(--ink),0 0 0 4px color-mix(in srgb,var(--accent-bright) 70%,transparent)}
+
+/* رابط التخطّي: مخفيّ حتى يصله التركيز، ثم يظهر فوق كل شيء.
+   `clip-path` لا `display:none` — المخفيّ بالعرض لا يمكن التركيز عليه
+   أصلًا، فيصير الرابط زينةً لا وظيفة. */
+.skip{position:fixed;z-index:200;inset-block-start:.6rem;inset-inline-start:50%;
+  transform:translate(50%,-160%);
+  padding:.6rem 1.1rem;border-radius:999px;text-decoration:none;font-size:.82rem;font-weight:600;
+  color:var(--on-accent);background:var(--accent-bright);
+  box-shadow:0 12px 30px -12px var(--shadow-lift);
+  transition:transform var(--dur-base) var(--ease)}
+.skip:focus-visible{transform:translate(50%,0)}
+
+/* ── حلقة تركيز لكل ما يُنقر، لا لكل صنف على حدة ────────────────────
+   كانت مقصورة على `.btn` و`.press`، فبقيت الألسنة والمحطّات ونقاط
+   اللوح ومبدّل الشاشات بلا أثرٍ للوحة المفاتيح — أي أن التنقّل بالكيبورد
+   كان أعمى في نصف الواجهة، وهو ما لا يظهر في أي لقطة شاشة.
+
+   `:where()` تُبقي الخصوصية صفرًا، فقواعد المكوّنات أعلاه تظلّ الأقوى
+   حيث عرّفت حلقتها الخاصة.  و`outline` لا `box-shadow` هنا لأنها تتبع
+   `border-radius` تلقائيًا ولا تصطدم بظلال المكوّن. */
+:where(a,button,[tabindex],summary,input,select,textarea):focus-visible{
+  outline:2px solid var(--accent-bright);outline-offset:3px}
 /* الأزرار الأساسية ترتفع قليلًا عند التصويب — دعوة، لا مجرّد تلوين */
 @media(hover:hover){
   .btn-primary:hover,.btn-spark:hover{transform:translateY(-1px);
@@ -212,7 +242,10 @@ body::after{
   .top-in::-webkit-scrollbar{display:none}
   .top-in > *{flex:0 0 auto}
 }
-.brand{display:flex;align-items:center;text-decoration:none;flex:0 0 auto;border-radius:10px}
+/* الحشو يرفع مساحة اللمس إلى ٤٤px دون أن يكبر الشعار — كان ١٠٤×٣٣،
+   وهو رابط العودة للرئيسية، أي هدفٌ حقيقيّ لا زينة. */
+.brand{display:flex;align-items:center;text-decoration:none;flex:0 0 auto;border-radius:10px;
+  padding-block:.4rem;margin-block:-.4rem}
 .brand:focus-visible{outline:2px solid var(--accent-bright);outline-offset:3px}
 /* اللوغو مقصوص بالخلفية: الملف ٥٨٦×٥٨٥ والعلامة تشغل وسطه فقط،
    فنُزيح ونُكبّر لنُظهر العلامة وحدها بلا الهوامش. */
@@ -320,6 +353,11 @@ body::after{
     radial-gradient(58% 46% at 78% -8%, color-mix(in srgb,var(--warning) 32%,transparent), transparent 68%),
     radial-gradient(92% 66% at 52% 44%, color-mix(in srgb,var(--panel-high) 55%,transparent), transparent 74%);
   filter:blur(12px);animation:lampBreathe 11s ease-in-out infinite}
+/* ⚠ أُعيد تعريفها هنا.  كانت داخل كتلة المكتب المحذوفة، فبقي اللوح
+   يستدعي إطارًا غير موجود — والمصباح لم يتنفّس منذ حذف المكتب.
+   ولا خطأ في الطرفية ولا فرق في أي لقطة: اسم إطار مفقود يُتجاهَل
+   بصمت.  احذر هذا عند حذف أي كتلة تحوي `@keyframes` مشتركة. */
+@keyframes lampBreathe{0%,100%{opacity:.78}50%{opacity:1}}
 
 .board{position:relative;display:flex;flex-direction:column;
   /* سالب مقصود: البداية في RTL هي اليمين، فالحافّة القريبة يجب أن
@@ -353,8 +391,11 @@ body::after{
   box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 15%,transparent)}
 .board-code{color:var(--accent);font-family:"IBM Plex Mono",monospace;
   font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
-.board-fac{color:var(--subtle)}
-.board-topic{margin-inline-start:auto;color:var(--subtle)}
+/* ⚠ `--muted` لا `--subtle` هنا وحدها: ترويسة اللوح تقع على
+   `--panel-high`، وهو أفتح سطح في النظام، فيهبط `--subtle` عليه إلى
+   ٣٫٧٠.  السطح هو ما يقرّر، لا حجم النصّ. */
+.board-fac{color:var(--muted)}
+.board-topic{margin-inline-start:auto;color:var(--muted)}
 .board-lead{font-size:.78rem;color:var(--subtle);margin-bottom:1.1rem}
 /* المتن يملأ ما بين الترويسة والتذييل ويتوسّطه بصريًا.  بدونه كان
    الارتفاع الثابت يفتح فراغًا أسفل الإعراب يبدو نقصًا لا سعة. */
@@ -399,7 +440,10 @@ body::after{
 
 /* مؤشّر الدوران — ولأنها أزرار، لا ينتظر أحد ٧ ثوانٍ ليرى التالي */
 .board-rota{display:flex;gap:.45rem;justify-content:center}
-.board-rota button{border:0;padding:.5rem .25rem;background:transparent;cursor:pointer;line-height:0}
+/* مساحة اللمس ٤٤px والنقطة نفسها ٦px: الحشو يوسّع الهدف بلا أن يكبر
+   الشكل.  كانت ١٤×٢٢ — أصغر من أن تُصاب بإبهام. */
+.board-rota button{border:0;padding:1.2rem .7rem;margin:-.95rem -.35rem;
+  background:transparent;cursor:pointer;line-height:0}
 .board-rota i{display:block;width:6px;height:6px;border-radius:99px;background:var(--line);
   transition:width var(--dur-base) var(--ease),background var(--dur-base) var(--ease)}
 .board-rota button[aria-current] i{width:18px;background:var(--accent)}
@@ -569,14 +613,10 @@ body::after{
   box-shadow:0 18px 50px -14px var(--shadow-lift);transition:transform var(--dur-base) var(--ease)}
 .player:hover .play{transform:scale(1.07)}
 
-/* الشريط المقسَّم — قلب صفحة البيع: يُري الطالب ما الذي تغطّيه كل باقة */
-.segbar{display:flex;gap:3px;margin-block:1rem 1.6rem}
-.seg{height:7px;border-radius:999px;flex:1;position:relative;transition:transform var(--dur-base) var(--ease)}
-.seg-mid{background:linear-gradient(90deg,var(--accent-bright),var(--accent-deep))}
-.seg-fin{background:linear-gradient(90deg,var(--seg-b),var(--seg-b2))}
-.seg.dim{opacity:.24}
-.segbar.hover-mid .seg-fin{opacity:.2}
-.segbar.hover-fin .seg-mid{opacity:.2}
+/* ملاحظة: `.segbar` و`.seg*` حُذفت — «الشريط المقسَّم» مرفوض في §4،
+   لأنه احتاج جملة تشرح كيف يُقرأ، وصاحب المنتج نفسه لم يفهمه.
+   ثالث فكرة مرفوضة تترك قواعدها وراءها في هذا الملف بعد `.stat-row`
+   و`.deadline`.  الرمزان `--seg-b`/`--seg-b2` ذهبا معها. */
 
 /* ══ مجموعة الباقة ═════════════════════════════════════════════════ */
 .bundle{position:relative;margin-bottom:1.5rem;padding:1rem 1.15rem 1.15rem;
@@ -613,7 +653,9 @@ body::after{
 .tier-badge{position:absolute;inset-inline-end:1.1rem;top:-.62rem;font-size:.64rem;font-weight:600;
   padding:.2rem .6rem;border-radius:999px;color:var(--on-accent);background:linear-gradient(180deg,var(--accent-bright),var(--action))}
 .tier-price{display:flex;align-items:baseline;gap:.4rem;margin-top:.5rem}
-.strike{color:var(--faint);text-decoration:line-through;font-size:.9rem}
+/* السعر القديم مشطوبًا: `--faint` كان ٣٫٠٤ — والشطب تخفيتٌ كافٍ بذاته،
+   فلا حاجة لأن يكون اللون دون العتبة أيضًا.  وهو رقمٌ يقارنه المشتري. */
+.strike{color:var(--subtle);text-decoration:line-through;font-size:.9rem}
 .tier ul{list-style:none;margin-top:.9rem;display:grid;gap:.42rem}
 .tier li{display:flex;gap:.5rem;align-items:flex-start;font-size:.79rem;color:var(--muted)}
 .tick{color:var(--spark);flex:0 0 auto;margin-top:.28rem}
@@ -670,7 +712,7 @@ body::after{
 .sec-title{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
 .sec-title::before{content:"";width:3px;height:19px;border-radius:2px;background:linear-gradient(180deg,var(--accent-bright),var(--accent-deep))}
 
-.footnote{margin-block:4rem 3rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);font-size:.76rem;color:var(--faint);line-height:1.9}
+.footnote{margin-block:4rem 3rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);font-size:.76rem;color:var(--subtle);line-height:1.9}
 
 /* ظهور عند التمرير — الحالة الافتراضية مرئية، والصنف يخفيها فقط بعد
    أن يعمل JS.  فلو تعطّل السكربت لا يختفي المحتوى. */
@@ -679,7 +721,7 @@ body::after{
 
 @media(prefers-reduced-motion:reduce){
   .rise{opacity:1 !important;transform:none !important}
-  .wave span,.scene-art .flow,.scene-art .drift,.scene-art .breathe,.scene-art .spin{animation:none !important}
+  .scene-art .flow,.scene-art .drift,.scene-art .breathe,.scene-art .spin{animation:none !important}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
@@ -688,6 +730,12 @@ body::after{
 </head>
 <body>
 <div id="app">
+
+<!-- رابط التخطّي ومَعلَم `main`: التطبيق الحقيقي يحملهما بالفعل
+     (`<main id="main">` و«تخطٍ إلى المحتوى» في `AppPage`)، فوجودهما هنا
+     يجعل النقل يرث البنية الصحيحة بدل أن يُعاد تركيبها.  ولم يكن في
+     المعاينة معلَمٌ واحد: لا `main` ولا `footer`. -->
+<a class="skip" href="#main">تخطٍ إلى المحتوى</a>
 
 <header class="top glass">
   <div class="wrap top-in">
@@ -706,6 +754,8 @@ body::after{
     </nav>
   </div>
 </header>
+
+<main id="main">
 
 <!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
 <section class="screen on" id="s-cat">
@@ -793,7 +843,7 @@ body::after{
             </span>
           </div>
           <button class="player-cta press">
-            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
             شغّل الدرس المجاني
           </button>
           <span class="pill pill-free" style="position:absolute;z-index:2;inset-inline-start:1rem;top:1rem">مجاني</span>
@@ -870,7 +920,7 @@ body::after{
             </span>
           </div>
           <button class="player-cta press">
-            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
             تابع من <span class="num">٦:١٤</span>
           </button>
           <!-- نفس فخّ الاتجاه أعلاه: الوضع على الغلاف، و`.num` بالداخل -->
@@ -934,12 +984,14 @@ body::after{
   </div>
 </section>
 
-<div class="wrap">
+</main>
+
+<footer class="wrap">
   <p class="footnote">
     معاينة بصرية معزولة · بيانات تمثيلية · لا اتصال بقاعدة بيانات ولا صلة بكود الإنتاج.<br />
     كل ما هنا قابل للتنفيذ بالمكدّس الحالي: Next.js وTailwind وIBM Plex Sans Arabic — بلا مكتبات جديدة.
   </p>
-</div>
+</footer>
 
 </div>
 
@@ -1047,8 +1099,13 @@ function stations(){
    هو مجاني، والذيل يعرض «تابع الدرس ٣» مكان السعر.  نفس المكوّن،
    وسؤالٌ واحد يفرّق بين متجرٍ ومكتبة. */
 function courseCard(c,i=0,{owned=false,done=0}={}){
+  /* ⚠ `tabindex` و`role` لأن البطاقة تحمل `cursor:pointer` ولا شيء
+     يستطيع الوصول إليها بلوحة المفاتيح — بطاقةٌ تُنقر بالفأرة وحدها.
+     وعند النقل إلى التطبيق الحقيقي اجعلها `<a href>` فعليًّا: هذا
+     يعطي التركيز والدور، ولا يعطي فتحًا في تبويب جديد ولا حالة زيارة. */
   return `
-  <article class="card course lift" style="animation-delay:${i*70}ms">
+  <article class="card course lift" tabindex="0" role="link"
+           aria-label="${c.title} — ${c.code}" style="animation-delay:${i*70}ms">
     <span class="course-code">${c.code.replace(/[A-Z]/g,"")}</span>
     <div class="course-top">
       <h3 class="h3" style="max-width:20ch">${c.title}</h3>
@@ -1231,7 +1288,7 @@ function lessonGroups(targetSel){
       const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"":AR(i+1);
       const badge = l.s==="wait"?'<span class="pill pill-warn">قيد الرفع</span>'
                   : l.s==="live"?'<span class="pill pill-free">تدرسه الآن</span>'
-                  : l.s==="lock"?'<span class="small" style="color:var(--faint)">يُفتح بالشراء</span>':"";
+                  : l.s==="lock"?'<span class="small">يُفتح بالشراء</span>':"";
       rail.appendChild(el(`
         <div class="stop">
           <span class="node ${cls}">${mark}</span>
@@ -1253,7 +1310,7 @@ function lessons(targetSel, withSeg){
     const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"🔒":AR(i+1);
     const badge = l.s==="wait"?'<span class="pill pill-warn">قيد الرفع</span>'
                 : l.s==="live"?'<span class="pill pill-free">تدرسه الآن</span>'
-                : l.s==="lock"?'<span class="small" style="color:var(--faint)">يُفتح بالشراء</span>':"";
+                : l.s==="lock"?'<span class="small">يُفتح بالشراء</span>':"";
     box.appendChild(el(`
       <div class="stop" ${withSeg?`data-seg="${l.seg}"`:""}>
         <span class="node ${cls}">${l.s==="lock"?"":mark}</span>
