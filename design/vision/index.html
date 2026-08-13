@@ -206,7 +206,7 @@ body::after{
    هذا شريط أدوات المعاينة لا المنتج، فيُمرَّر أفقيًا ولا يُعاد تصميمه. */
 @media(max-width:760px){
   .top-in{height:auto;padding-block:.6rem;gap:.6rem;
-    overflow-x:auto;scrollbar-width:none}
+    overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
   .top-in::-webkit-scrollbar{display:none}
   .top-in > *{flex:0 0 auto}
 }
@@ -548,6 +548,14 @@ body::after{
   transition:transform var(--dur-base) var(--ease)}
 .player-cta .play{width:34px;height:34px;box-shadow:none;background:color-mix(in srgb,var(--on-accent) 12%,transparent)}
 @media(hover:hover){.player:hover .player-cta{transform:translateY(-2px)}}
+
+/* شريط الموضع على حافّة الإطار — يقول «توقّفتَ هنا» بلا كلمة.
+   ⚠ يبدأ من البداية المنطقية: `inset-inline-start:0` مع `width` نسبيّة،
+   فينمو نحو النهاية.  استعمال `left` هنا يجعله ينمو عكس القراءة. */
+.player-seek{position:absolute;z-index:2;inset-inline:0;bottom:0;height:3px;
+  background:color-mix(in srgb,var(--paper) 12%,transparent)}
+.player-seek i{display:block;height:100%;background:var(--spark);
+  box-shadow:0 0 12px -2px color-mix(in srgb,var(--spark) 70%,transparent)}
 .player::after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--spark) 11%,transparent),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
 .player:hover::after{opacity:1}
 .play{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;position:relative;z-index:2;
@@ -603,7 +611,14 @@ body::after{
 /* ═══ صفحة الدراسة ═════════════════════════════════════════════════ */
 .study{display:grid;gap:1.6rem;grid-template-columns:1fr}
 @media(min-width:1060px){.study{grid-template-columns:1fr 20rem}}
-.tabs{display:flex;gap:.2rem;border-bottom:1px solid var(--line-soft);margin-bottom:1.4rem;overflow-x:auto}
+/* ⚠ `overflow-y:hidden` صراحةً.  ضبطُ `overflow-x` وحده يحوّل الآخر
+   من `visible` إلى `auto` بحكم المواصفة، فيحجز المتصفّح شريط تمرير
+   رأسيًّا: كان عرض الصندوق ٩٢٥ و`clientWidth` ٩١٠ — أي ١٥px شريطٍ
+   ظاهر يسار الألسنة يبدو خللًا في الرسم.  والقاعدة نفسها تنطبق على
+   `.top-in` وعلى كل ما يُمرَّر أفقيًّا. */
+.tabs{display:flex;gap:.2rem;border-bottom:1px solid var(--line-soft);margin-bottom:1.4rem;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
 .tab{border:0;background:transparent;color:var(--subtle);font:inherit;font-size:.87rem;font-weight:500;
   padding:.75rem 1rem;cursor:pointer;position:relative;white-space:nowrap;transition:color var(--dur-fast) var(--ease)}
 .tab:hover{color:var(--paper)}
@@ -834,9 +849,28 @@ body::after{
     <div class="study">
       <div>
         <div class="player" style="aspect-ratio:16/9">
-          <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+          <!-- ملصق الدرس الجاري نفسه (النحو التطبيقي)، لا مستطيل أسود.
+               وهنا الطالب اشترى بالفعل، فالملصق ليس إقناعًا بل تذكيرٌ
+               بموضع توقّفه: يرى ما كان فيه قبل أن يضغط «تابع». -->
+          <div class="player-poster">
+            <span class="eyebrow">كان وأخواتها</span>
+            <span class="parse">
+              <span class="pw"><span class="pw-w">كان</span><span class="pw-tie"></span>
+                <span class="pw-p">فعل ماضٍ ناقص</span></span>
+              <span class="pw"><span class="pw-w">الطالبُ</span><span class="pw-tie"></span>
+                <span class="pw-p">اسم كان مرفوع</span></span>
+              <span class="pw"><span class="pw-w">مجتهدًا</span><span class="pw-tie"></span>
+                <span class="pw-p">خبر كان منصوب</span></span>
+            </span>
+          </div>
+          <button class="player-cta press">
+            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            تابع من <span class="num">٦:١٤</span>
+          </button>
           <!-- نفس فخّ الاتجاه أعلاه: الوضع على الغلاف، و`.num` بالداخل -->
           <span class="small" style="position:absolute;z-index:2;inset-inline-end:1rem;bottom:1.5rem"><span class="num">١٨:٢٢</span></span>
+          <!-- شريط الموضع: ٦:١٤ من ١٨:٢٢ — الرقم نفسه مرئيًّا -->
+          <span class="player-seek" aria-hidden="true"><i style="width:34%"></i></span>
         </div>
         <h2 class="h3" style="margin-top:1.1rem">الدرس الثالث — النحو التطبيقي</h2>
         <p class="body" style="margin-top:.4rem">تطبيق قواعد النحو على نصوص المقرر، مع إعراب نماذج من أسئلة الامتحانات السابقة.</p>
