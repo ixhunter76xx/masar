@@ -409,116 +409,128 @@ body::after{
 .stat-row{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:3rem;padding-top:1.8rem;border-top:1px solid var(--line-soft)}
 .stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:1.65rem;font-weight:600;letter-spacing:-.03em}
 
-/* ══ الطريق في الواجهة ═════════════════════════════════════════════
-   خمس محطّات وضوءٌ يقطعها.  حركة واحدة بطيئة جدًا (٩ ثوانٍ للدورة)
-   تكفي لتقول «حيّ» بلا أن تسرق القراءة. */
-.hero{display:grid;gap:clamp(2.5rem,5vw,4.5rem);align-items:center;grid-template-columns:1fr}
-@media(min-width:940px){.hero{grid-template-columns:1.05fr .95fr}}
+/* الواجهة عمودان فوق ٩٤٠px: النصّ، والمشهد. */
+.hero{display:grid;gap:clamp(2rem,4vw,3.5rem);align-items:center;grid-template-columns:1fr}
+@media(min-width:940px){.hero{grid-template-columns:1.02fr .98fr}}
+/* ══ الطاولة ثلاثية الأبعاد ═════════════════════════════════════════
+   المنظور يحسبه المتصفّح: حاوية perspective، ومستوى مائل بـpreserve-3d،
+   وكل غرض يرقد عليه أو يقف فوقه.  فزاوية «من فوق الكتف» تنشأ من
+   الهندسة لا من رسم أشكال منحرفة يدويًا.
 
-/* ══ المكتب ═════════════════════════════════════════════════════════
-   لا شيء يتحرّك من موضعه.  الضوء وحده يتنفّس — والسكون التامّ مع ضوء
-   حيّ هو ما يجعل «الليل» يُقرأ حقيقيًا لا متحرّكًا. */
-/* النسبة مثبَّتة على نسبة الـviewBox، فتنطبق نسب اللوحة المئوية على
-   إحداثيات SVG بالضبط ويجلس وجه الشاشة على إطاره المرسوم تمامًا. */
-.desk{position:relative;aspect-ratio:420/360;min-height:300px;justify-self:stretch;isolation:isolate}
-.fig-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+   ولا حدّ (border) واحدًا هنا.  كل حافّة يصنعها فارق ضوء أو ظلّ —
+   وهذا وحده الفرق بين مشهد يبدو مصوَّرًا وآخر يبدو رسمًا متجهًا. */
+.desk{position:relative;aspect-ratio:1/.9;min-height:300px;max-height:460px;
+  justify-self:stretch;isolation:isolate;overflow:hidden;border-radius:var(--r-lg)}
 
-.fx-desk,.fx-chair{fill:var(--line);opacity:.55}
-.fx-lap{fill:var(--accent-deep);opacity:.5}
-.fx-lapframe{fill:none;stroke:var(--accent-deep);stroke-width:2.5;opacity:.55}
-/* الشفافية على المجموعة لا على كل شكل: لو وُضعت على الأشكال لتراكمت
-   عند التداخل فظهر الذراع خطًّا أغمق فوق الجذع بدل أن يذوب فيه. */
-.fx-body{fill:var(--paper)}
-.fig{opacity:.26}
+.stage3d{position:absolute;inset:-8% -6% -14%;perspective:1100px;perspective-origin:62% 8%}
+.deskplane{position:absolute;inset:0;transform-style:preserve-3d;
+  transform:rotateX(58deg) rotateZ(-13deg) translateZ(-30px);
+  background:
+    radial-gradient(58% 46% at 44% 30%, color-mix(in srgb,var(--warning) 15%,transparent), transparent 72%),
+    linear-gradient(158deg, color-mix(in srgb,var(--panel-lift) 92%,transparent), var(--ink) 78%);
+  animation:camDrift 26s ease-in-out infinite}
+/* انجراف بطيء جدًا — كاميرا محمولة لا حاملٌ ثابت */
+@keyframes camDrift{
+  0%,100%{transform:rotateX(58deg) rotateZ(-13deg) translateZ(-30px)}
+  50%    {transform:rotateX(56.6deg) rotateZ(-12deg) translateZ(-22px)}
+}
+.dp-light{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(40% 34% at 40% 22%, color-mix(in srgb,var(--spark) 20%,transparent), transparent 70%);
+  animation:lampBreathe 11s ease-in-out infinite}
 
-/* ══ الوضعيات ═══════════════════════════════════════════════════════
-   أربع حالات، كلٌّ منها زوايا لأربعة مفاصل.  الانتقال على الزاوية
-   نفسها (١٫٢ ثانية، منحنى هادئ) فيبدو تحوّل جلسة لا قفزة صورة.
+/* الأغراض ترقد على السطح؛ الظلّ وحده يفصلها عنه */
+.books,.sheet,.mug{position:absolute;transform-style:preserve-3d}
+.books{border-radius:3px;background:linear-gradient(180deg,var(--panel-high),var(--panel));
+  box-shadow:0 10px 18px -8px rgba(0,0,0,.75)}
+.b-l1{left:2%;top:26%;width:20%;height:15%;transform:translateZ(16px) rotate(-3deg)}
+.b-l2{left:5%;top:44%;width:17%;height:12%;transform:translateZ(9px) rotate(4deg)}
+.b-r1{right:3%;top:20%;width:19%;height:17%;transform:translateZ(20px) rotate(2deg)}
+.b-r2{right:7%;top:41%;width:15%;height:11%;transform:translateZ(8px) rotate(-5deg)}
 
-   القصّة مقصودة بترتيبها: ينكبّ ليقرأ ← يكتب ← يفكّر ← يستوعب ويرتاح.
-   وهي وعد المنتج نفسه في أربع لقطات. */
-.fig .torso{transform-origin:330px 306px;transform:rotate(var(--t,0deg))}
-.fig .head {transform-origin:320px 196px;transform:rotate(var(--h,0deg))}
-.fig .armA {transform-origin:322px 208px;transform:rotate(var(--a,0deg))}
-.fig .armB {transform-origin:320px 255px;transform:rotate(var(--b,0deg))}
-.fig .torso,.fig .head,.fig .armA,.fig .armB{
-  transform-box:view-box;
-  transition:transform 1200ms cubic-bezier(.32,.72,0,1)}
+.sheet{background:color-mix(in srgb,var(--paper) 86%,transparent);border-radius:2px;
+  box-shadow:0 6px 14px -6px rgba(0,0,0,.6);padding:9% 8%;display:grid;gap:14%;align-content:start}
+.sheet i{display:block;height:3px;border-radius:2px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
+/* شرائط التظليل الملوّنة — التفصيل الذي يجعلها «ملاحظات» لا مستطيلات */
+.sheet i:nth-child(2){background:color-mix(in srgb,var(--spark) 70%,transparent);width:72%}
+.sheet i:nth-child(3){background:color-mix(in srgb,var(--warning) 62%,transparent);width:54%}
+.s1{left:6%;bottom:6%;width:30%;height:22%;transform:translateZ(3px) rotate(-7deg)}
+.s2{left:33%;bottom:2%;width:26%;height:17%;transform:translateZ(2px) rotate(5deg)}
+.s3{right:12%;bottom:9%;width:27%;height:20%;transform:translateZ(3px) rotate(-3deg)}
 
-/* ١ · عربي — ينكبّ على النصّ، والساعد ممتدّ على الطاولة */
-.desk[data-pose="0"] .fig{--t:-8deg;--h:-8deg;--a:-14deg;--b:24deg}
-/* ٢ · برمجة — منتصب، اليد على لوحة المفاتيح */
-.desk[data-pose="1"] .fig{--t:-3deg;--h:-4deg;--a:-4deg;--b:34deg}
-/* ٣ · رياضيات — يتوقّف، اليد ترتفع إلى الصدغ.
-   الساعد مرسوم متّجهًا يسارًا (١٨٠°)، ورفعه إلى الرأس دورانٌ **مع**
-   عقارب الساعة لا عكسها — القيمة السالبة كانت تهوي به إلى أسفل. */
-.desk[data-pose="2"] .fig{--t:0deg;--h:7deg;--a:-16deg;--b:112deg}
-/* ٤ · هندسة — يتّكئ للخلف: فَهِم */
-.desk[data-pose="3"] .fig{--t:8deg;--h:4deg;--a:26deg;--b:6deg}
-
-@media(prefers-reduced-motion:reduce){
-  .fig .torso,.fig .head,.fig .armA,.fig .armB{transition:none}
+.mug{right:20%;top:36%;width:9%;height:9%;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%, var(--panel-high), var(--ink));
+  box-shadow:0 12px 20px -8px rgba(0,0,0,.8);transform:translateZ(26px)}
+/* البخار يصعد ويتلاشى — أوضح إشارة «حياة» في المشهد */
+.steam{position:absolute;right:22%;top:22%;width:6%;height:16%;transform:translateZ(40px)}
+.steam i{position:absolute;bottom:0;width:3px;height:100%;border-radius:99px;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--paper) 26%,transparent));
+  filter:blur(2.5px);opacity:0;animation:steamUp var(--sd) ease-in-out var(--so) infinite}
+.steam i:nth-child(1){left:8%;--sd:5.5s;--so:0s}
+.steam i:nth-child(2){left:44%;--sd:6.8s;--so:-2.2s}
+.steam i:nth-child(3){left:76%;--sd:6.1s;--so:-4.1s}
+@keyframes steamUp{
+  0%{opacity:0;transform:translateY(14%) scaleY(.5)}
+  35%{opacity:.5}
+  100%{opacity:0;transform:translateY(-58%) scaleY(1.25)}
 }
 
-/* بركة ضوء المصباح — تتنفّس كخيط متوهّج */
-.desk-lamp{position:absolute;inset:0;pointer-events:none;
-  background:
-    radial-gradient(46% 40% at 74% 12%, color-mix(in srgb,var(--spark) 26%,transparent), transparent 68%),
-    radial-gradient(70% 58% at 64% 26%, color-mix(in srgb,var(--warning) 12%,transparent), transparent 74%);
-  animation:lampBreathe 11s ease-in-out infinite}
-@keyframes lampBreathe{0%,100%{opacity:.72}50%{opacity:1}}
+/* ══ اللابتوب ══════════════════════════════════════════════════════ */
+.lap3d{position:absolute;left:26%;top:16%;width:48%;height:40%;transform-style:preserve-3d}
+.lap-base{position:absolute;inset:0;border-radius:10px;transform:translateZ(6px);
+  background:linear-gradient(170deg,var(--panel-high),var(--panel) 70%);
+  box-shadow:0 20px 34px -14px rgba(0,0,0,.85), inset 0 1px 0 var(--hair)}
+/* الشاشة تقف على الحافّة البعيدة للقاعدة */
+/* المفصل عند الحافّة البعيدة للقاعدة لا فوقها.  وضعُ الشاشة على نفس
+   مساحة القاعدة كان يطبقها عليها فتُرى ظهرًا لا وجهًا — لابتوب مغلق. */
+.lap-screen{position:absolute;left:0;right:0;bottom:100%;height:112%;
+  transform-origin:bottom center;transform:translateZ(7px) rotateX(-96deg);
+  transform-style:preserve-3d}
+.lap{height:100%;overflow:hidden;border-radius:10px;padding:.8rem .85rem;
+  background:linear-gradient(168deg,var(--panel-high),var(--panel) 78%);
+  box-shadow:0 -18px 40px -16px rgba(0,0,0,.8), inset 0 1px 0 var(--hair)}
 
-/* حوافّ لا تُقرأ، تُحَسّ: غطاء الحاسوب، قلم، دفتر */
-.desk-edge{position:absolute;pointer-events:none;background:var(--line);opacity:.5}
-.desk-lid{inset-inline-end:6%;top:16%;width:52%;height:1px;transform:rotate(-7deg);transform-origin:right}
-.desk-pen{inset-inline-start:12%;bottom:15%;width:23%;height:3px;border-radius:99px;transform:rotate(-4deg)}
-.desk-note{position:absolute;inset-inline-start:9%;bottom:20%;width:30%;display:grid;gap:7px;opacity:.34}
-.desk-note i{display:block;height:1px;background:var(--line)}
-.desk-note i:nth-child(2){width:78%}
-.desk-note i:nth-child(3){width:54%}
-
-/* ══ الشاشة ═════════════════════════════════════════════════════════ */
-/* يطابق `fx-lapframe` في الـSVG: x 58..254 من ٤٢٠، y 116..294 من ٣٦٠.
-   ولأن نسبة الحاوية مثبَّتة على نسبة الـviewBox، ينطبق الاثنان تمامًا. */
-.screen-wrap{position:absolute;left:13.8%;right:39.5%;top:32.2%;bottom:18.3%;z-index:2}
-.lap{position:relative;z-index:2;height:100%;overflow:hidden;border-radius:11px;padding:.85rem .9rem;
-  border:1px solid color-mix(in srgb,var(--accent-bright) 16%,transparent);
-  background:linear-gradient(168deg,
-    color-mix(in srgb,var(--panel-high) 92%,transparent),
-    color-mix(in srgb,var(--panel) 96%,transparent));
-  box-shadow:inset 0 1px 0 var(--hair),0 26px 60px -26px rgba(0,0,0,.9)}
-/* الضوء المرتدّ من الشاشة إلى المكتب — يرتعش بالكاد كفيديو يعمل */
-.screen-spill{position:absolute;left:0;right:26%;top:78%;height:120px;z-index:0;pointer-events:none;
-  background:radial-gradient(60% 100% at 50% 0%, color-mix(in srgb,var(--accent-bright) 15%,transparent), transparent 72%);
-  filter:blur(6px);animation:spillFlicker 7s ease-in-out infinite}
-@keyframes spillFlicker{0%,100%{opacity:.62}42%{opacity:.86}68%{opacity:.7}}
-
-.screen-head{display:flex;align-items:center;gap:.5rem;padding-bottom:.6rem;margin-bottom:.75rem;
-  border-bottom:1px solid var(--line-soft)}
-.screen-dot{width:7px;height:7px;border-radius:99px;background:var(--spark);flex:0 0 auto}
-.screen-course{font-size:.66rem;color:var(--accent);letter-spacing:.02em}
-.screen-topic{font-size:.66rem;color:var(--subtle);margin-inline-start:auto}
-
-.screen-q{font-size:1.02rem;font-weight:600;line-height:1.65;letter-spacing:-.012em;min-height:2.6em}
+.screen-head{display:flex;align-items:center;gap:.45rem;padding-bottom:.5rem;margin-bottom:.6rem;
+  box-shadow:0 1px 0 color-mix(in srgb,var(--paper) 8%,transparent)}
+.screen-dot{width:6px;height:6px;border-radius:99px;background:var(--spark);flex:0 0 auto}
+.screen-course{font-size:.6rem;color:var(--accent)}
+.screen-topic{font-size:.6rem;color:var(--subtle);margin-inline-start:auto}
+.screen-q{font-size:.92rem;font-weight:600;line-height:1.6;letter-spacing:-.012em;min-height:2.3em}
 .screen-q .hl{color:var(--spark)}
-.screen-steps{list-style:none;margin-top:.7rem;display:grid;gap:.36rem;min-height:4.4em}
-.screen-steps li{font-size:.78rem;line-height:1.75;color:var(--muted);
-  display:flex;gap:.45rem;opacity:0;transform:translateY(5px);
-  animation:stepIn 420ms var(--ease) forwards}
+.screen-steps{list-style:none;margin-top:.5rem;display:grid;gap:.24rem;min-height:3.6em}
+.screen-steps li{font-size:.68rem;line-height:1.7;color:var(--muted);display:flex;gap:.35rem;
+  opacity:0;transform:translateY(4px);animation:stepIn 420ms var(--ease) forwards}
 .screen-steps li::before{content:"—";color:var(--accent-deep);flex:0 0 auto}
 @keyframes stepIn{to{opacity:1;transform:none}}
 .lap.swap{animation:screenSwap 520ms var(--ease)}
-@keyframes screenSwap{0%{opacity:.25;transform:translateY(6px)}100%{opacity:1;transform:none}}
+@keyframes screenSwap{0%{opacity:.3}100%{opacity:1}}
+.screen-q code,.screen-steps code{font-family:"IBM Plex Mono",monospace;font-size:.9em;
+  direction:ltr;unicode-bidi:isolate;background:var(--sunk);padding:.06em .3em;border-radius:5px}
 
-/* الشفرة والرياضيات لاتينية الاتجاه داخل سطر عربي */
-.screen-q code,.screen-steps code{font-family:"IBM Plex Mono",monospace;font-size:.92em;
-  direction:ltr;unicode-bidi:isolate;background:var(--sunk);
-  padding:.08em .38em;border-radius:6px}
+/* ══ المصباح والكتف ════════════════════════════════════════════════ */
+.desk-lamp{position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:radial-gradient(30% 26% at 40% -2%, color-mix(in srgb,var(--warning) 34%,transparent), transparent 70%);
+  animation:lampBreathe 11s ease-in-out infinite}
+@keyframes lampBreathe{0%,100%{opacity:.78}50%{opacity:1}}
 
-@media(max-width:939px){.desk{min-height:300px;aspect-ratio:1/.7}}
+/* الكتف أقرب من مستوى التركيز، فهو ضبابيّ — وهذا وحده يوحي بالعمق */
+.shoulder{position:absolute;right:-8%;bottom:-16%;width:52%;height:62%;z-index:4;pointer-events:none;
+  border-radius:52% 46% 0 0 / 62% 58% 0 0;
+  background:linear-gradient(200deg, color-mix(in srgb,var(--ink) 88%,transparent), var(--ink));
+  filter:blur(7px);
+  transition:transform 1400ms cubic-bezier(.32,.72,0,1)}
+
+/* من فوق الكتف لا تُرى الجلسة كاملة — يُرى الكتف ينزاح.  إزاحة
+   صغيرة صادقة خير من تمثيل جسدٍ كامل لا نراه أصلًا. */
+.desk[data-pose="0"] .shoulder{transform:translate(0,2%)   rotate(-1deg)}
+.desk[data-pose="1"] .shoulder{transform:translate(-2%,4%) rotate(1deg)}
+.desk[data-pose="2"] .shoulder{transform:translate(3%,-1%) rotate(-2deg)}
+.desk[data-pose="3"] .shoulder{transform:translate(1%,7%)  rotate(2deg)}
+
+@media(max-width:939px){.desk{aspect-ratio:1/.68;min-height:280px}}
 @media(prefers-reduced-motion:reduce){
-  .desk-lamp,.screen-spill{animation:none}
+  .deskplane,.dp-light,.desk-lamp,.steam i{animation:none}
   .screen-steps li{opacity:1;transform:none;animation:none}
+  .shoulder{transition:none}
 }
 
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
@@ -786,61 +798,49 @@ body::after{
            تعرض مسألة حقيقية تُحلّ خطوة خطوة، وتتبدّل بين الكليات —
            إعراب، ثم شفرة، ثم اشتقاق، ثم اتزان.  فيرى الزائر البرهان
            داخل الإحساس، ولا تبقى الواجهة مجرّدة بلا دليل. -->
-      <div class="desk" aria-hidden="true">
-        <span class="desk-lamp"></span>
+      <div class="desk" data-pose="0" aria-hidden="true">
+        <!-- ══ الطاولة من فوق الكتف ═════════════════════════════════
+             الزاوية المطلوبة نظرٌ من أعلى وخلف كتف الطالب.  الأشكال
+             المسطّحة لا تعطيها، فالمستوى هنا **ثلاثي الأبعاد فعلًا**:
+             حاوية بـperspective، وسطحٌ مائل، وكل شيء يرقد عليه أو يقف
+             فوقه.  فالمنظور يحسبه المتصفّح لا أنا.
 
-        <!-- ══ الطالب ═══════════════════════════════════════════════
-             ظلٌّ مصمت بلا ملامح، بلغة اللوغو نفسها.  رسم شخص بتفاصيل
-             داخل SVG يدويًا ينزلق إلى قصاصة رديئة؛ والظلّ الهندسي
-             يصمد ويطابق الهوية.
+             ولا حدّ واحدًا في المشهد.  الحوافّ تُعرَّف بالضوء والظلّ —
+             وهذا ما يجعل صورة تبدو مصوَّرة لا مرسومة. -->
+        <div class="stage3d">
+          <div class="deskplane">
+            <span class="dp-light"></span>
 
-             والوضعيات ليست أربع صور تتلاشى — بل **مفاصل تدور**:
-             الجذع والرأس والعضد والساعد.  الانتقال حركة لا استبدال. -->
-        <svg class="fig-svg" viewBox="0 0 420 360" id="figure">
-          <!-- الطاولة -->
-          <rect class="fx-desk" x="8" y="308" width="404" height="4" rx="2"/>
-          <!-- ظهر الكرسي -->
-          <rect class="fx-chair" x="392" y="196" width="7" height="112" rx="3.5"/>
+            <!-- أكوام الكتب -->
+            <span class="books b-l1"></span><span class="books b-l2"></span>
+            <span class="books b-r1"></span><span class="books b-r2"></span>
 
-          <!-- اللابتوب: قاعدة وإطار شاشة.  وجهُ الشاشة تغطّيه لوحة
-               HTML فوقه، فما يعرضه حقيقيّ لا مرسوم. -->
-          <rect class="fx-lap" x="46" y="292" width="220" height="12" rx="5"/>
-          <rect class="fx-lapframe" x="58" y="116" width="196" height="178" rx="12"/>
+            <!-- أوراق مبعثرة عليها تظليل ملوّن -->
+            <span class="sheet s1"><i></i><i></i><i></i></span>
+            <span class="sheet s2"><i></i><i></i></span>
+            <span class="sheet s3"><i></i><i></i><i></i></span>
 
-          <!-- الطالب -->
-          <g class="fig">
-            <g class="torso">
-              <!-- جذع يميل قليلًا نحو اللابتوب؛ الكتف عند حافته الأمامية -->
-              <path class="fx-body" d="M304,308 Q300,250 312,206 Q318,192 336,193 Q350,196 352,232 Q358,272 356,308 Z"/>
-              <g class="head">
-                <rect class="fx-body" x="311" y="176" width="18" height="24" rx="9"/>
-                <circle class="fx-body" cx="316" cy="162" r="23"/>
-                <!-- شعر عند مؤخّرة الرأس فقط — يمنحه اتجاهًا بلا ملامح -->
-                <path class="fx-body" d="M330,142 Q343,150 341,170 Q346,150 337,140 Q329,133 318,139 Z"/>
-              </g>
-              <g class="armA">
-                <rect class="fx-body" x="314" y="204" width="16" height="54" rx="8"/>
-                <g class="armB">
-                  <rect class="fx-body" x="246" y="248" width="76" height="15" rx="7.5"/>
-                </g>
-              </g>
-            </g>
-          </g>
-        </svg>
+            <!-- الكوب، وبخاره يصعد -->
+            <span class="mug"></span>
+            <span class="steam"><i></i><i></i><i></i></span>
 
-        <!-- وجه الشاشة — لوحة حقيقية فوق الإطار المرسوم -->
-        <div class="screen-wrap">
-          <div class="lap" id="lap">
-            <div class="screen-head">
-              <span class="screen-dot"></span>
-              <span class="screen-course num"></span>
-              <span class="screen-topic"></span>
+            <!-- اللابتوب: قاعدة راقدة وشاشة قائمة عليها -->
+            <div class="lap3d">
+              <div class="lap-base"></div>
+              <div class="lap-screen">
+                <div class="lap" id="lap">
+                  <div class="screen-head">
+                    <span class="screen-dot"></span>
+                    <span class="screen-course num"></span>
+                    <span class="screen-topic"></span>
+                  </div>
+                  <div class="screen-q"></div>
+                  <ol class="screen-steps"></ol>
+                </div>
+              </div>
             </div>
-            <div class="screen-q"></div>
-            <ol class="screen-steps"></ol>
           </div>
         </div>
-        <span class="screen-spill"></span>
       </div>
     </div>
 
