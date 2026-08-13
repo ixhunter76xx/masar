@@ -435,7 +435,11 @@ body::after{
 .scene{position:relative;isolation:isolate}
 /* `meet` لا `slice`: الاقتصاص كان يقطع البوّابات المنطقية فتُقرأ
    خربشة.  والارتفاع أكبر ليظهر الرسم قبل أن تغطّيه البطاقات. */
-.scene-art{position:absolute;inset-block:-2.5rem auto;inset-inline:-1rem;height:360px;z-index:-1;
+/* ⚠ `inset-inline:0` لا `-1rem`.  التجاوز الأفقي لعنصر مطلق يزيد
+   `scrollWidth` للصفحة (٣٩٧ مقابل ٣٩٠ على الهاتف)، و`overflow-x:hidden`
+   يُخفيه ولا يمنعه فتُزاح كل لقطة.  ثالث موضع من هذه العائلة في هذا
+   الملف — بعد شريط المعاينة وبركة ضوء اللوح. */
+.scene-art{position:absolute;inset-block:-2.5rem auto;inset-inline:0;height:360px;z-index:-1;
   pointer-events:none;opacity:0;mask-image:linear-gradient(to bottom,#000 42%,transparent 96%)}
 .scene-art svg{preserve-aspect-ratio:none}
 .scene-art.in{animation:sceneIn 620ms var(--ease) both}
@@ -593,7 +597,11 @@ body::after{
    بصريّ واحد.  مكدَّسةً بعرض الصفحة لا يقارن أحد شيئًا — يقرأ ثلاث
    بطاقات متتابعة ثم ينسى الأولى. */
 .tiers{display:grid;gap:1rem}
-@media(min-width:760px){.tiers{grid-template-columns:repeat(3,1fr);gap:1.1rem;align-items:stretch}}
+/* ⚠ `minmax(0,1fr)` لا `1fr`.  الحدّ الأدنى الضمنيّ لـ`1fr` هو
+   `min-content`، فالعمود يرفض النزول تحت أطول سطر فيه («الدروس ٣ إلى
+   ٥ · النحو والبلاغة والمراجعة») ويدفع الشبكة خارج الصفحة: ١٢١٩
+   مقابل ١١٦٥ عند ١١٨٠px. */
+@media(min-width:760px){.tiers{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1rem;align-items:stretch}}
 /* عمود مرن ليستقرّ الزرّ في القاع مهما اختلف عدد البنود — «الدورة
    الكاملة» فيها أربعة بنود والأخريان ثلاثة، فبلا هذا تتذبذب الأزرار */
 .tier{display:flex;flex-direction:column}
