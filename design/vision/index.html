@@ -332,9 +332,16 @@ body::after{
 /* ═══ الرأسية ═══════════════════════════════════════════════════════ */
 .top{position:sticky;top:0;z-index:50}
 .top-in{display:flex;align-items:center;gap:1rem;height:66px}
-.brand{display:flex;align-items:center;gap:.7rem;font-weight:700;letter-spacing:-.02em}
-.mark{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
-  background:linear-gradient(155deg,var(--accent-bright),var(--accent-deep));color:var(--on-accent);font-weight:700;font-size:.95rem}
+.brand{display:flex;align-items:center;text-decoration:none;flex:0 0 auto;border-radius:10px}
+.brand:focus-visible{outline:2px solid var(--accent-bright);outline-offset:3px}
+/* اللوغو مقصوص بالخلفية: الملف ٥٨٦×٥٨٥ والعلامة تشغل وسطه فقط،
+   فنُزيح ونُكبّر لنُظهر العلامة وحدها بلا الهوامش. */
+.brand-logo{display:block;width:104px;height:33px;border-radius:6px;
+  background-image:url("logo-masar.png");
+  background-size:143px auto;background-position:-16px -54px;background-repeat:no-repeat}
+@media(max-width:640px){
+  .brand-logo{width:84px;height:27px;background-size:116px auto;background-position:-13px -44px}
+}
 
 /* مبدّل الشاشات — أداة معاينة، ليست جزءًا من التصميم المقترح */
 .themes{margin-inline-start:.6rem}
@@ -408,25 +415,69 @@ body::after{
 .hero{display:grid;gap:clamp(2.5rem,5vw,4.5rem);align-items:center;grid-template-columns:1fr}
 @media(min-width:940px){.hero{grid-template-columns:1.05fr .95fr}}
 
-.journey{position:relative;padding-inline-start:2.4rem;max-width:22rem;justify-self:center}
-.journey-line{position:absolute;inset-block:14px;inset-inline-start:11px;width:2px;border-radius:2px;
-  background:linear-gradient(180deg,transparent,var(--line) 12%,var(--line) 88%,transparent)}
-/* الضوء الجاري — يهبط من أول محطّة إلى آخرها ثم يعيد */
-.journey-run{position:absolute;inset-inline-start:10px;width:4px;height:64px;border-radius:99px;
-  background:linear-gradient(180deg,transparent,var(--spark),transparent);
-  filter:blur(.5px);animation:runDown 9s ease-in-out infinite}
-@keyframes runDown{0%{top:0;opacity:0}12%{opacity:.9}88%{opacity:.9}100%{top:calc(100% - 64px);opacity:0}}
+/* ══ المكتب ═════════════════════════════════════════════════════════
+   لا شيء يتحرّك من موضعه.  الضوء وحده يتنفّس — والسكون التامّ مع ضوء
+   حيّ هو ما يجعل «الليل» يُقرأ حقيقيًا لا متحرّكًا. */
+.desk{position:relative;aspect-ratio:1/.92;min-height:340px;justify-self:stretch;isolation:isolate}
 
-.journey-stops{list-style:none;display:grid;gap:1.45rem}
-.journey-stops li{position:relative;padding-inline-start:.2rem}
-.journey-stops i{position:absolute;inset-inline-start:-2.4rem;top:.42rem;width:11px;height:11px;
-  border-radius:99px;border:1.5px solid var(--line);background:var(--ink);
-  box-shadow:0 0 0 4px var(--ink);transition:all var(--dur-base) var(--ease)}
-.journey-stops li:first-child i,.journey-stops li:last-child i{border-color:var(--accent-deep)}
-.journey-stops li:last-child i{background:var(--spark);border-color:transparent}
-.journey-stops b{display:block;font-size:.9rem;font-weight:600;letter-spacing:-.012em}
-.journey-stops em{display:block;font-style:normal;font-size:.76rem;color:var(--subtle);margin-top:.1rem}
-@media(max-width:939px){.journey{max-width:none;justify-self:stretch}}
+/* بركة ضوء المصباح — تتنفّس كخيط متوهّج */
+.desk-lamp{position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(46% 40% at 74% 12%, color-mix(in srgb,var(--spark) 26%,transparent), transparent 68%),
+    radial-gradient(70% 58% at 64% 26%, color-mix(in srgb,var(--warning) 12%,transparent), transparent 74%);
+  animation:lampBreathe 11s ease-in-out infinite}
+@keyframes lampBreathe{0%,100%{opacity:.72}50%{opacity:1}}
+
+/* حوافّ لا تُقرأ، تُحَسّ: غطاء الحاسوب، قلم، دفتر */
+.desk-edge{position:absolute;pointer-events:none;background:var(--line);opacity:.5}
+.desk-lid{inset-inline-end:6%;top:16%;width:52%;height:1px;transform:rotate(-7deg);transform-origin:right}
+.desk-pen{inset-inline-start:12%;bottom:15%;width:23%;height:3px;border-radius:99px;transform:rotate(-4deg)}
+.desk-note{position:absolute;inset-inline-start:9%;bottom:20%;width:30%;display:grid;gap:7px;opacity:.34}
+.desk-note i{display:block;height:1px;background:var(--line)}
+.desk-note i:nth-child(2){width:78%}
+.desk-note i:nth-child(3){width:54%}
+
+/* ══ الشاشة ═════════════════════════════════════════════════════════ */
+.screen-wrap{position:absolute;inset-inline:8% 8%;top:26%;}
+.lap{position:relative;z-index:2;border-radius:14px;padding:1.05rem 1.15rem 1.2rem;
+  border:1px solid color-mix(in srgb,var(--accent-bright) 16%,transparent);
+  background:linear-gradient(168deg,
+    color-mix(in srgb,var(--panel-high) 92%,transparent),
+    color-mix(in srgb,var(--panel) 96%,transparent));
+  box-shadow:inset 0 1px 0 var(--hair),0 26px 60px -26px rgba(0,0,0,.9)}
+/* الضوء المرتدّ من الشاشة إلى المكتب — يرتعش بالكاد كفيديو يعمل */
+.screen-spill{position:absolute;inset-inline:-14% -14%;top:64%;height:150px;z-index:1;pointer-events:none;
+  background:radial-gradient(60% 100% at 50% 0%, color-mix(in srgb,var(--accent-bright) 15%,transparent), transparent 72%);
+  filter:blur(6px);animation:spillFlicker 7s ease-in-out infinite}
+@keyframes spillFlicker{0%,100%{opacity:.62}42%{opacity:.86}68%{opacity:.7}}
+
+.screen-head{display:flex;align-items:center;gap:.5rem;padding-bottom:.6rem;margin-bottom:.75rem;
+  border-bottom:1px solid var(--line-soft)}
+.screen-dot{width:7px;height:7px;border-radius:99px;background:var(--spark);flex:0 0 auto}
+.screen-course{font-size:.66rem;color:var(--accent);letter-spacing:.02em}
+.screen-topic{font-size:.66rem;color:var(--subtle);margin-inline-start:auto}
+
+.screen-q{font-size:1.02rem;font-weight:600;line-height:1.65;letter-spacing:-.012em;min-height:2.6em}
+.screen-q .hl{color:var(--spark)}
+.screen-steps{list-style:none;margin-top:.7rem;display:grid;gap:.36rem;min-height:4.4em}
+.screen-steps li{font-size:.78rem;line-height:1.75;color:var(--muted);
+  display:flex;gap:.45rem;opacity:0;transform:translateY(5px);
+  animation:stepIn 420ms var(--ease) forwards}
+.screen-steps li::before{content:"—";color:var(--accent-deep);flex:0 0 auto}
+@keyframes stepIn{to{opacity:1;transform:none}}
+.lap.swap{animation:screenSwap 520ms var(--ease)}
+@keyframes screenSwap{0%{opacity:.25;transform:translateY(6px)}100%{opacity:1;transform:none}}
+
+/* الشفرة والرياضيات لاتينية الاتجاه داخل سطر عربي */
+.screen-q code,.screen-steps code{font-family:"IBM Plex Mono",monospace;font-size:.92em;
+  direction:ltr;unicode-bidi:isolate;background:var(--sunk);
+  padding:.08em .38em;border-radius:6px}
+
+@media(max-width:939px){.desk{min-height:300px;aspect-ratio:1/.7}}
+@media(prefers-reduced-motion:reduce){
+  .desk-lamp,.screen-spill{animation:none}
+  .screen-steps li{opacity:1;transform:none;animation:none}
+}
 
 .split{display:grid;gap:2.6rem;grid-template-columns:1fr}
 @media(min-width:1000px){.split{grid-template-columns:16.5rem 1fr;gap:3rem}}
@@ -627,7 +678,13 @@ body::after{
 
 <header class="top glass">
   <div class="wrap top-in">
-    <div class="brand"><span class="mark">م</span><span>مسار</span></div>
+    <!-- اللوغو الحقيقي.  خلفيته الرمادية مدموجة في الـPNG، وهي نفس
+         `--panel-high` في ثيم مسار، فيُعرض كشارة بخلفيته بدل محاولة
+         قصّها — وهكذا يعمل على الاتجاهات الخمسة بلا تشويه.
+         ⚠ استبدله بـSVG متى توفّر: يرث اللون ويبقى حادًّا بأي حجم. -->
+    <a class="brand" href="#cat" aria-label="مسار — الصفحة الرئيسية">
+      <span class="brand-logo"></span>
+    </a>
     <nav class="screens" id="nav" aria-label="شاشات المعاينة">
       <button data-s="cat" aria-current="true">الكتالوج</button>
       <button data-s="course">صفحة المقرر</button>
@@ -672,24 +729,42 @@ body::after{
         </div>
       </div>
 
-      <!-- ══ الفراغ على اليسار ═══════════════════════════════════════
-           كان نصف الواجهة فارغًا.  والحلّ ليس زخرفة تملؤه، بل أن يحمل
-           ما لا يقدر العنوان على قوله: **الطريق نفسه**.
+      <!-- ══ مكتب في الليل — والشاشة تعمل ════════════════════════════
+           المحاولة السابقة (خمس محطّات) فشلت لأنها **نصٌّ متنكّر في
+           هيئة رسم**: عمود عبارات بجانب عمود نصّي، فالعين تقرأ مرّتين
+           ولا ترى شيئًا.
 
-           العنوان صار وعدًا من كلمتين، والرسم يشرح كيف يتحقّق: خمس
-           محطّات من المحاضرة الأولى إلى ليلة الامتحان، وضوءٌ يقطعها
-           ببطء بلا توقّف.  هذا ليس حشوًا — هو المنتج مرسومًا، واسمه
-           «مسار».  ولأنه رأسي فلا اتجاه فيه ينقلب في RTL. -->
-      <div class="journey" aria-hidden="true">
-        <span class="journey-line"></span>
-        <span class="journey-run"></span>
-        <ol class="journey-stops">
-          <li><i></i><b>المحاضرة الأولى</b><em>لم تفهمها كاملة</em></li>
-          <li><i></i><b>وحدات المقرر</b><em>درسًا بعد درس</em></li>
-          <li><i></i><b>الاختبار النصفي</b><em>مراجعة مركّزة</em></li>
-          <li><i></i><b>ما بعد النصفي</b><em>حتى آخر وحدة</em></li>
-          <li><i></i><b>ليلة الامتحان</b><em>وأنت مستعدّ</em></li>
-        </ol>
+           هذه تبيع اللحظة: الحادية عشرة ليلًا، الامتحان قريب، والطالب
+           وحده أمام مصباح.  والقرار الحاسم أنني **لا أرسم مكتبًا** —
+           رسوم المكاتب المتجهة قصاصات جاهزة.  أُركّب **الضوء** بدل
+           الأشياء: بركة دافئة، ووهج شاشة أبرد، وحوافّ لا تظهر إلا حيث
+           يقع الضوء.
+
+           ولأن الجوّ وحده لا يقول ما يفعله المنتج، الشاشة **تعمل**:
+           تعرض مسألة حقيقية تُحلّ خطوة خطوة، وتتبدّل بين الكليات —
+           إعراب، ثم شفرة، ثم اشتقاق، ثم اتزان.  فيرى الزائر البرهان
+           داخل الإحساس، ولا تبقى الواجهة مجرّدة بلا دليل. -->
+      <div class="desk" aria-hidden="true">
+        <span class="desk-lamp"></span>
+        <span class="desk-edge desk-lid"></span>
+        <span class="desk-edge desk-pen"></span>
+
+        <div class="screen-wrap">
+          <div class="lap" id="lap">
+            <div class="screen-head">
+              <span class="screen-dot"></span>
+              <span class="screen-course num"></span>
+              <span class="screen-topic"></span>
+            </div>
+            <div class="screen-q"></div>
+            <ol class="screen-steps"></ol>
+          </div>
+          <span class="screen-spill"></span>
+        </div>
+
+        <span class="desk-note">
+          <i></i><i></i><i></i>
+        </span>
       </div>
     </div>
 
@@ -1223,6 +1298,45 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
   t.setAttribute("aria-current","true");
 }));
+
+/* ══ ما تعرضه الشاشة ═══════════════════════════════════════════════
+   مسائل حقيقية من كليات مختلفة، تُحلّ خطوة خطوة.  التبديل بين
+   الكليات مقصود: واجهة تعرض إعرابًا فقط تبدو منصّة لغة عربية، وهذا
+   يناقض «اختر كليتك» أسفلها مباشرة. */
+const WORK = [
+  { code:"ARAB110", topic:"النحو",
+    q:'ما أجملَ <span class="hl">العلمَ</span>!',
+    steps:["ما: تعجّبية، مبتدأ","أجملَ: فعل ماضٍ للتعجّب","العلمَ: مفعول به منصوب"] },
+  { code:"ITCS106", topic:"البرمجة",
+    q:'<code>for (i = 0; i &lt; 3; i++)</code>',
+    steps:["يبدأ العدّاد من الصفر","يتوقّف قبل ٣ لا عندها","المخرج: <code>0 1 2</code>"] },
+  { code:"MATHS101", topic:"التفاضل",
+    q:'<code>d/dx (x²·sin x)</code>',
+    steps:["قاعدة الضرب: <code>u′v + uv′</code>","<code>u = x² → u′ = 2x</code>","الناتج: <code>2x·sin x + x²·cos x</code>"] },
+  { code:"ENGG201", topic:"الاستاتيكا",
+    q:'جسم متّزن، <span class="hl">ΣF = 0</span>',
+    steps:["حلّل القوى أفقيًا ورأسيًا","مجموع كلٍّ منهما يساوي صفرًا","<code>T = W / 2</code>"] },
+];
+
+(function screenLoop(){
+  const box = $("#lap"); if(!box) return;
+  const cEl=box.querySelector(".screen-course"), tEl=box.querySelector(".screen-topic"),
+        qEl=box.querySelector(".screen-q"), sEl=box.querySelector(".screen-steps");
+  let i = 0;
+  function render(){
+    const w = WORK[i];
+    cEl.textContent = w.code;
+    tEl.textContent = w.topic;
+    qEl.innerHTML = w.q;
+    /* الخطوات تتكشّف واحدة بعد أخرى — هذا هو «الشرح» مرئيًا */
+    sEl.innerHTML = w.steps.map((s,k)=>
+      `<li style="animation-delay:${700 + k*620}ms">${s}</li>`).join("");
+    box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
+    i = (i + 1) % WORK.length;
+  }
+  render();
+  setInterval(render, 7200);
+})();
 
 /* الأقسام تظهر عند بلوغها — لا تهبط كلها دفعة واحدة */
 (function reveal(){
