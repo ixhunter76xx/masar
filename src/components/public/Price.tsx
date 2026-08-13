@@ -1,4 +1,5 @@
-import { formatFils } from "@/lib/price";
+import { formatFils, CURRENCY } from "@/lib/price";
+import { arPrice } from "@/lib/numerals";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,10 +25,13 @@ export function Price({
 
   return (
     <span className={cn("inline-flex items-baseline gap-1.5", className)}>
+      {/* التعريب هنا لا في `formatFils`: تلك تُقرأ آليًّا — تمرّ من
+          `Number()` في محرّر الباقات وتُنسخ من رسالة واتساب إلى تطبيق
+          المصرف. انظر التعليل في `lib/numerals.ts`. */}
       <b className={cn("numeric font-semibold tracking-[-0.03em]", scale)}>
-        {formatFils(fils)}
+        {arPrice(formatFils(fils))}
       </b>
-      <span className="text-xs text-muted">د.ب</span>
+      <span className="text-xs text-muted">{CURRENCY.label}</span>
     </span>
   );
 }
