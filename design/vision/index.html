@@ -178,6 +178,8 @@ body::after{
   background:var(--sunk);color:var(--paper);cursor:pointer;
 }
 .btn:hover{border-color:var(--accent-deep);background:var(--panel-lift)}
+/* مقاس أصغر لذيل البطاقة: زرّ ٤٤px يطغى على بطاقة ارتفاعها ٢٤٠ */
+.btn-sm{min-height:34px;padding:0 .85rem;font-size:.78rem;border-radius:999px}
 .btn-primary{
   border-color:transparent;color:var(--on-accent);font-weight:600;
   background:linear-gradient(180deg,var(--accent-bright),var(--action));
@@ -641,15 +643,11 @@ body::after{
 .resume::before{content:"";position:absolute;inset-inline-end:-60px;top:-60px;width:240px;height:240px;border-radius:999px;
   background:radial-gradient(circle,color-mix(in srgb,var(--spark) 17%,transparent),transparent 68%);pointer-events:none}
 .dash-grid{display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
-/* الموعد القادم — الشيء الوحيد في اللوحة الذي يحكمه وقت */
-.deadline{display:flex;align-items:center;gap:1rem;margin-top:1.15rem;padding:1.05rem 1.25rem;
-  border-radius:var(--r-card);border:1px solid color-mix(in srgb,var(--warning) 34%,transparent);
-  background:color-mix(in srgb,var(--warning) 7%,transparent)}
-.deadline-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;
-  font-size:1.05rem;color:var(--warning);
-  border:1px solid color-mix(in srgb,var(--warning) 34%,transparent);
-  background:color-mix(in srgb,var(--warning) 10%,transparent)}
-@media(max-width:560px){.deadline{flex-wrap:wrap}}
+/* ملاحظة: `.deadline` و`.deadline-mark` حُذفتا — كانتا لبطاقة «الموعد
+   القادم»، وهي مرفوضة في §4: المنصّة ليست تقويمًا ولا تعرف جدول
+   الجامعة.  المعلَم أُزيل من العلامات وبقيت قواعده، تمامًا كما بقيت
+   قواعد صفّ الأرقام بعد رفضه.  فتيش عن القواعد اليتيمة كلّما رُفضت
+   فكرة، وإلا عادت أول مرّة يبحث فيها أحدٌ عن صنفٍ جاهز. */
 .mini{padding:1.15rem}
 .mini b{display:block;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
   font-variant-numeric:tabular-nums;font-size:1.9rem;font-weight:600;line-height:1.2}
@@ -964,6 +962,23 @@ const COURSES = {
   eng:[],
 };
 
+/* ══ الأرقام والتمييز في العربية ═══════════════════════════════════
+   عيبان ظهرا حين صارت البطاقات تولّد أرقامها:
+
+   ١ · الملف كلّه مكتوب بأرقام عربية-هندية (١٢:٤٠ · ٨٫٠٠٠)، والأرقام
+       الآتية من JS تخرج لاتينية، فيجتمع النظامان في السطر الواحد:
+       «2 من 5 دروس» بجانب «١٢:٤٠».
+
+   ٢ · تمييز العدد: من ٣ إلى ١٠ جمعٌ مجرور («٥ دروس»)، ومن ١١ فصاعدًا
+       مفردٌ منصوب («١٢ درسًا»).  و«١٢ دروس» خطأ نحويّ صريح، وكان
+       يظهر فعلًا لأن في الكتالوج مقررات من ١١ و١٢ و١٤ درسًا.
+       والمنصّة تبيع شرح النحو، فخطأٌ نحويّ في واجهتها يكلّف أكثر مما
+       يكلّف غيرها. */
+const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+const countWord = (n, few, many) => (n >= 3 && n <= 10) ? few : many;
+const lessonsWord  = n => countWord(n, "دروس", "درسًا");
+const coursesWord  = n => countWord(n, "مقررات", "مقررًا");
+
 const LESSONS = [
   {t:"الاستفهام",       d:"١٢:٤٠", s:"done", seg:"mid"},
   {t:"الصرف",           d:"١٥:٠٥", s:"done", seg:"mid"},
@@ -978,10 +993,17 @@ const TIERS = [
   {name:"الدورة الكاملة", price:"١٤٫٠٠٠", was:"١٦٫٠٠٠", best:true, items:["الدروس الخمسة كاملة","كل الاختبارات والواجبات","أسئلة الامتحانات السابقة محلولة","وصول دائم بلا انتهاء"]},
 ];
 
+/* ⚠ حُذف من هنا صفٌّ كان يقول «موعد الاختبار النصفي · يوم الأحد
+   القادم».  وهذا بعينه مرفوضٌ ومسجَّل في §4 من HANDOFF: المنصّة ليست
+   تقويمًا ولا تعرف جدول الجامعة، فهي تعِد بما لا تملكه.  كان قد رُفض
+   في الأبطل ونجا هنا لأن الرفض سُجِّل بصيغته لا بمعناه.
+
+   والبديل ليس صفًّا مخترَعًا مكانه: الأحداث الثلاثة الباقية كلّها
+   وقعت داخل المنصّة فعلًا — رفعٌ، وتصحيحٌ، ورسالة — فهي تعرفها. */
 const FEED = [
   {i:"▤", t:"رُفعت محاضرة: النحو التطبيقي", s:"مهارات الاتصال باللغة العربية", w:"أمس"},
-  {i:"◈", t:"موعد الاختبار النصفي", s:"يوم الأحد القادم · يغطّي الاستفهام والصرف", w:"قبل ٤ أيام"},
   {i:"✓", t:"نتيجة الاختبار: الاستفهام", s:"٤ من ٤ — ممتاز", w:"قبل ٦ أيام"},
+  {i:"◈", t:"ردّت د. منى على سؤالك", s:"في نقاش الدرس الثاني — الصرف", w:"قبل ٦ أيام"},
 ];
 
 /* ── الرسم ────────────────────────────────────────────────────────── */
@@ -1000,7 +1022,7 @@ function stations(){
         <span class="node station-node ${on?"node-here":empty?"node-wait":""}">${f.icon}</span>
         <span style="min-width:0;flex:1">
           <span class="station-name" style="display:block">${f.name}</span>
-          <span class="station-sub">${empty?"لم تُطرح بعد":`<span class="num">${f.n}</span> مقررات`}</span>
+          <span class="station-sub">${empty?"لم تُطرح بعد":`<span class="num">${AR(f.n)}</span> ${coursesWord(f.n)}`}</span>
         </span>
       </button>`);
     b.onclick = ()=>{ const prev=active; active=f.slug; stations(); catBody(prev); };
@@ -1008,7 +1030,15 @@ function stations(){
   });
 }
 
-function courseCard(c,i=0){
+/* ── بطاقة واحدة، سياقان ═══════════════════════════════════════════
+   «مقرراتي» في لوحة التحكم كانت تستعمل بطاقة المتجر كما هي، فتعرض
+   «يبدأ من ١٢٫٠٠٠ د.ب» على مقرر **اشتراه صاحبها بالفعل**.  تسعيرُ ما
+   يملكه المرء ليس عيبًا بصريًّا بل خطأ في المعنى.
+
+   فالبطاقة الآن تسأل: أنملكه؟  إن نعم، فالعمود يرسم ما أُنجز لا ما
+   هو مجاني، والذيل يعرض «تابع الدرس ٣» مكان السعر.  نفس المكوّن،
+   وسؤالٌ واحد يفرّق بين متجرٍ ومكتبة. */
+function courseCard(c,i=0,{owned=false,done=0}={}){
   return `
   <article class="card course lift" style="animation-delay:${i*70}ms">
     <span class="course-code">${c.code.replace(/[A-Z]/g,"")}</span>
@@ -1021,19 +1051,23 @@ function courseCard(c,i=0){
     <div class="course-spine">
       <span class="spine" aria-hidden="true">${
         Array.from({length:c.n},(_,k)=>
-          `<i class="${c.free && k===0 ? "on" : ""}"></i>`).join("")
+          `<i class="${owned ? (k < done ? "on" : "") : (c.free && k===0 ? "on" : "")}"></i>`).join("")
       }</span>
-      <span class="small" style="font-size:.7rem">
-        <span class="num">${c.n}</span> دروس${c.free?" · أوّلها مجاني":""}</span>
+      <span class="small" style="font-size:.7rem">${
+        owned ? `<span class="num">${AR(done)}</span> من <span class="num">${AR(c.n)}</span> ${lessonsWord(c.n)}`
+              : `<span class="num">${AR(c.n)}</span> ${lessonsWord(c.n)}${c.free?" · أوّلها مجاني":""}`
+      }</span>
     </div>
 
     <div class="course-foot">
       <span style="display:flex;align-items:center;gap:.5rem;font-size:.74rem;color:var(--subtle)">
         <span class="avatar">${c.by.replace(/^[^ ]+ /,"").charAt(0)}</span>${c.by}</span>
-      <span class="course-price">
-        <span class="small" style="display:block;font-size:.66rem;line-height:1.4">يبدأ من</span>
-        <span class="price">${c.price}</span><span class="small" style="margin-inline-start:.3rem">د.ب</span>
-      </span>
+      ${owned
+        ? `<span class="btn btn-sm">تابع الدرس <span class="num">${AR(done+1)}</span></span>`
+        : `<span class="course-price">
+             <span class="small" style="display:block;font-size:.66rem;line-height:1.4">يبدأ من</span>
+             <span class="price">${c.price}</span><span class="small" style="margin-inline-start:.3rem">د.ب</span>
+           </span>`}
     </div>
   </article>`;
 }
@@ -1150,7 +1184,7 @@ function catBody(prev){
   box.innerHTML = `
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--line-soft);padding-bottom:.9rem;margin-bottom:1.3rem">
       <h3 class="h2">${f.name}</h3>
-      <span class="small">${list.length?`<span class="num">${list.length}</span> مقررات`:"لا مقررات بعد"}</span>
+      <span class="small">${list.length?`<span class="num">${AR(list.length)}</span> ${coursesWord(list.length)}`:"لا مقررات بعد"}</span>
     </div>
     ${list.length
       ? `<div class="grid-courses">${list.map((c,i)=>courseCard(c,i)).join("")}</div>`
@@ -1186,7 +1220,7 @@ function lessonGroups(targetSel){
     mine.forEach(l=>{
       const i = LESSONS.indexOf(l);
       const cls = l.s==="done"?"node-done":l.s==="live"?"node-live":l.s==="wait"?"node-wait":"node-lock";
-      const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"":String(i+1);
+      const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"":AR(i+1);
       const badge = l.s==="wait"?'<span class="pill pill-warn">قيد الرفع</span>'
                   : l.s==="live"?'<span class="pill pill-free">تدرسه الآن</span>'
                   : l.s==="lock"?'<span class="small" style="color:var(--faint)">يُفتح بالشراء</span>':"";
@@ -1208,7 +1242,7 @@ function lessons(targetSel, withSeg){
   box.innerHTML = `<span class="rail-line"></span>`;
   LESSONS.forEach((l,i)=>{
     const cls = l.s==="done"?"node-done":l.s==="live"?"node-live":l.s==="wait"?"node-wait":"node-lock";
-    const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"🔒":String(i+1);
+    const mark = l.s==="done"?"✓":l.s==="wait"?"◷":l.s==="lock"?"🔒":AR(i+1);
     const badge = l.s==="wait"?'<span class="pill pill-warn">قيد الرفع</span>'
                 : l.s==="live"?'<span class="pill pill-free">تدرسه الآن</span>'
                 : l.s==="lock"?'<span class="small" style="color:var(--faint)">يُفتح بالشراء</span>':"";
@@ -1264,7 +1298,12 @@ function tiers(){
 }
 
 function dash(){
-  $("#my-courses").innerHTML = [COURSES.arts[0], COURSES.it[0]].map(courseCard).join("");
+  /* درسان من خمسة في ARAB110، وثلاثة من اثني عشر في ITCS106 — نفس
+     تقدّم شاشة الدراسة، فلا تتناقض الشاشتان في الرقم. */
+  $("#my-courses").innerHTML = [
+    [COURSES.arts[0], 2],
+    [COURSES.it[0],   3],
+  ].map(([c,done],i)=>courseCard(c,i,{owned:true,done})).join("");
   $("#feed").innerHTML = FEED.map(f=>`
     <div class="feed-row">
       <span class="dot">${f.i}</span>
