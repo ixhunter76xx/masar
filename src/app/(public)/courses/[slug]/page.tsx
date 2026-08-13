@@ -246,7 +246,7 @@ function PreviewPlayer({
           rounded-[20px] border border-line/85 transition-colors duration-[320ms]
           ease-out hover:border-accent-deep/75
           shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_24px_60px_-18px_rgba(0,0,0,0.7)]
-          [background:radial-gradient(130%_100%_at_50%_-10%,#1c2c3d_0%,#14202c_40%,var(--color-ink)_100%)]"
+          [background:radial-gradient(130%_100%_at_50%_-10%,var(--color-panel-high)_0%,var(--color-panel)_40%,var(--color-ink)_100%)]"
       >
         <span
           aria-hidden="true"

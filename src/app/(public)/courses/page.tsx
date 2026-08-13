@@ -44,7 +44,7 @@ export default async function CatalogPage() {
             شرح مقرَّرك الجامعي{" "}
             <em
               className="bg-clip-text not-italic text-transparent
-                [background-image:linear-gradient(160deg,#c8dcea_0%,var(--color-accent-bright)_42%,var(--color-accent-deep)_100%)]"
+                [background-image:linear-gradient(160deg,var(--color-accent-lift)_0%,var(--color-accent-bright)_42%,var(--color-accent-deep)_100%)]"
             >
               كما يُدرَّس لك
             </em>

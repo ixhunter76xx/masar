@@ -57,7 +57,7 @@ export function BuyButton({
           "press mt-5 flex min-h-touch w-full items-center justify-center gap-2 rounded-[10px] text-sm font-medium",
           "disabled:cursor-not-allowed disabled:opacity-70",
           best
-            ? "text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_1px_2px_rgba(0,0,0,0.35)] [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))] hover:[background:linear-gradient(180deg,#bcd4e3,var(--color-accent-bright))]"
+            ? "text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_1px_2px_rgba(0,0,0,0.35)] [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))] hover:[background:linear-gradient(180deg,var(--color-accent-lift),var(--color-accent-bright))]"
             : "border border-line bg-panel text-paper hover:border-accent-deep hover:bg-panel-lift",
         )}
       >

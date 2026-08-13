@@ -152,7 +152,7 @@ export function AttemptRunner({
                         onChange={() =>
                           setAnswers((prev) => ({ ...prev, [q.id]: o.id }))
                         }
-                        className="size-4 shrink-0 accent-[#8FB2C8]"
+                        className="size-4 shrink-0 accent-[var(--color-action)]"
                       />
                       <span className="text-sm text-paper">{o.text}</span>
                     </label>

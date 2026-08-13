@@ -14,8 +14,8 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           minHeight: "100dvh",
           display: "grid",
           placeItems: "center",
-          background: "#0D1013",
-          color: "#EEF3F7",
+          background: "#1a1817",
+          color: "#f4f1ec",
           fontFamily: "system-ui, sans-serif",
           textAlign: "center",
           padding: "1rem",
@@ -23,7 +23,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
       >
         <div>
           <h1 style={{ fontSize: 18, margin: 0 }}>تعذّر تحميل المنصة</h1>
-          <p style={{ color: "#9DAFBD", fontSize: 13, marginTop: 8 }}>
+          <p style={{ color: "#b5aca2", fontSize: 13, marginTop: 8 }}>
             حدث خطأ جذري. أعد تحميل الصفحة، وإن تكرر تواصل مع الدعم الفني.
           </p>
           <button
@@ -35,8 +35,8 @@ export default function GlobalError({ reset }: { reset: () => void }) {
               padding: "0 20px",
               borderRadius: 10,
               border: 0,
-              background: "#8FB2C8",
-              color: "#0D1013",
+              background: "#e8e2d6",
+              color: "#1a1817",
               fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",

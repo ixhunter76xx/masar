@@ -123,7 +123,7 @@ export function QuestionEditor({
                   checked={correctId === o.id}
                   onChange={() => setCorrectId(o.id)}
                   disabled={locked}
-                  className="size-4 shrink-0 accent-[#4E8C6A]"
+                  className="size-4 shrink-0 accent-[var(--color-success)]"
                   aria-label={`تحديد كإجابة صحيحة`}
                 />
 

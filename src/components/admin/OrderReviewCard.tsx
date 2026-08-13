@@ -145,7 +145,7 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
                 px-4 text-xs font-medium text-ink
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_1px_2px_rgba(0,0,0,0.35)]
                 [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]
-                hover:[background:linear-gradient(180deg,#bcd4e3,var(--color-accent-bright))]
+                hover:[background:linear-gradient(180deg,var(--color-accent-lift),var(--color-accent-bright))]
                 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {pending ? (

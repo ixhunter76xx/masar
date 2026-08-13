@@ -56,7 +56,7 @@ export function SidebarNav({
                   "before:rounded-full before:origin-center",
                   "before:transition-[background-color,transform] before:duration-200",
                   isActive
-                    ? "bg-[#18222e] text-paper font-medium before:bg-accent-bright before:scale-y-100"
+                    ? "bg-panel-lift text-paper font-medium before:bg-accent-bright before:scale-y-100"
                     : "text-muted hover:text-paper hover:bg-panel before:bg-transparent before:scale-y-0",
                 )}
               >

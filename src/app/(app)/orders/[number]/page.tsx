@@ -91,7 +91,7 @@ export default async function OrderPage({ params }: Params) {
               rounded-[10px] text-sm font-medium text-ink
               shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_1px_2px_rgba(0,0,0,0.35)]
               [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]
-              hover:[background:linear-gradient(180deg,#bcd4e3,var(--color-accent-bright))]"
+              hover:[background:linear-gradient(180deg,var(--color-accent-lift),var(--color-accent-bright))]"
           >
             <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" />
             متابعة الدفع على واتساب
