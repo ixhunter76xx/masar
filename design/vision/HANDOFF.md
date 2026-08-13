@@ -1,39 +1,61 @@
 # Handoff — design vision session
 
-Written 2026-08-13, at the end of a long session. Read this before touching
-anything in `design/vision/`. `CLAUDE.md` on this branch is the `master`
-copy and knows **nothing** about the work described here.
+Written 2026-08-13, updated the same day at the end of a second session. Read
+this before touching anything in `design/vision/`. `CLAUDE.md` on this branch
+is the `master` copy and knows **nothing** about the work described here.
+
+**Newest material is in §10.** §5a is the hero as it now stands; §8 is the
+trap list, which doubled in the second session and is the section most likely
+to save you time.
 
 ---
 
-## ⚠ Status: NOT approved. The visual work continues.
+## Status — updated 2026-08-13 (second session)
 
-The owner's words at handoff: **«الشكل الجديد الذي وصلنا له ليس مقنع كليا»** —
-the look reached so far does not convince him, and the new session is to
-**carry on developing it from here**, not to polish a finished thing.
+**The hero direction is now chosen.** The owner picked **`اللوح`** over the
+desk, and asked for a comprehensive pass over all four screens. Both are
+done; see §10 for what that session changed and §5a for the hero itself.
 
-So: treat everything in `index.html` as a live draft. The structure and the
-decisions in §3 are settled; **the visual result is not.** The three items in
-§5 are the ones he named out loud, but they are a starting list, not the full
-extent of what is unsatisfying.
+**Still not signed off as finished.** «اللوح» was chosen against one
+alternative, which is not the same as approval. Assume the visual work
+continues, and keep bringing something better rather than asking whether
+it is good.
 
-Do not open the new session by asking "is this good?" — assume it is not yet,
-and bring something better.
+### Three standing decisions the owner made this session
+1. **`اللوح` is the hero.** The desk is deleted, not parked.
+2. **`مسار` is the only palette.** The four comparison themes and the theme
+   switcher are deleted; the tokens live on `:root` with no `data-theme`.
+3. **The board must not name the lesson its example came from.** The
+   «من الدرس الثالث …» footer is gone. Do not reintroduce it.
 
 ### One honest note on how to converge faster
 
-This has now taken many rounds because taste feedback without a reference
-loops. The single thing that moved it fastest was the **photograph** he sent
-for the hero angle — one image ended more argument than several paragraphs
-had. If the next round stalls again, ask for a reference for the screen being
-worked on (any site, any field) rather than iterating blind.
+This has taken many rounds because taste feedback without a reference loops.
+The single thing that moved it fastest was the **photograph** he sent for the
+hero angle — one image ended more argument than several paragraphs had. If the
+next round stalls, ask for a reference for the screen being worked on (any
+site, any field) rather than iterating blind.
+
+### And one on how to verify, which cost real time this session
+
+**Do not read Arabic bidi off a screenshot.** Three separate "bugs" were
+spotted in screenshots and all three measured clean — «٥ دروس · ٣ ساعات»,
+«الدروس ٣ إلى ٥ ·», and a timestamp that only looked reversed because the
+check itself read in the wrong direction. Measure character positions with
+`Range.getBoundingClientRect`, sorting **ascending** for `direction:ltr`
+numerals and **descending** for Arabic prose. And exclude hidden screens —
+elements inside `display:none` return zero rects and read as "broken".
+
+The preview pane also serves **stale frames** after scrolling. If a screenshot
+looks blank or wrong, confirm against the DOM before believing it; resizing by
+one pixel forces a repaint.
 
 ---
 
 ## Say this to open the new session
 
-> اقرأ `design/vision/HANDOFF.md` أولًا — نحن على فرع `masar-vision`، والشكل
-> الحالي غير مقنع بعد، ونكمل تطويره من حيث توقفنا.
+> اقرأ `design/vision/HANDOFF.md` أولًا — نحن على فرع `masar-vision`،
+> واللوح معتمد وسمة مسار وحدها، ونكمل الصقل من حيث توقفنا.
 
 ---
 
@@ -43,10 +65,11 @@ worked on (any site, any field) rather than iterating blind.
 |---|---|---|---|---|
 | `master` | `c1afb92` | — | yes | live. Netlify auto-deploys every push to it. |
 | `masar-design-2` | `270bcdf` | +6 | yes | the **real code** design pass. Open as **PR #1**, not merged. |
-| `masar-vision` | `0004cea` | +10 | **NO — local only** | this work. Isolated HTML preview. |
+| `masar-vision` | `ff23895` | +16 | **NO — local only** | this work. Isolated HTML preview. |
 
-**⚠ `masar-vision` has never been pushed.** Nine commits exist only on this
-machine. Push it before relying on it surviving.
+**⚠ `masar-vision` has still never been pushed.** Sixteen commits exist only
+on this machine. Push it before relying on it surviving — this warning has now
+survived two sessions unactioned.
 
 **⚠ Merging anything to `master` publishes to production.** There is one
 database behind everything and no staging step.
@@ -81,7 +104,7 @@ and no JavaScript runs.
 
 ### What is in it
 Four screens behind a top switcher — **الكتالوج · صفحة المقرر · الدراسة ·
-لوحة التحكم** — plus a theme switcher with five directions.
+لوحة التحكم**. The theme switcher is **gone**; `مسار` is the only palette.
 
 ---
 
@@ -103,8 +126,13 @@ promised more breadth than intended.
 **Empty-faculty wording is «لم تُطرح بعد», never «قريبًا».** The second
 promises a timetable nobody controls.
 
-**The other four themes (حبر · شفق · ورق · هدوء) are kept for comparison
-only.** Delete them once `مسار` is confirmed final.
+~~**The other four themes (حبر · شفق · ورق · هدوء) are kept for comparison
+only.** Delete them once `مسار` is confirmed final.~~ **Done 2026-08-13** —
+`مسار` was confirmed and the other four are deleted along with the switcher.
+The tokens now sit on bare `:root`; there is no `data-theme` attribute
+anywhere. The semantic tokens (`--on-accent`, `--sunk`, `--hair`, `--shadow`)
+were **kept** even though the light theme is gone: they are what made the
+system invertible, and re-deriving them costs more than carrying them.
 
 ---
 
@@ -126,6 +154,19 @@ This is the highest-value section. Each was built and killed for a reason.
 | Side-view student silhouette | replaced by the over-the-shoulder angle from the owner's reference photo |
 | Visible `border` on scene objects | reads as vector art. Edges must come from light and shadow only |
 | **Depicting a scene with CSS boxes at all** | 2026-08-13. See §5a. The frame's loudest objects carried no information and its only informative object was its smallest. Not a polish problem — a ceiling |
+| A big centred circular play button over a poster | 2026-08-13. Tried it on the course player; it covered «كتبَ» entirely — a control hiding the content it advertises. Replaced by a named button in the corner |
+| Naming the lesson a hero example came from | owner's call, 2026-08-13. The worked example stands on its own |
+
+**⚠ When an idea is rejected, delete its CSS too.** Two rejected ideas left
+orphaned rules behind that were only found this session: `.stat-row` / `.stat b`
+from the invented stat row, and `.deadline` / `.deadline-mark` from the
+calendar card. Orphan rules are how a rejected idea comes back — the next
+person needs a class and finds a ready-made one.
+
+**⚠ And check whether it survived somewhere else.** The deadline idea was
+rejected *for the hero* and went on living in the dashboard's activity feed
+(«موعد الاختبار النصفي · يوم الأحد القادم») because the rejection was recorded
+against a location rather than against the claim. Reject the claim.
 
 **Current headline: «مقرَّرك، مفهومًا.»** on one line (`white-space:nowrap`).
 Owner has not endorsed it either. Live alternatives offered: «افهم مقرَّرك.» ·
@@ -228,8 +269,9 @@ The charcoal background is **baked into the PNG** and happens to equal
 ground rather than knocked out. It is cropped via `background-position` to
 skip the file's wide margins.
 
-**⚠ Ask for an SVG.** SVG inherits colour (so it works on all five themes) and
-stays sharp at any size. The PNG does neither.
+**⚠ Ask for an SVG.** It stays sharp at any size and inherits colour, which
+the PNG does neither. (The five-theme argument no longer applies — there is
+one palette now — but resolution alone still justifies it.)
 
 ⚠ `public/logo-masar.png` in the repo is the **old** blue calligraphic mark —
 unrelated, do not confuse them.
@@ -256,12 +298,39 @@ unrelated, do not confuse them.
 ## 8 · Technical traps already hit (do not repeat)
 
 - **Class-name collision.** `.screen` already means "page section" in this
-  file and carries `display:none`. The laptop panel is `.lap` for that reason.
-- **Laptop hinge.** Hinging the screen on top of the base lays it face-down —
-  a closed laptop, invisible. It hinges at the far edge (`bottom:100%`).
-- **Bulk CSS replacement swallowed a line.** A scripted range replace ate the
-  hero's `@media(min-width:940px)` rule and collapsed the layout. Verify line
-  ranges before replacing.
+  file and carries `display:none`. (The laptop's `.lap` is gone with the desk,
+  but the collision is still there for the next new class.)
+- **Range deletes eat lines — twice now.** The first swallowed the hero's
+  `@media(min-width:940px)`. The second, deleting the desk markup, took the
+  `</div>` that closed `.hero-visual`, so `.split` silently became a grid item
+  of `.hero` and the whole catalogue rendered 608px wide at x=−62. **The
+  screenshot looked plausible; `el.parentElement.className` did not.** A third,
+  a `sed` on `foot:` lines, ate the `},` that closed three object literals.
+  Prefer anchored edits, and after any structural delete assert on the parent.
+- **`inset-inline-*` resolves against the element's own direction.** Anything
+  carrying `.num` (which sets `direction:ltr`) flips. This is the documented
+  CLAUDE.md bug and it reappeared here on both video duration badges. Put the
+  positioning on a wrapper and `.num` on an inner span.
+- **`overflow-x:auto` alone promotes the other axis to `auto`.** Per spec, so
+  the browser reserves a vertical scrollbar gutter — `.tabs` measured 925px
+  box against 910px clientWidth, and the 15px strip read as a rendering glitch
+  beside the tab strip. Always pair with `overflow-y:hidden`.
+- **`1fr` has an implicit `min-content` floor.** `.tiers` refused to shrink
+  below its longest line and pushed the page to 1219px inside 1165px. Use
+  `minmax(0,1fr)`.
+- **Absolutely positioned bleed grows `scrollWidth`.** Three instances here —
+  the preview top bar, the board's lamp pool, `.scene-art`. `body{overflow-x:
+  hidden}` hides the overflow without preventing it, so the page still shifts
+  and every screenshot at that width is wrong. `filter:blur` spills for free;
+  a negative inset does not.
+- **Arabic-Indic digits are not in IBM Plex Mono.** Setting «٨٫٠٠٠» in it made
+  the browser fall back per character, and every price rendered ragged as
+  «٨ , ٠٠٠». `.num` uses the interface font; `.code` keeps mono for Latin
+  identifiers only.
+- **Arabic number agreement.** 3–10 takes the plural («٥ دروس»), 11+ takes the
+  accusative singular («١٢ درسًا»). `lessonsWord()` / `coursesWord()` handle
+  it. The catalogue really does have 11-, 12- and 14-lesson courses, so the
+  wrong form was on screen.
 - **Bidi.** «٢ / ٥» inside one numeric run renders «٥ / ٢» in RTL. Split into
   two isolated numerals with an Arabic word between them.
 - **No positive `letter-spacing` on Arabic** — it breaks the joins. Negative
@@ -277,14 +346,52 @@ unrelated, do not confuse them.
 
 ## 9 · Open questions for the owner
 
-The first is the live one; the rest can wait.
+Answered 2026-08-13: ~~`اللوح` or `المكتب`~~ → `اللوح`. ~~Delete the four
+themes~~ → deleted. What is left:
 
-1. **`اللوح` or `المكتب`?** The toggle under the hero switches them. This
-   is now the live question, and the loser should be deleted rather than
-   left to rot. If neither convinces, the next thing to ask for is a
-   **reference image** — one photo ended more argument here than several
-   paragraphs had.
-2. Is «مقرَّرك، مفهومًا.» the headline, or one of the alternatives in §4?
-3. Delete the four comparison themes now that `مسار` is chosen?
-4. Push `masar-vision` to the remote? **Still local-only at handoff.**
-5. Merge PR #1 (`masar-design-2`) — separate decision, CI is green.
+1. **Push `masar-vision` to the remote.** Still local-only, now 17 commits.
+   This is the second handoff carrying this warning. It needs the owner —
+   agents cannot supply the credential (see CLAUDE.md, "The Repository Has a
+   Remote").
+2. Is «مقرَّرك، مفهومًا.» the headline, or one of the alternatives in §4? It
+   has never been endorsed, only left in place.
+3. **Ask for the logo as SVG** (§6).
+4. Merge PR #1 (`masar-design-2`) — separate decision, CI is green.
+5. **Is the look approved now, or does it keep going?** The hero direction was
+   chosen but the result has not been signed off. Assume it continues.
+
+---
+
+## 10 · What the second session (2026-08-13) changed
+
+Commits `0004cea` … `ff23895` on `masar-vision`. Nothing under `src/` was
+touched. Every claim below was verified in the browser, by measurement.
+
+| # | Change |
+|---|---|
+| `0004cea` | **The board replaces the desk as the hero** (§5a) |
+| `0b3b1ff` | Handoff records the new direction |
+| `466204c` | Desk deleted; four themes and the switcher deleted; tokens onto `:root` |
+| `3af0518` | Every price was rendering broken; course cards draw their own lesson count |
+| `fb45397` | Course page: poster shows the lesson; three bundles compare side by side |
+| `b92857e` | Study screen: poster + resume position; tab-strip scrollbar removed |
+| `3266441` | «مقرراتي» stopped pricing courses the student owns; Arabic digits and number agreement |
+| `ff23895` | Last two horizontal overflows closed |
+
+### The three faults worth remembering, because they were all invisible
+
+1. **A structural break that still looked fine.** Deleting the desk markup by
+   line range took a closing `</div>`, and the catalogue silently rendered
+   608px wide, half off the page. Caught by checking `parentElement`, not by
+   looking.
+2. **Prices had been broken the whole time.** Arabic-Indic digits set in a
+   font with no glyphs for them. Visible in every screenshot of every session,
+   and read as "slightly loose spacing" rather than as a bug.
+3. **A rejected idea living in a second place.** The calendar claim was
+   rejected in the hero and survived in the dashboard feed.
+
+### What was deliberately *not* done
+- The headline was left alone — it is the owner's call (§9.2).
+- `.player` still has no real video; the posters are static by design.
+- No animation work beyond what already existed. `improve-animations` is
+  plan-only per §7 and was not run.
