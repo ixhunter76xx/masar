@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="masar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -19,119 +19,39 @@
    لا يستطيع المكدّس تنفيذه تجعل الموافقة عليها بلا قيمة.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ═══ ثلاثة اتجاهات لونية على نفس التخطيط ═══════════════════════════
-   كل قرار لوني في هذا الملف يمرّ من هذه الرموز، فتبديل الاتجاه سطرٌ
-   واحد على <html>.  وهذا في ذاته نتيجة تستحق الذكر: التصميم قابل
-   للتلوين، فاختيار الاتجاه ليس قرارًا يُدفن في الكود.
+/* ═══ مسار — اللوحة الوحيدة ═════════════════════════════════════════
+   كانت هنا خمسة اتجاهات لونية خلف مبدّل، للمقارنة وحدها.  اعتُمد
+   «مسار» فحُذفت الأربعة الباقية: خيارٌ لا يُختار صيانةٌ بلا مقابل،
+   وكل قاعدة جديدة كانت تُكتب خمس مرّات.  ولم يبقَ `data-theme` أصلًا —
+   الرموز على `:root` مباشرة.
 
-   الرموز الدلالية (`--on-accent`, `--sunk`, `--hair`, `--shadow`)
-   موجودة لأن الوضع الفاتح يقلب معنى «أفتح» و«أغمق».  بلا هذه الطبقة
-   يستحيل قلب النظام دون إعادة كتابته. */
-:root{
-  --r-field: 11px;
-  --r-card:  16px;
-  --r-lg:    22px;
-  --dur-fast: 150ms;
-  --dur-base: 240ms;
-  --dur-slow: 380ms;
-  --ease: cubic-bezier(.22,1,.36,1);
-}
+   ── اللوحة مقتبسة من اللوغو ───────────────────────────────────────
+   اللوغو أبيض صافٍ على رمادي دافئ محايد — لا أزرق فيه إطلاقًا.
 
-/* ── ١ · حبر — الهوية الحالية، بمدى إضاءة أوسع ────────────────────── */
-html[data-theme="ink"]{
-  --ink:#07090c; --ink-lift:#0b0f14;
-  --panel:#121c26; --panel-lift:#1a2735; --panel-high:#223243;
-  --line:#2b3d4d; --line-soft:#1d2935;
-
-  --paper:#eef4f8; --muted:#9db0be; --subtle:#74899a; --faint:#55697a;
-
-  --accent:#7e9aae; --accent-bright:#a9c3d4; --accent-deep:#4f6d83; --action:#8fb2c8;
-  --spark:#4fe3b9; --spark-deep:#2aa88a;
-  --warning:#d9a961; --danger:#c26461;
-  --seg-b:#8b7fc2; --seg-b2:#5b5090;
-
-  --on-accent:#08131a; --on-spark:#04231b;
-  --sunk:rgba(7,9,12,.55); --sunk-2:rgba(18,28,38,.55);
-  --hair:rgba(255,255,255,.05); --shadow:rgba(0,0,0,.4);
-  --shadow-lift:rgba(0,0,0,.8);
-  --glass:rgba(14,20,27,.72);
-  --halo-1:rgba(79,109,131,.42); --halo-2:rgba(126,154,174,.16); --halo-3:rgba(79,109,131,.14);
-  --watermark:rgba(169,195,212,.045);
-  --grain:.035;
-}
-
-/* ── ٢ · شفق — نيلي عميق بلمسة مشمشية دافئة ────────────────────────
-   ما تعالجه: لوحة «حبر» كلها باردة، فكل الحالات في حرارة شعورية
-   واحدة.  هنا القاعدة نيلية والفعل مشمشي دافئ، فينشأ تباين حرارة
-   يفصل «اقرأ» عن «افعل» بلا الاعتماد على السطوع وحده.
-   النعناع باقٍ للتقدّم — والتباين معه هو المقصود. */
-html[data-theme="dusk"]{
-  --ink:#0a0813; --ink-lift:#0f0c1c;
-  --panel:#191430; --panel-lift:#221b40; --panel-high:#2c2352;
-  --line:#3a2f63; --line-soft:#241d44;
-
-  --paper:#f1ecfa; --muted:#b5aacf; --subtle:#8b80a9; --faint:#685e85;
-
-  --accent:#d99a6c; --accent-bright:#f2c49d; --accent-deep:#a76d46; --action:#e8ae7e;
-  --spark:#4fe3b9; --spark-deep:#2aa88a;
-  --warning:#e0b45f; --danger:#d0655f;
-  --seg-b:#7c6ad0; --seg-b2:#4f3fa0;
-
-  --on-accent:#2a1607; --on-spark:#04231b;
-  --sunk:rgba(10,8,19,.6); --sunk-2:rgba(25,20,48,.6);
-  --hair:rgba(255,255,255,.055); --shadow:rgba(0,0,0,.45);
-  --shadow-lift:rgba(0,0,0,.82);
-  --glass:rgba(16,12,30,.74);
-  --halo-1:rgba(150,105,70,.30); --halo-2:rgba(120,95,200,.20); --halo-3:rgba(90,70,170,.16);
-  --watermark:rgba(242,196,157,.05);
-  --grain:.03;
-}
-
-/* ── ٣ · ورق — الرهان المضادّ: فاتح دافئ كورق الكتاب ────────────────
-   لماذا يستحق التجربة: العربية نشأت على الورق، والنص الطويل يُقرأ
-   عليه أريح.  وهو عكس كل منصّة داكنة متشابهة.
-   وأين يضعف: المنصة تُشاهَد فيها فيديوهات طويلة، والداكن أرحم للعين
-   في جلسة مساء — وشعار مسار نفسه بادج كحلي داكن. */
-html[data-theme="paper"]{
-  --ink:#f1ece1; --ink-lift:#f7f3ea;
-  --panel:#fffdf9; --panel-lift:#fffefc; --panel-high:#ffffff;
-  --line:#dcd2c0; --line-soft:#e9e2d5;
-
-  /* `subtle` عُتِّم درجتين: عند #6d7784 كان تباينه على البطاقة 4.47 —
-     أي دون عتبة AA بقليل، وهو لون التسميات في كل مكان. */
-  --paper:#1b232e; --muted:#4e5966; --subtle:#646d7a; --faint:#98a1ac;
-
-  --accent:#2f6f8f; --accent-bright:#1d5670; --accent-deep:#7ea7bd; --action:#2f6f8f;
-  --spark:#0e8f6e; --spark-deep:#0a7156;
-  --warning:#a8722a; --danger:#b0413c;
-  --seg-b:#6a5bb5; --seg-b2:#9a8fd0;
-
-  --on-accent:#ffffff; --on-spark:#ffffff;
-  --sunk:rgba(27,35,46,.045); --sunk-2:rgba(27,35,46,.035);
-  --hair:rgba(255,255,255,.9); --shadow:rgba(27,35,46,.09);
-  --shadow-lift:rgba(27,35,46,.20);
-  --glass:rgba(247,243,234,.82);
-  --halo-1:rgba(47,111,143,.10); --halo-2:rgba(168,114,42,.07); --halo-3:rgba(47,111,143,.05);
-  --watermark:rgba(47,111,143,.055);
-  --grain:.02;
-}
-
-/* ══ ٠ · مسار — الاتجاه المعتمد، مقتبس من اللوغو ═══════════════════
-   اللوغو أبيض صافٍ على رمادي دافئ محايد — لا أزرق فيه إطلاقًا.  هذا
-   يقلب الأساس: كل ما سبق كان باردًا، والهوية دافئة.
-
-   ── نظام أحادي بإشارة واحدة ─────────────────────────────────────────
+   ── نظام أحادي بإشارة واحدة ───────────────────────────────────────
    اللوغو نفسه أحادي اللون، فالأصدق أن يكون النظام كذلك: الفعل الأساسي
    أبيضُ عظميّ مملوء، والنصّ أبيض أهدأ غير مملوء.  التمييز بالامتلاء لا
    باللون — وهو ما يجعل اللون الوحيد المتبقّي مسموعًا.
 
-   ── ولماذا العنبر للتقدّم ───────────────────────────────────────────
+   ── ولماذا العنبر للتقدّم ─────────────────────────────────────────
    على قاعدة دافئة، النعناع البارد يبدو غريبًا مستوردًا.  العنبر يرث
    دفء الهوية، و«الذهبي = إنجاز» قراءة عالمية لا تحتاج تعليمًا.
-   ⚠ هذا يخالف قاعدة «لا ذهب» الموروثة من هوية مركز حساب — وهي هوية
+   ⚠ يخالف قاعدة «لا ذهب» الموروثة من هوية مركز حساب — وهي هوية
    استُبدلت باللوغو الجديد.  اذكرها لي إن أردت العودة عنها.
+
+   ⚠ ولماذا تبقى الرموز الدلالية (`--on-accent`, `--sunk`, `--hair`,
+   `--shadow`) بعد زوال الوضع الفاتح: هي وحدها ما جعل قلب النظام
+   ممكنًا.  حذفها اليوم يعني إعادة كتابته إن عاد وضعٌ فاتح يومًا.
    ═══════════════════════════════════════════════════════════════════ */
-html[data-theme="masar"]{
+:root{
+  --r-field: 12px;
+  --r-card:  18px;
+  --r-lg:    24px;
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --ease: cubic-bezier(.22,1,.36,1);
+
   --ink:#1a1817; --ink-lift:#201e1c;
   --panel:#262322; --panel-lift:#302c2a; --panel-high:#3a3634; /* الأخيرة خلفية اللوغو نفسها */
   --line:#453f3b; --line-soft:#2e2a28;
@@ -153,84 +73,15 @@ html[data-theme="masar"]{
   --watermark:rgba(234,228,217,.04);
   --grain:.026;
 }
-/* نفس ليونة «هدوء» — الراحة ليست ترفًا في منصّة يُقرأ فيها طويلًا */
-html[data-theme="masar"] body{line-height:1.85}
-html[data-theme="masar"] .body{font-size:1.02rem;line-height:2.05}
-html[data-theme="masar"] .card{background:var(--panel)}
-html[data-theme="masar"] .stop-body{background:var(--panel);padding:1rem 1.2rem}
-html[data-theme="masar"] .course{padding:1.7rem}
-html[data-theme="masar"]{--r-field:12px;--r-card:18px;--r-lg:24px}
-@media(hover:hover){
-  html[data-theme="masar"] .lift:hover{transform:translateY(-2px);
-    box-shadow:inset 0 1px 0 var(--hair),0 14px 30px -18px var(--shadow-lift)}
-}
-
-/* ── ٤ · هدوء — راحة العين قبل أي شيء ══════════════════════════════
-   الاتجاهات الثلاثة السابقة تشترك في ثلاثة أسباب إجهاد، وكلها مقيسة
-   لا مذوَّقة:
-
-   ١ · تباين المتن ١٨:١ — أبيض شبه صافٍ على أسود شبه صافٍ.  هذا يُنتج
-       «الهالة» (halation): تتوهّج الحروف وتتسايل عند العين المتعبة أو
-       ذات اللابؤرية.  المريح في الواجهات الداكنة ١٠–١٣:١.
-   ٢ · القاعدة #07090c أي أسود عمليًا.  آبل وماتيريال يوصيان بتجنّبه:
-       يضاعف الهالة، ويجعل الارتفاع غير مقروء لأن لا شيء تحته.
-   ٣ · خمس درجات أسطح + تدرّج على كل بطاقة + حبيبات + هالات + زجاج،
-       كلها تعمل في وقت واحد.  الراحة تأتي من الهدوء لا من الطبقات.
-
-   العلاج هنا: القاعدة تُرفع عن الأسود، والنصّ يُخفَّف، والسلّم يُختصر
-   إلى ثلاث درجات، والبطاقات تُسطَّح، والمتن يكبر ويتنفّس.
-   ═══════════════════════════════════════════════════════════════════ */
-html[data-theme="calm"]{
-  --ink:#151b23; --ink-lift:#1a2029;
-  --panel:#1e252f; --panel-lift:#252d38; --panel-high:#2c3541;
-  --line:#333d4a; --line-soft:#262e39;
-
-  /* نصّ مخفَّف: ١٢:١ بدل ١٨:١ — يبقى واضحًا ويكفّ عن التوهّج */
-  --paper:#d6dee6; --muted:#9fadba; --subtle:#8394a2; --faint:#66757f;
-
-  --accent:#86a8bd; --accent-bright:#a6c4d6; --accent-deep:#5b7f96; --action:#8fb4cb;
-  /* نعناع أهدأ: #4fe3b9 مشبَع جدًا ويصرخ على لوحة ساكنة */
-  --spark:#6fc9a8; --spark-deep:#48a184;
-  --warning:#cba468; --danger:#c0716d;
-  --seg-b:#8f86bd; --seg-b2:#645b92;
-
-  --on-accent:#0f1720; --on-spark:#08231b;
-  --sunk:rgba(12,16,21,.5); --sunk-2:rgba(30,37,47,.6);
-  --hair:rgba(255,255,255,.04); --shadow:rgba(0,0,0,.28);
-  --shadow-lift:rgba(0,0,0,.5);
-  --glass:rgba(21,27,35,.78);
-  /* هالات أخفت بكثير — الخلفية تهدأ فيرتاح المحتوى */
-  --halo-1:rgba(91,127,150,.20); --halo-2:rgba(134,168,189,.08); --halo-3:rgba(91,127,150,.07);
-  --watermark:rgba(166,196,214,.04);
-  --grain:.018;
-}
-
-/* ── والراحة ليست ألوانًا وحدها: مساحة وحجم وسكون ─────────────────── */
-html[data-theme="calm"] body{line-height:1.85}
-html[data-theme="calm"] .body{font-size:1.02rem;line-height:2.05}
-html[data-theme="calm"] .small{font-size:.84rem}
-html[data-theme="calm"] .eyebrow{font-size:.74rem}
-/* بطاقات مسطّحة: التدرّج على كل سطح ضجيج بصري متكرّر */
-html[data-theme="calm"] .card{background:var(--panel)}
-html[data-theme="calm"] .stop-body{background:var(--panel);padding:1rem 1.2rem}
-html[data-theme="calm"] .course{padding:1.7rem}
-html[data-theme="calm"] .mini{padding:1.4rem}
-/* زوايا أكثر ليونة تُقرأ أهدأ */
-html[data-theme="calm"]{--r-field:13px;--r-card:20px;--r-lg:26px}
-/* ارتفاع أخفّ عند التصويب — القفزة الكبيرة تشدّ العين */
-@media(hover:hover){
-  html[data-theme="calm"] .lift:hover{transform:translateY(-2px);
-    box-shadow:inset 0 1px 0 var(--hair),0 14px 30px -18px var(--shadow-lift)}
-}
-/* العقدة تتنفّس أبطأ وأخفت */
-html[data-theme="calm"] .node-live{animation-duration:5s}
 
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
   background:var(--ink);color:var(--paper);
   font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
-  font-weight:400;line-height:1.7;
+  /* ١٫٨٥ لا ١٫٧ — الراحة ليست ترفًا في منصّة يُقرأ فيها طويلًا.
+     كانت تصل سابقًا من تجاوز خاصّ بسمة «مسار»، وقد طُويت هنا. */
+  font-weight:400;line-height:1.85;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
@@ -261,7 +112,7 @@ body::after{
 .h1{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.3;letter-spacing:-.032em;font-weight:700}
 .h2{font-size:clamp(1.25rem,2.2vw,1.6rem);line-height:1.38;letter-spacing:-.026em;font-weight:600}
 .h3{font-size:1.06rem;line-height:1.5;letter-spacing:-.018em;font-weight:600}
-.body{font-size:.95rem;line-height:1.95;font-weight:300;color:var(--muted)}
+.body{font-size:1.02rem;line-height:2.05;font-weight:300;color:var(--muted)}
 .small{font-size:.8rem;line-height:1.8;color:var(--subtle)}
 .eyebrow{font-size:.7rem;font-weight:500;color:var(--subtle)}
 
@@ -274,8 +125,10 @@ body::after{
 }
 
 /* ── الأسطح ───────────────────────────────────────────────────────── */
+/* مسطّحة: تدرّجٌ على كل سطح ضجيجٌ بصريّ متكرّر، والهدوء يأتي من قلّة
+   الطبقات لا من كثرتها.  (كان تجاوزًا في سمة «مسار»، وقد طُوي هنا.) */
 .card{
-  background:linear-gradient(168deg,var(--panel-lift) 0%,var(--panel) 62%);
+  background:var(--panel);
   border:1px solid var(--line);border-radius:var(--r-card);
   box-shadow:inset 0 1px 0 var(--hair),0 2px 4px var(--shadow);
 }
@@ -286,8 +139,9 @@ body::after{
 }
 .lift{transition:transform var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease),box-shadow var(--dur-base) var(--ease)}
 @media(hover:hover){
-  .lift:hover{transform:translateY(-3px);border-color:var(--accent-deep);
-    box-shadow:inset 0 1px 0 var(--hair),0 22px 48px -20px var(--shadow-lift),0 0 38px -16px color-mix(in srgb,var(--accent-bright) 20%,transparent)}
+  /* ارتفاع خفيف: القفزة الكبيرة تشدّ العين وتُقرأ مزعجة بعد العاشرة */
+  .lift:hover{transform:translateY(-2px);border-color:var(--accent-deep);
+    box-shadow:inset 0 1px 0 var(--hair),0 14px 30px -18px var(--shadow-lift)}
 }
 /* ══ الضغط ═════════════════════════════════════════════════════════
    الضغط يهبط بسرعة (١٠٠ms) ويعود أبطأ (٢٤٠ms).  التماثل يجعل الزرّ
@@ -356,10 +210,7 @@ body::after{
 }
 
 /* مبدّل الشاشات — أداة معاينة، ليست جزءًا من التصميم المقترح */
-.themes{margin-inline-start:.6rem}
-.themes button{display:flex;align-items:center;gap:.42rem}
-.themes i{width:13px;height:13px;border-radius:999px;display:block;border:1px solid var(--line)}
-@media(max-width:860px){.themes button span,.screens button{font-size:.72rem;padding:.4rem .55rem}}
+@media(max-width:860px){.screens button{font-size:.72rem;padding:.4rem .55rem}}
 .screens{margin-inline-start:auto;display:flex;gap:2px;padding:4px;border-radius:999px;
   background:var(--sunk);border:1px solid var(--line-soft)}
 .screens button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
@@ -405,8 +256,8 @@ body::after{
 .node-lock{color:var(--faint)}
 
 .stop{position:relative;margin-bottom:.6rem}
-.stop-body{display:flex;align-items:center;gap:.9rem;padding:.85rem 1.1rem;border-radius:var(--r-field);
-  border:1px solid var(--line-soft);background:linear-gradient(168deg,var(--panel-lift),var(--panel) 70%);
+.stop-body{display:flex;align-items:center;gap:.9rem;padding:1rem 1.2rem;border-radius:var(--r-field);
+  border:1px solid var(--line-soft);background:var(--panel);
   transition:transform var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
 @media(hover:hover){.stop:hover .stop-body{transform:translateY(-2px);border-color:var(--accent-deep)}}
 .stop-title{flex:1;font-size:.92rem;font-weight:500;min-width:0}
@@ -425,127 +276,6 @@ body::after{
 .hero{display:grid;gap:clamp(2rem,4vw,3.5rem);align-items:center;grid-template-columns:1fr}
 /* اللوح يحمل نصًّا مقروءًا، فيأخذ أوسع قليلًا من عمود العنوان */
 @media(min-width:940px){.hero{grid-template-columns:.92fr 1.08fr}}
-/* ══ الطاولة ثلاثية الأبعاد ═════════════════════════════════════════
-   المنظور يحسبه المتصفّح: حاوية perspective، ومستوى مائل بـpreserve-3d،
-   وكل غرض يرقد عليه أو يقف فوقه.  فزاوية «من فوق الكتف» تنشأ من
-   الهندسة لا من رسم أشكال منحرفة يدويًا.
-
-   ولا حدّ (border) واحدًا هنا.  كل حافّة يصنعها فارق ضوء أو ظلّ —
-   وهذا وحده الفرق بين مشهد يبدو مصوَّرًا وآخر يبدو رسمًا متجهًا. */
-.desk{position:relative;aspect-ratio:1/.9;min-height:300px;max-height:460px;
-  justify-self:stretch;isolation:isolate;overflow:hidden;border-radius:var(--r-lg)}
-
-.stage3d{position:absolute;inset:-8% -6% -14%;perspective:1100px;perspective-origin:62% 8%}
-.deskplane{position:absolute;inset:0;transform-style:preserve-3d;
-  transform:rotateX(58deg) rotateZ(-13deg) translateZ(-30px);
-  background:
-    radial-gradient(58% 46% at 44% 30%, color-mix(in srgb,var(--warning) 15%,transparent), transparent 72%),
-    linear-gradient(158deg, color-mix(in srgb,var(--panel-lift) 92%,transparent), var(--ink) 78%);
-  animation:camDrift 26s ease-in-out infinite}
-/* انجراف بطيء جدًا — كاميرا محمولة لا حاملٌ ثابت */
-@keyframes camDrift{
-  0%,100%{transform:rotateX(58deg) rotateZ(-13deg) translateZ(-30px)}
-  50%    {transform:rotateX(56.6deg) rotateZ(-12deg) translateZ(-22px)}
-}
-.dp-light{position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(40% 34% at 40% 22%, color-mix(in srgb,var(--spark) 20%,transparent), transparent 70%);
-  animation:lampBreathe 11s ease-in-out infinite}
-
-/* الأغراض ترقد على السطح؛ الظلّ وحده يفصلها عنه */
-.books,.sheet,.mug{position:absolute;transform-style:preserve-3d}
-.books{border-radius:3px;background:linear-gradient(180deg,var(--panel-high),var(--panel));
-  box-shadow:0 10px 18px -8px rgba(0,0,0,.75)}
-.b-l1{left:2%;top:26%;width:20%;height:15%;transform:translateZ(16px) rotate(-3deg)}
-.b-l2{left:5%;top:44%;width:17%;height:12%;transform:translateZ(9px) rotate(4deg)}
-.b-r1{right:3%;top:20%;width:19%;height:17%;transform:translateZ(20px) rotate(2deg)}
-.b-r2{right:7%;top:41%;width:15%;height:11%;transform:translateZ(8px) rotate(-5deg)}
-
-.sheet{background:color-mix(in srgb,var(--paper) 86%,transparent);border-radius:2px;
-  box-shadow:0 6px 14px -6px rgba(0,0,0,.6);padding:9% 8%;display:grid;gap:14%;align-content:start}
-.sheet i{display:block;height:3px;border-radius:2px;background:color-mix(in srgb,var(--ink) 45%,transparent)}
-/* شرائط التظليل الملوّنة — التفصيل الذي يجعلها «ملاحظات» لا مستطيلات */
-.sheet i:nth-child(2){background:color-mix(in srgb,var(--spark) 70%,transparent);width:72%}
-.sheet i:nth-child(3){background:color-mix(in srgb,var(--warning) 62%,transparent);width:54%}
-.s1{left:6%;bottom:6%;width:30%;height:22%;transform:translateZ(3px) rotate(-7deg)}
-.s2{left:33%;bottom:2%;width:26%;height:17%;transform:translateZ(2px) rotate(5deg)}
-.s3{right:12%;bottom:9%;width:27%;height:20%;transform:translateZ(3px) rotate(-3deg)}
-
-.mug{right:20%;top:36%;width:9%;height:9%;border-radius:50%;
-  background:radial-gradient(circle at 40% 35%, var(--panel-high), var(--ink));
-  box-shadow:0 12px 20px -8px rgba(0,0,0,.8);transform:translateZ(26px)}
-/* البخار يصعد ويتلاشى — أوضح إشارة «حياة» في المشهد */
-.steam{position:absolute;right:22%;top:22%;width:6%;height:16%;transform:translateZ(40px)}
-.steam i{position:absolute;bottom:0;width:3px;height:100%;border-radius:99px;
-  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--paper) 26%,transparent));
-  filter:blur(2.5px);opacity:0;animation:steamUp var(--sd) ease-in-out var(--so) infinite}
-.steam i:nth-child(1){left:8%;--sd:5.5s;--so:0s}
-.steam i:nth-child(2){left:44%;--sd:6.8s;--so:-2.2s}
-.steam i:nth-child(3){left:76%;--sd:6.1s;--so:-4.1s}
-@keyframes steamUp{
-  0%{opacity:0;transform:translateY(14%) scaleY(.5)}
-  35%{opacity:.5}
-  100%{opacity:0;transform:translateY(-58%) scaleY(1.25)}
-}
-
-/* ══ اللابتوب ══════════════════════════════════════════════════════ */
-.lap3d{position:absolute;left:26%;top:16%;width:48%;height:40%;transform-style:preserve-3d}
-.lap-base{position:absolute;inset:0;border-radius:10px;transform:translateZ(6px);
-  background:linear-gradient(170deg,var(--panel-high),var(--panel) 70%);
-  box-shadow:0 20px 34px -14px rgba(0,0,0,.85), inset 0 1px 0 var(--hair)}
-/* الشاشة تقف على الحافّة البعيدة للقاعدة */
-/* المفصل عند الحافّة البعيدة للقاعدة لا فوقها.  وضعُ الشاشة على نفس
-   مساحة القاعدة كان يطبقها عليها فتُرى ظهرًا لا وجهًا — لابتوب مغلق. */
-.lap-screen{position:absolute;left:0;right:0;bottom:100%;height:112%;
-  transform-origin:bottom center;transform:translateZ(7px) rotateX(-96deg);
-  transform-style:preserve-3d}
-.lap{height:100%;overflow:hidden;border-radius:10px;padding:.8rem .85rem;
-  background:linear-gradient(168deg,var(--panel-high),var(--panel) 78%);
-  box-shadow:0 -18px 40px -16px rgba(0,0,0,.8), inset 0 1px 0 var(--hair)}
-
-.screen-head{display:flex;align-items:center;gap:.45rem;padding-bottom:.5rem;margin-bottom:.6rem;
-  box-shadow:0 1px 0 color-mix(in srgb,var(--paper) 8%,transparent)}
-.screen-dot{width:6px;height:6px;border-radius:99px;background:var(--spark);flex:0 0 auto}
-.screen-course{font-size:.6rem;color:var(--accent)}
-.screen-topic{font-size:.6rem;color:var(--subtle);margin-inline-start:auto}
-.screen-q{font-size:.92rem;font-weight:600;line-height:1.6;letter-spacing:-.012em;min-height:2.3em}
-.screen-q .hl{color:var(--spark)}
-.screen-steps{list-style:none;margin-top:.5rem;display:grid;gap:.24rem;min-height:3.6em}
-.screen-steps li{font-size:.68rem;line-height:1.7;color:var(--muted);display:flex;gap:.35rem;
-  opacity:0;transform:translateY(4px);animation:stepIn 420ms var(--ease) forwards}
-.screen-steps li::before{content:"—";color:var(--accent-deep);flex:0 0 auto}
-@keyframes stepIn{to{opacity:1;transform:none}}
-.lap.swap{animation:screenSwap 520ms var(--ease)}
-@keyframes screenSwap{0%{opacity:.3}100%{opacity:1}}
-.screen-q code,.screen-steps code{font-family:"IBM Plex Mono",monospace;font-size:.9em;
-  direction:ltr;unicode-bidi:isolate;background:var(--sunk);padding:.06em .3em;border-radius:5px}
-
-/* ══ المصباح والكتف ════════════════════════════════════════════════ */
-.desk-lamp{position:absolute;inset:0;pointer-events:none;z-index:3;
-  background:radial-gradient(30% 26% at 40% -2%, color-mix(in srgb,var(--warning) 34%,transparent), transparent 70%);
-  animation:lampBreathe 11s ease-in-out infinite}
-@keyframes lampBreathe{0%,100%{opacity:.78}50%{opacity:1}}
-
-/* الكتف أقرب من مستوى التركيز، فهو ضبابيّ — وهذا وحده يوحي بالعمق */
-.shoulder{position:absolute;right:-8%;bottom:-16%;width:52%;height:62%;z-index:4;pointer-events:none;
-  border-radius:52% 46% 0 0 / 62% 58% 0 0;
-  background:linear-gradient(200deg, color-mix(in srgb,var(--ink) 88%,transparent), var(--ink));
-  filter:blur(7px);
-  transition:transform 1400ms cubic-bezier(.32,.72,0,1)}
-
-/* من فوق الكتف لا تُرى الجلسة كاملة — يُرى الكتف ينزاح.  إزاحة
-   صغيرة صادقة خير من تمثيل جسدٍ كامل لا نراه أصلًا. */
-.desk[data-pose="0"] .shoulder{transform:translate(0,2%)   rotate(-1deg)}
-.desk[data-pose="1"] .shoulder{transform:translate(-2%,4%) rotate(1deg)}
-.desk[data-pose="2"] .shoulder{transform:translate(3%,-1%) rotate(-2deg)}
-.desk[data-pose="3"] .shoulder{transform:translate(1%,7%)  rotate(2deg)}
-
-@media(max-width:939px){.desk{aspect-ratio:1/.68;min-height:280px}}
-@media(prefers-reduced-motion:reduce){
-  .deskplane,.dp-light,.desk-lamp,.steam i{animation:none}
-  .screen-steps li{opacity:1;transform:none;animation:none}
-  .shoulder{transition:none}
-}
-
 /* ══ اللوح — الشرح نفسه معروضًا، لا صورةَ مكانٍ يُشرح فيه ═══════════
    المكتب كان يبيع الجوّ: ليلٌ ومصباحٌ وطالب.  والجوّ لا يقول ماذا
    نبيع، والزائر يعرف شكل مكتبه أصلًا فلا جديد فيه.
@@ -652,29 +382,12 @@ body::after{
 .board-out-v{font-family:"IBM Plex Mono",monospace;direction:ltr;unicode-bidi:isolate;
   color:var(--accent-bright);font-size:.95rem;font-weight:600}
 
-/* ما يمنعه من أن يكون عرضًا تجريديًا: سطرٌ يقول من أيّ درس هو.
-   و`auto` تثبّته في القاع، فيستقرّ السطر نفسه في الحالات الثلاث بدل
-   أن يطفو حيث انتهى المحتوى. */
-.board-foot{margin-top:auto;padding-top:1.1rem;font-size:.7rem;color:var(--faint);
-  box-shadow:0 -1px 0 color-mix(in srgb,var(--paper) 7%,transparent)}
-
 /* مؤشّر الدوران — ولأنها أزرار، لا ينتظر أحد ٧ ثوانٍ ليرى التالي */
 .board-rota{display:flex;gap:.45rem;justify-content:center}
 .board-rota button{border:0;padding:.5rem .25rem;background:transparent;cursor:pointer;line-height:0}
 .board-rota i{display:block;width:6px;height:6px;border-radius:99px;background:var(--line);
   transition:width var(--dur-base) var(--ease),background var(--dur-base) var(--ease)}
 .board-rota button[aria-current] i{width:18px;background:var(--accent)}
-
-/* مبدّل المشهد — أداة معاينة للمقارنة، تُحذف مع الخاسر منهما */
-.hero-swap{align-self:center;display:inline-flex;gap:.15rem;padding:.2rem;border-radius:99px;
-  background:color-mix(in srgb,var(--panel) 72%,transparent)}
-.hero-swap button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
-  font:inherit;font-size:.68rem;padding:.34rem .8rem;border-radius:99px;
-  transition:background var(--dur-base) var(--ease),color var(--dur-base) var(--ease)}
-.hero-swap button[aria-pressed="true"]{background:var(--panel-high);color:var(--paper)}
-
-.hero[data-hero="board"] .desk{display:none}
-.hero[data-hero="desk"] .boardwrap{display:none}
 
 @media(prefers-reduced-motion:reduce){
   .boardwrap::before{animation:none}
@@ -757,7 +470,7 @@ body::after{
 .grid-courses > *{animation:cardIn 480ms var(--ease) both}
 @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-.course{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:1.4rem;text-decoration:none;color:inherit;cursor:pointer}
+.course{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:1.7rem;text-decoration:none;color:inherit;cursor:pointer}
 .course-code{position:absolute;inset-inline-end:-.4rem;top:-1.4rem;font-family:"IBM Plex Mono",monospace;
   font-size:4.6rem;font-weight:600;color:var(--watermark);pointer-events:none;letter-spacing:-.05em}
 .course-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
@@ -894,20 +607,13 @@ body::after{
       <button data-s="study">الدراسة</button>
       <button data-s="dash">لوحة التحكم</button>
     </nav>
-    <nav class="screens themes" id="themes" aria-label="الاتجاه اللوني">
-      <button data-t="masar" aria-current="true" title="مسار — مقتبس من اللوغو"><i style="background:linear-gradient(135deg,#eae4d9,#3a3634)"></i>مسار</button>
-      <button data-t="ink" title="حبر — الهوية السابقة"><i style="background:linear-gradient(135deg,#a9c3d4,#121c26)"></i>حبر</button>
-      <button data-t="dusk" title="شفق — نيلي بلمسة دافئة"><i style="background:linear-gradient(135deg,#f2c49d,#191430)"></i>شفق</button>
-      <button data-t="paper" title="ورق — فاتح دافئ"><i style="background:linear-gradient(135deg,#2f6f8f,#f1ece1)"></i>ورق</button>
-      <button data-t="calm" title="هدوء — تباين مخفَّف ومساحة أوسع"><i style="background:linear-gradient(135deg,#a6c4d6,#1e252f)"></i>هدوء</button>
-    </nav>
   </div>
 </header>
 
 <!-- ═══════════════ ١ · الكتالوج ═══════════════ -->
 <section class="screen on" id="s-cat">
   <div class="wrap">
-    <div class="hero" id="hero" data-hero="board">
+    <div class="hero" id="hero">
       <!-- ── لماذا تغيّر النصّ مرّتين ───────────────────────────────────
            «مشروحًا خطوة بخطوة» وصفٌ يقوله كل موقع تعليمي.
            و«شرحٌ لمقرَّرك، لا لموضوعه» ذكاءٌ لفظي: يطلب من الزائر أن
@@ -934,79 +640,15 @@ body::after{
 
       <div class="hero-visual">
       <!-- ══ اللوح — الشرح نفسه، بحجمه ═══════════════════════════════
-           هذا هو الاتجاه الجديد.  المكتب أسفله باقٍ خلف مبدّل للمقارنة
-           وحدها، ويُحذف الخاسر منهما فور اختيارك. -->
+           حلّ محلّ مشهد المكتب ثلاثي الأبعاد بعد اعتماده.  سبب استبداله
+           مشروح فوق قواعده في الأنماط، ويستحقّ القراءة قبل اقتراح أي
+           «مشهد» جديد في مكانه. -->
       <div class="boardwrap">
         <article class="board" id="board"></article>
       </div>
       <div class="board-rota" id="board-rota"></div>
-
-      <!-- ══ مكتب في الليل — والشاشة تعمل ════════════════════════════
-           المحاولة السابقة (خمس محطّات) فشلت لأنها **نصٌّ متنكّر في
-           هيئة رسم**: عمود عبارات بجانب عمود نصّي، فالعين تقرأ مرّتين
-           ولا ترى شيئًا.
-
-           هذه تبيع اللحظة: الحادية عشرة ليلًا، الامتحان قريب، والطالب
-           وحده أمام مصباح.  والقرار الحاسم أنني **لا أرسم مكتبًا** —
-           رسوم المكاتب المتجهة قصاصات جاهزة.  أُركّب **الضوء** بدل
-           الأشياء: بركة دافئة، ووهج شاشة أبرد، وحوافّ لا تظهر إلا حيث
-           يقع الضوء.
-
-           ولأن الجوّ وحده لا يقول ما يفعله المنتج، الشاشة **تعمل**:
-           تعرض مسألة حقيقية تُحلّ خطوة خطوة، وتتبدّل بين الكليات —
-           إعراب، ثم شفرة، ثم اشتقاق، ثم اتزان.  فيرى الزائر البرهان
-           داخل الإحساس، ولا تبقى الواجهة مجرّدة بلا دليل. -->
-      <div class="desk" data-pose="0" aria-hidden="true">
-        <!-- ══ الطاولة من فوق الكتف ═════════════════════════════════
-             الزاوية المطلوبة نظرٌ من أعلى وخلف كتف الطالب.  الأشكال
-             المسطّحة لا تعطيها، فالمستوى هنا **ثلاثي الأبعاد فعلًا**:
-             حاوية بـperspective، وسطحٌ مائل، وكل شيء يرقد عليه أو يقف
-             فوقه.  فالمنظور يحسبه المتصفّح لا أنا.
-
-             ولا حدّ واحدًا في المشهد.  الحوافّ تُعرَّف بالضوء والظلّ —
-             وهذا ما يجعل صورة تبدو مصوَّرة لا مرسومة. -->
-        <div class="stage3d">
-          <div class="deskplane">
-            <span class="dp-light"></span>
-
-            <!-- أكوام الكتب -->
-            <span class="books b-l1"></span><span class="books b-l2"></span>
-            <span class="books b-r1"></span><span class="books b-r2"></span>
-
-            <!-- أوراق مبعثرة عليها تظليل ملوّن -->
-            <span class="sheet s1"><i></i><i></i><i></i></span>
-            <span class="sheet s2"><i></i><i></i></span>
-            <span class="sheet s3"><i></i><i></i><i></i></span>
-
-            <!-- الكوب، وبخاره يصعد -->
-            <span class="mug"></span>
-            <span class="steam"><i></i><i></i><i></i></span>
-
-            <!-- اللابتوب: قاعدة راقدة وشاشة قائمة عليها -->
-            <div class="lap3d">
-              <div class="lap-base"></div>
-              <div class="lap-screen">
-                <div class="lap" id="lap">
-                  <div class="screen-head">
-                    <span class="screen-dot"></span>
-                    <span class="screen-course num"></span>
-                    <span class="screen-topic"></span>
-                  </div>
-                  <div class="screen-q"></div>
-                  <ol class="screen-steps"></ol>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-swap" id="hero-swap">
-        <button data-h="board" aria-pressed="true">اللوح</button>
-        <button data-h="desk"  aria-pressed="false">المكتب</button>
-      </div>
-      </div>
-    </div>
+      </div><!-- /.hero-visual -->
+    </div><!-- /.hero -->
 
     <div class="sec-title"><h2 class="h2">اختر كليتك</h2></div>
     <div class="split">
@@ -1525,15 +1167,6 @@ $("#nav").addEventListener("click", e=>{
   history.replaceState(null,"","#"+b.dataset.s);
 });
 
-/* الاتجاه اللوني — سطر واحد على <html>، والباقي رموز */
-$("#themes").addEventListener("click", e=>{
-  const b = e.target.closest("button[data-t]"); if(!b) return;
-  document.querySelectorAll("#themes button").forEach(x=>x.removeAttribute("aria-current"));
-  b.setAttribute("aria-current","true");
-  document.documentElement.dataset.theme = b.dataset.t;
-  try{ localStorage.setItem("masar-theme", b.dataset.t); }catch{}
-});
-
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.removeAttribute("aria-current"));
   t.setAttribute("aria-current","true");
@@ -1558,8 +1191,7 @@ const BOARD = [
       { w:"أجملَ",  p:"فعل ماضٍ جامد" },
       { w:"العلمَ", p:"مفعول به منصوب" },
     ],
-    tail:"وجملة «أجملَ العلمَ» في محلّ رفع خبر المبتدأ.",
-    foot:"من الدرس الثالث · مهارات الاتصال باللغة العربية" },
+    tail:"وجملة «أجملَ العلمَ» في محلّ رفع خبر المبتدأ." },
 
   { code:"ITCS106", faculty:"كلية تقنية المعلومات", topic:"حلقة for", type:"steps",
     lead:"ماذا يطبع هذا؟",
@@ -1569,8 +1201,7 @@ const BOARD = [
       "والشرط <code>i &lt; 3</code> يتوقّف قبلها لا عندها",
       "فالدورات ثلاث: صفر، ثم واحد، ثم اثنان",
     ],
-    outLabel:"المخرج", out:"0 1 2",
-    foot:"من الدرس الخامس · مقدمة في البرمجة" },
+    outLabel:"المخرج", out:"0 1 2" },
 
   { code:"MATHS101", faculty:"كلية العلوم", topic:"قاعدة الضرب", type:"steps",
     lead:"اشتقّ بالنسبة إلى x:",
@@ -1580,8 +1211,7 @@ const BOARD = [
       "<code>u = x²</code> ومنه <code>u′ = 2x</code>",
       "<code>v = sin x</code> ومنه <code>v′ = cos x</code>",
     ],
-    outLabel:"الناتج", out:"2x·sin x + x²·cos x",
-    foot:"من الدرس الثاني · التفاضل والتكامل ١" },
+    outLabel:"الناتج", out:"2x·sin x + x²·cos x" },
 ];
 
 function boardHTML(w){
@@ -1610,26 +1240,7 @@ function boardHTML(w){
             <span class="board-out-v">${w.out}</span>
           </div>` : ""}`;
 
-  return head + `<div class="board-body">${mid}</div>`
-              + `<p class="board-foot">${w.foot}</p>`;
-}
-
-/* المكتب القديم يبقى مغذًّى ما دام معروضًا للمقارنة — بصيغته هو،
-   فشاشته أصغر من أن تحمل ما يحمله اللوح. */
-function lapRender(w, i){
-  const box = $("#lap"); if(!box) return;
-  box.querySelector(".screen-course").textContent = w.code;
-  box.querySelector(".screen-topic").textContent  = w.topic;
-  box.querySelector(".screen-q").innerHTML = w.type === "parse"
-    ? w.words.map(x=>x.w).join(" ")
-    : `<code>${w.expr}</code>`;
-  box.querySelector(".screen-steps").innerHTML = (w.type === "parse"
-    ? w.words.map(x=>`${x.w}: ${x.p}`)
-    : w.steps
-  ).map((s,k)=>`<li style="animation-delay:${700 + k*620}ms">${s}</li>`).join("");
-  box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
-  const desk = document.querySelector(".desk");
-  if (desk) desk.dataset.pose = String(i);
+  return head + `<div class="board-body">${mid}</div>`;
 }
 
 (function boardLoop(){
@@ -1647,7 +1258,6 @@ function lapRender(w, i){
     board.classList.remove("swap"); void board.offsetWidth; board.classList.add("swap");
     rota.querySelectorAll("button").forEach((b,n)=>
       n === i ? b.setAttribute("aria-current","true") : b.removeAttribute("aria-current"));
-    lapRender(w, i);
   }
   /* كلّ تدخّل يدويّ يعيد ضبط المؤقّت، وإلا قفز اللوح بعد نقرك بلحظة */
   function arm(){ clearInterval(timer); timer = setInterval(()=>render(i+1), 7200); }
@@ -1658,21 +1268,6 @@ function lapRender(w, i){
   render(0); arm();
 })();
 
-/* مبدّل المشهد — للمقارنة وحدها */
-(function heroSwap(){
-  const bar = $("#hero-swap"), hero = $("#hero");
-  if(!bar || !hero) return;
-  bar.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-    hero.dataset.hero = b.dataset.h;
-    bar.querySelectorAll("button").forEach(x=>
-      x.setAttribute("aria-pressed", String(x === b)));
-    try{ localStorage.setItem("masar-hero", b.dataset.h); }catch{}
-  }));
-  try{
-    const saved = localStorage.getItem("masar-hero");
-    if(saved){ const b = bar.querySelector(`button[data-h="${saved}"]`); if(b) b.click(); }
-  }catch{}
-})();
 
 /* الأقسام تظهر عند بلوغها — لا تهبط كلها دفعة واحدة */
 (function reveal(){
@@ -1688,11 +1283,6 @@ stations(); catBody(); lessonGroups("#lessons"); lessons("#study-rail",false); t
 
 const h = location.hash.replace("#","");
 if(h){ const b=document.querySelector(`#nav button[data-s="${h}"]`); if(b) b.click(); }
-
-try{
-  const t = localStorage.getItem("masar-theme");
-  if(t){ const b=document.querySelector(`#themes button[data-t="${t}"]`); if(b) b.click(); }
-}catch{}
 </script>
 </body>
 </html>
