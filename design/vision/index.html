@@ -515,10 +515,40 @@ body::after{
 }
 
 /* ═══ صفحة المقرر ══════════════════════════════════════════════════ */
+/* ── المشغّل: لقطةٌ من الدرس، لا مستطيل أسود ────────────────────────
+   كان أكبر عنصر في الصفحة وأشدّها سوادًا ولا يقول شيئًا — نفس خطأ
+   مشهد المكتب: أعلى الأشياء صوتًا أفرغُها معنى.
+
+   وصفحةُ بيعٍ تعرض مربّعًا أسود تطلب من الزائر أن يدفع على الثقة.
+   فليكن الملصق هو الدرس نفسه: نفس معالجة اللوح في الأبطل، مصغَّرة،
+   خلف ستارٍ يُبقي زرّ التشغيل مقروءًا.  فيرى ما يشتريه قبل أن يشتريه. */
 .player{position:relative;aspect-ratio:16/9;border-radius:var(--r-lg);overflow:hidden;
   border:1px solid var(--line);background:radial-gradient(120% 100% at 50% 0%,var(--panel-high),var(--ink) 78%);
   display:grid;place-items:center;cursor:pointer}
-.player::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--spark) 11%,transparent),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
+.player-poster{position:absolute;inset:0;padding:clamp(1.1rem,3vw,2rem) clamp(1.1rem,3vw,2rem) clamp(4.2rem,9vw,5.4rem);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.1rem;pointer-events:none}
+.player-poster .parse{gap:1rem 1.7rem;justify-content:center}
+.player-poster .pw{animation:none;opacity:1;transform:none}
+.player-poster .pw-w{font-size:clamp(1.4rem,3.4vw,2.3rem)}
+.player-poster .pw-p{font-size:.64rem}
+/* ⚠ لا زرّ دائريّ في المنتصف.  الملصق نصٌّ، والقرص المركزيّ يحجب
+   الكلمة الوسطى منه حجبًا كاملًا — جرَّبتُه فاختفت «كتبَ».  زرٌّ
+   مُسمّى في القاع لا يصطدم بشيء، ويقول ما سيحدث بدل أن يرمز إليه. */
+.player::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(0deg, color-mix(in srgb,var(--ink) 88%,transparent) 0%,
+                          color-mix(in srgb,var(--ink) 34%,transparent) 34%,
+                          color-mix(in srgb,var(--ink) 14%,transparent) 100%)}
+.player-cta{position:absolute;z-index:2;inset-inline-start:clamp(1rem,3vw,1.6rem);
+  bottom:clamp(1rem,3vw,1.4rem);display:inline-flex;align-items:center;gap:.7rem;
+  border:0;cursor:pointer;font:inherit;font-size:.84rem;font-weight:600;
+  padding:.5rem 1.1rem .5rem .5rem;border-radius:999px;color:var(--on-accent);
+  background:linear-gradient(180deg,var(--accent-bright),var(--action));
+  box-shadow:0 16px 40px -14px var(--shadow-lift);
+  transition:transform var(--dur-base) var(--ease)}
+.player-cta .play{width:34px;height:34px;box-shadow:none;background:color-mix(in srgb,var(--on-accent) 12%,transparent)}
+@media(hover:hover){.player:hover .player-cta{transform:translateY(-2px)}}
+.player::after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--spark) 11%,transparent),transparent 70%);opacity:0;transition:opacity var(--dur-slow) var(--ease)}
 .player:hover::after{opacity:1}
 .play{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;position:relative;z-index:2;
   background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent);
@@ -548,7 +578,17 @@ body::after{
 .bundle-price{white-space:nowrap}
 .bundle-rail{padding-inline-start:2.6rem}
 
+/* ثلاث باقات جنبًا إلى جنب فوق ٧٦٠px.  كانت عمودًا واحدًا بعرض ٩٢٥px،
+   وهذا يُبطل وظيفة القسم أصلًا: المقارنة تحتاج أن تقع الأسعار في خطّ
+   بصريّ واحد.  مكدَّسةً بعرض الصفحة لا يقارن أحد شيئًا — يقرأ ثلاث
+   بطاقات متتابعة ثم ينسى الأولى. */
 .tiers{display:grid;gap:1rem}
+@media(min-width:760px){.tiers{grid-template-columns:repeat(3,1fr);gap:1.1rem;align-items:stretch}}
+/* عمود مرن ليستقرّ الزرّ في القاع مهما اختلف عدد البنود — «الدورة
+   الكاملة» فيها أربعة بنود والأخريان ثلاثة، فبلا هذا تتذبذب الأزرار */
+.tier{display:flex;flex-direction:column}
+.tier ul{flex:1}
+.tier .btn{margin-top:1.2rem}
 .tier{position:relative;padding:1.3rem;cursor:pointer;transition:opacity var(--dur-base) var(--ease),border-color var(--dur-base) var(--ease)}
 .tier.off{opacity:.4}
 .tier-best{border-color:color-mix(in srgb,var(--accent-bright) 55%,transparent);background:linear-gradient(168deg,var(--panel-high),var(--panel) 70%)}
@@ -718,9 +758,30 @@ body::after{
     <div class="study" style="margin-top:2.2rem;align-items:start">
       <div>
         <div class="player">
-          <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-          <span class="pill pill-free" style="position:absolute;inset-inline-start:1rem;top:1rem">مجاني</span>
-          <span class="small num" style="position:absolute;inset-inline-end:1rem;bottom:1rem">١٢:٤٠</span>
+          <!-- الملصق من الدرس المجاني نفسه (الاستفهام)، لا صورة عامّة:
+               الزائر هنا يقرّر الشراء، فأصدق ما يُعرض عليه هو الشرح. -->
+          <div class="player-poster">
+            <span class="eyebrow">إعراب أسلوب الاستفهام</span>
+            <span class="parse">
+              <span class="pw"><span class="pw-w">مَن</span><span class="pw-tie"></span>
+                <span class="pw-p">اسم استفهام، مبتدأ</span></span>
+              <span class="pw"><span class="pw-w">كتبَ</span><span class="pw-tie"></span>
+                <span class="pw-p">فعل ماضٍ</span></span>
+              <span class="pw"><span class="pw-w">القصيدةَ</span><span class="pw-tie"></span>
+                <span class="pw-p">مفعول به منصوب</span></span>
+            </span>
+          </div>
+          <button class="player-cta press">
+            <span class="play"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            شغّل الدرس المجاني
+          </button>
+          <span class="pill pill-free" style="position:absolute;z-index:2;inset-inline-start:1rem;top:1rem">مجاني</span>
+          <!-- ⚠ الوضع على الغلاف و`.num` على الداخل، لا على العنصر نفسه.
+               `.num` تضبط `direction:ltr`، والمتصفّح يحسب `inset-inline-*`
+               بالنسبة إلى اتجاه العنصر ذاته لا اتجاه الصفحة — فتنقلب
+               الشارة إلى الجهة المقابلة.  وهذا العيب بعينه موثَّق في
+               CLAUDE.md، و«شارة مدّة الفيديو» أحد مواضعه الأربعة. -->
+          <span class="small" style="position:absolute;z-index:2;inset-inline-end:1rem;bottom:1.5rem"><span class="num">١٢:٤٠</span></span>
         </div>
         <p class="small" style="margin-top:.8rem">الدرس الأول — الاستفهام. شاهده كاملًا قبل أن تدفع شيئًا.</p>
 
@@ -774,7 +835,8 @@ body::after{
       <div>
         <div class="player" style="aspect-ratio:16/9">
           <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-          <span class="small num" style="position:absolute;inset-inline-end:1rem;bottom:1rem">١٨:٢٢</span>
+          <!-- نفس فخّ الاتجاه أعلاه: الوضع على الغلاف، و`.num` بالداخل -->
+          <span class="small" style="position:absolute;z-index:2;inset-inline-end:1rem;bottom:1.5rem"><span class="num">١٨:٢٢</span></span>
         </div>
         <h2 class="h3" style="margin-top:1.1rem">الدرس الثالث — النحو التطبيقي</h2>
         <p class="body" style="margin-top:.4rem">تطبيق قواعد النحو على نصوص المقرر، مع إعراب نماذج من أسئلة الامتحانات السابقة.</p>
@@ -1138,7 +1200,7 @@ function tiers(){
         ${t.was?`<span class="strike num">${t.was}</span>`:""}
       </div>
       <ul>${t.items.map(x=>`<li><span class="tick">✓</span>${x}</li>`).join("")}</ul>
-      <button class="btn ${t.best?"btn-primary":""} press" style="width:100%;margin-top:1rem">
+      <button class="btn ${t.best?"btn-primary":""} press" style="width:100%">
         ${t.best?"اطلب الدورة الكاملة":"اطلب هذه الباقة"}
       </button>
     </div>`).join("");
