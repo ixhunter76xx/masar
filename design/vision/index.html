@@ -278,41 +278,42 @@ html[data-shell="app"]  .pubtop{display:none}
   .brand-logo{width:84px;height:27px;background-size:116px auto;background-position:-13px -44px}
 }
 
-/* ═══ شريط المعاينة ═════════════════════════════════════════════════
-   ⚠ نزل من أعلى الصفحة إلى أسفلها، وفقد الشعار، وصار سياقين لا ستّ
-   بوابات.  والسبب أن ستّ بوابات كانت تخلط شيئين مختلفين:
+/* ═══ مبدّل المنطقتين ═══════════════════════════════════════════════
+   ⚠ صار **تنقّل منتج**، بعد أن كان زرّ معاينة عائمًا في القاع.
 
-     · السياق   — أزائرٌ أنا أم داخل الحساب؟
-     · والوجهة  — لوحة أم دراسة أم درجات؟
+   والسبب ثغرةٌ حقيقية: للمنصّة منطقتان — كتالوجٌ عامّ يُتصفَّح ويُشترى
+   منه، ومنطقة دراسة خاصّة — ولم يكن بينهما بابٌ ظاهر.  عناصر الشريط
+   الجانبي الستة كلها داخل المنطقة الخاصّة، فالداخل لا يجد طريقًا
+   يعود به إلى الكتالوج، والشعار في الجانبيّ ليس رابطًا أصلًا.
 
-   والثلاث الأخيرة **وجهات الشريط الجانبي نفسه**، فرفعُها إلى الأعلى
-   يتجاوز التنقّل الحقيقي بدل أن يعرضه.  وكذلك «صفحة المقرر»: تُبلَغ
-   بالنقر على بطاقة في الكتالوج، كما في الموقع.
+   وهذا النمط قياسيّ في أسواق المقررات: بابٌ للتصفّح وبابٌ لما اشتريتَ،
+   ظاهران معًا في الرأسية.
 
-   وبقاؤه أعلى الصفحة كان يضعه في مكان رأسية المنتج، فينشأ الشعار
-   المكرَّر والرأسيتان.  في القاع لا ينازع شيئًا، ويبقى واضحًا أنه
-   أداة لا واجهة. */
-.harness{position:fixed;z-index:80;inset-block-end:1rem;inset-inline:0;
-  display:flex;justify-content:center;pointer-events:none}
-/* الشريط عائم، فيحجب آخر ما في الصفحة ما لم يُترك له خلوص */
-body{padding-block-end:5.5rem}
-html{scroll-padding-block-end:5.5rem}
-.harness-in{display:flex;align-items:center;gap:.6rem;pointer-events:auto;
-  padding:.35rem .35rem .35rem .9rem;border-radius:999px;
-  background:var(--glass);border:1px solid var(--line);
-  -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);
-  box-shadow:0 18px 44px -18px var(--shadow-lift)}
-.harness-tag{font-size:.66rem;color:var(--faint);letter-spacing:0;flex:0 0 auto}
-@media(max-width:560px){.harness-tag{display:none}
-  .harness-in{padding-inline:.35rem}}
-
-@media(max-width:860px){.screens button{font-size:.72rem;padding:.4rem .55rem}}
-.screens{display:flex;gap:2px;padding:4px;border-radius:999px;
+   ── لماذا هذان الاسمان ────────────────────────────────────────────
+   «الكتالوج» هي الكلمة التي تسمّي بها الرأسيةُ العامّة المكانَ نفسه،
+   فالمكان الواحد يحمل اسمًا واحدًا في كل موضع.  و«الدراسة» تصف الجانب
+   الخاصّ كلَّه (لوحة، مقررات، درجات، رسائل) بلا أن تصطدم بـ«مقرراتي»
+   في الشريط الجانبي — وهي وجهةٌ واحدة داخله لا اسمٌ للمنطقة كلها. */
+.areaswitch{display:flex;gap:2px;padding:3px;border-radius:999px;flex:0 0 auto;
   background:var(--sunk);border:1px solid var(--line-soft)}
-.screens button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
-  font:inherit;font-size:.78rem;font-weight:500;padding:.42rem .8rem;border-radius:999px;transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
-.screens button:hover{color:var(--paper)}
-.screens button[aria-current]{background:linear-gradient(180deg,var(--accent-bright),var(--action));color:var(--on-accent);font-weight:600}
+.areaswitch button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
+  font:inherit;font-size:.78rem;font-weight:500;padding:.4rem .85rem;border-radius:999px;
+  white-space:nowrap;
+  transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
+@media(hover:hover){.areaswitch button:hover{color:var(--paper)}}
+.areaswitch button[aria-current]{background:var(--panel-high);color:var(--paper);font-weight:600}
+/* الرأسية العامّة تُوسّط المبدّل؛ ورأسية التطبيق تضعه بعد العنوان */
+.pubtop-in .areaswitch{margin-inline-start:.6rem;margin-inline-end:auto}
+@media(max-width:620px){
+  /* العنوان يتقلّص أولًا: المبدّل بابٌ، والعنوان وصفٌ لما أنت فيه */
+  .apptop h1{font-size:.9rem}
+  .areaswitch button{padding:.4rem .6rem;font-size:.73rem}
+}
+@media(max-width:420px){
+  /* في أضيق العروض يختفي العنوان لا المبدّل — الرأسية تحتها مباشرةً
+     عنوانٌ في الصفحة نفسها، أما الباب فلا بديل عنه. */
+  .apptop h1{display:none}
+}
 
 /* الشاشة الداخلة ترتفع وتتّضح؛ والمؤشّر تحت التبويب ينزلق بينها.
    الانزلاق يقول «هذه هي نفسها انتقلت» بدل «ظهرت واحدة واختفت أخرى». */
@@ -320,14 +321,9 @@ html{scroll-padding-block-end:5.5rem}
 .screen.on{display:block}
 @keyframes screenIn{from{opacity:0;transform:translateY(14px) scale(.995)}to{opacity:1;transform:none}}
 
-/* المؤشّر المنزلق لمبدّل الشاشات وحده — مبدّل الثيم يحتفظ بحبّته
-   المملوءة، وإلا فقد أثر الاختيار فيه. */
-#nav{position:relative}
-#nav .glide{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;z-index:0;
-  background:linear-gradient(180deg,var(--accent-bright),var(--action));
-  transition:transform var(--dur-base) var(--ease),width var(--dur-base) var(--ease)}
-#nav button{position:relative;z-index:1}
-#nav button[aria-current]{background:transparent}
+/* ملاحظة: قواعد `#nav` و`.glide` حُذفت مع شريط المعاينة — رابعُ طقمٍ
+   من القواعد اليتيمة في هذا الملف بعد `.stat-row` و`.deadline`
+   و`.segbar`.  كلّما زال معلَمٌ فتّش عن أنماطه. */
 
 /* ═══ السكّة — العمود الفقري للمنتج ════════════════════════════════
    رأسية دائمًا: المسار الرأسي بلا اتجاه أفقي، فلا ينقلب في RTL. */
@@ -1000,10 +996,7 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
     <a class="brand" href="#cat" data-goto="cat" aria-label="مسار — الصفحة الرئيسية">
       <span class="brand-logo"></span>
     </a>
-    <nav class="pubnav" aria-label="التنقّل العام">
-      <button data-goto="cat" aria-current="page">الكتالوج</button>
-      <button data-todo="1">كيف يعمل مسار؟</button>
-    </nav>
+    <div class="areaswitch" data-where="pub"></div>
     <button class="btn btn-sm press" data-goto="login">دخول</button>
   </div>
 </header>
@@ -1284,6 +1277,7 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
           <path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <h1 id="apptitle">سجل النشاط</h1>
+      <div class="areaswitch" data-where="app"></div>
       <button class="btn btn-sm press">تسجيل الخروج</button>
     </header>
 
@@ -1525,19 +1519,6 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
 </div>
 
 </main>
-
-<!-- شريط المعاينة — أداة، لا واجهة.  سياقان فحسب؛ والتنقّل داخل كلٍّ
-     منهما يجري كما يجري في الموقع: بالنقر على بطاقة، وبالشريط
-     الجانبي، وبزرّ الدخول. -->
-<div class="harness" id="harness">
-  <div class="harness-in">
-    <span class="harness-tag">معاينة</span>
-    <nav class="screens" id="nav" aria-label="سياق المعاينة">
-      <button data-ctx="public" aria-current="true">زائر</button>
-      <button data-ctx="app">داخل الحساب</button>
-    </nav>
-  </div>
-</div>
 
 <footer class="wrap">
   <p class="footnote">
@@ -1935,19 +1916,10 @@ function dash(){
 }
 
 /* ── التنقّل بين الشاشات ──────────────────────────────────────────── */
-/* المؤشّر المنزلق: يُقاس بالبكسل من `offsetLeft`، فهو محايد اتجاهيًا
-   ولا يحتاج قلبًا في RTL. */
-const glide = document.createElement("span");
-glide.className = "glide";
-$("#nav").appendChild(glide);
-function moveGlide(btn, animate){
-  if(!animate) glide.style.transition = "none";
-  glide.style.width = btn.offsetWidth + "px";
-  glide.style.transform = `translateX(${btn.offsetLeft}px)`;
-  if(!animate) requestAnimationFrame(()=>{ glide.style.transition = ""; });
-}
-moveGlide($('#nav button[aria-current]'), false);
-window.addEventListener("resize", ()=>moveGlide($('#nav button[aria-current]'), false));
+/* ملاحظة: المؤشّر المنزلق (`.glide`) حُذف مع شريط المعاينة.  كان
+   يقيس `offsetLeft` لعنصرٍ واحد ثابت في الصفحة؛ والمبدّل الآن مرسوم
+   في رأسيتين مختلفتين ويُعاد بناؤه عند كل تبديل، فمؤشّرٌ منزلق واحد
+   لا يعرف أيّهما يتبع.  والحالة تُقال بالخلفية و`aria-current`. */
 
 /* ══ التنقّل الجانبي — ستة عناصر بحدّ أقصى لأي مستخدم ═══════════════
    منقولة عن `src/lib/navigation.ts` كما هي، بما فيها قاعدة الأدوار:
@@ -2005,22 +1977,13 @@ function showScreen(key){
   const shell = next.dataset.shell || "public";
   document.documentElement.dataset.shell = shell;
 
-  /* السياق في شريط المعاينة يتبع الشاشة، لا العكس: الوصول إلى الدخول
-     من رأسية الموقع يجب أن يُحدّث الشريط أيضًا وإلا كذَب. */
-  const ctx = shell === "app" ? "app" : "public";
-  document.querySelectorAll("#nav button").forEach(x=>{
-    const on = x.dataset.ctx === ctx;
-    on ? x.setAttribute("aria-current","true") : x.removeAttribute("aria-current");
-    if(on) moveGlide(x, true);
-  });
+  /* المبدّل يتبع الشاشة لا العكس: بلوغ الدخول من رأسية الموقع، أو
+     صفحة المقرر من بطاقة، يجب أن يُحدّثه أيضًا وإلا كذَب على موضعك. */
+  paintAreaSwitch(shell === "app" ? "app" : "public");
 
   const t = SCREEN_TITLE[key]; if(t) $("#apptitle").textContent = t;
   $("#sidenav").innerHTML   = navHTML(key);
   $("#drawernav").innerHTML = navHTML(key);
-
-  /* «الكتالوج» في الرأسية العامّة يُضاء على شاشته وحدها */
-  document.querySelectorAll(".pubnav button[data-goto]").forEach(x=>
-    x.dataset.goto===key ? x.setAttribute("aria-current","page") : x.removeAttribute("aria-current"));
 
   /* إعادة تشغيل حركة الدخول عند كل تبديل، لا مرة واحدة */
   next.style.animation = "none"; void next.offsetWidth; next.style.animation = "";
@@ -2028,10 +1991,21 @@ function showScreen(key){
   history.replaceState(null,"","#"+key);
 }
 
-/* السياق يفتح على أوّل شاشة فيه، ثم يتنقّل المرء داخله كما في الموقع */
+/* المنطقة تفتح على أوّل شاشة فيها، ثم يتنقّل المرء داخلها كما في الموقع */
 const CTX_HOME = {public:"cat", app:"dash"};
-$("#nav").addEventListener("click", e=>{
-  const b = e.target.closest("button[data-ctx]"); if(!b) return;
+const AREAS = [
+  {ctx:"public", label:"الكتالوج"},
+  {ctx:"app",    label:"الدراسة"},
+];
+function paintAreaSwitch(ctx){
+  document.querySelectorAll(".areaswitch").forEach(box=>{
+    box.innerHTML = AREAS.map(a=>
+      `<button data-ctx="${a.ctx}" ${a.ctx===ctx?'aria-current="page"':""}>${a.label}</button>`
+    ).join("");
+  });
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".areaswitch button[data-ctx]"); if(!b) return;
   showScreen(CTX_HOME[b.dataset.ctx]);
 });
 
@@ -2182,8 +2156,10 @@ function boardHTML(w){
 
 stations(); catBody(); lessonGroups("#lessons"); lessons("#study-rail",false); tiers(); dash();
 
-const h = location.hash.replace("#","");
-if(h){ const b=document.querySelector(`#nav button[data-s="${h}"]`); if(b) b.click(); }
+/* الحالة الابتدائية: ترسم المبدّل وتضبط الإطار، ثم تحترم الوسم في
+   العنوان إن وُجد.  كانت تبحث عن زرٍّ في شريطٍ لم يعد موجودًا. */
+const h = location.hash.replace(/^#(s-)?/,"");
+showScreen(document.getElementById("s-"+h) ? h : "cat");
 </script>
 </body>
 </html>
