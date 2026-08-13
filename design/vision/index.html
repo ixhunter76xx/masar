@@ -239,7 +239,9 @@ body::after{
    هذه رأسية منتج حقيقية: الهوية، والكتالوج، وبابُ الدخول.  ووجودها
    هو ما يجعل «الدخول» يُبلَغ من الموقع لا من أداة المعاينة. */
 .pubtop{position:sticky;top:0;z-index:50}
-.pubtop-in{display:flex;align-items:center;gap:1rem;height:66px}
+/* ٦٤px كرأسية التطبيق تمامًا: المبدّل يتوسّط شريطًا واحدًا في
+   السياقين، فلو اختلف الارتفاعان لقفز رأسيًّا بينهما. */
+.pubtop-in{display:flex;align-items:center;gap:1rem;height:64px}
 /* ⚠ للزائر وحده.  داخل الحساب يحمل الشريط الجانبي الهوية، وصفحة
    الدخول تحملها في بطاقتها — وبقاؤها في الحالتين هو **بعينه** سبب
    الشعار المكرَّر والرأسيتين المتراكبتين. */
@@ -294,26 +296,41 @@ html[data-shell="app"]  .pubtop{display:none}
    فالمكان الواحد يحمل اسمًا واحدًا في كل موضع.  و«الدراسة» تصف الجانب
    الخاصّ كلَّه (لوحة، مقررات، درجات، رسائل) بلا أن تصطدم بـ«مقرراتي»
    في الشريط الجانبي — وهي وجهةٌ واحدة داخله لا اسمٌ للمنطقة كلها. */
-.areaswitch{display:flex;gap:2px;padding:3px;border-radius:999px;flex:0 0 auto;
-  background:var(--sunk);border:1px solid var(--line-soft)}
+/* ── موضعٌ محايد ═══════════════════════════════════════════════════
+   ⚠ ثابتٌ بالنسبة للنافذة، لا مرصوفٌ في الرأسية.
+
+   كان يُرصَف بين إخوته فيزيح موضعه كلّما اختلف ما حوله: زرّ قائمة في
+   جهة وشعارٌ في الأخرى، وعنوانٌ يظهر ويختفي، ورأسيةُ الحساب تبدأ بعد
+   ٢٦٠px من الشريط الجانبي بينما العامّة تبدأ من الحافّة.  فكان يقفز
+   بين السياقين — وهو أشدّ ما يُقلق العين، لأنه العنصر الذي يُفترض أن
+   يكون **المرجع الثابت** الذي تُقاس إليه بقيةُ الحركة.  ثباتُه هو
+   وظيفته، لا مجرّد تحسين.
+
+   ⚠ وخصائص فيزيائية لا منطقية هنا **عن قصد**: المنتصف لا اتجاه له،
+   و`inset-inline-start:50%` ينقلب معناه بين RTL وLTR فيحتاج إشارة
+   مختلفة لكلٍّ منهما.  `left:50%` مع `translateX(-50%)` يتوسّط في
+   الاتجاهين بلا شرط — وهذا الاستثناء الوحيد لقاعدة الملف في تفضيل
+   المنطقيّ على الفيزيائي. */
+.areaswitch{position:fixed;z-index:60;top:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:2px;padding:3px;border-radius:999px;flex:0 0 auto;
+  background:var(--sunk);border:1px solid var(--line-soft);
+  box-shadow:0 6px 20px -12px var(--shadow-lift)}
 .areaswitch button{border:0;background:transparent;color:var(--subtle);cursor:pointer;
   font:inherit;font-size:.78rem;font-weight:500;padding:.4rem .85rem;border-radius:999px;
   white-space:nowrap;
   transition:color var(--dur-fast) var(--ease),background-color var(--dur-fast) var(--ease)}
 @media(hover:hover){.areaswitch button:hover{color:var(--paper)}}
 .areaswitch button[aria-current]{background:var(--panel-high);color:var(--paper);font-weight:600}
-/* الرأسية العامّة تُوسّط المبدّل؛ ورأسية التطبيق تضعه بعد العنوان */
-.pubtop-in .areaswitch{margin-inline-start:.6rem;margin-inline-end:auto}
 @media(max-width:620px){
-  /* العنوان يتقلّص أولًا: المبدّل بابٌ، والعنوان وصفٌ لما أنت فيه */
-  .apptop h1{font-size:.9rem}
   .areaswitch button{padding:.4rem .6rem;font-size:.73rem}
 }
-@media(max-width:420px){
-  /* في أضيق العروض يختفي العنوان لا المبدّل — الرأسية تحتها مباشرةً
-     عنوانٌ في الصفحة نفسها، أما الباب فلا بديل عنه. */
-  .apptop h1{display:none}
-}
+/* لا مبدّل أثناء المصادقة: أنت بين المنطقتين لا في إحداهما */
+html[data-shell="auth"] .areaswitch{display:none}
+/* ⚠ العنوان يختفي تحت ٥٦٠px لا ٤٢٠.  المبدّل صار في منتصف النافذة،
+   فالمساحة المتاحة للعنوان هي ما بين حافّة الرأسية وحافّة المبدّل —
+   وعند ٥٢٠px تهبط إلى ١٣٠px، أي أن العنوان يزحف تحته.  والرأسية
+   تحتها مباشرةً عنوانٌ في متن الصفحة، أما الباب فلا بديل عنه. */
+@media(max-width:560px){ .apptop h1{display:none} }
 
 /* الشاشة الداخلة ترتفع وتتّضح؛ والمؤشّر تحت التبويب ينزلق بينها.
    الانزلاق يقول «هذه هي نفسها انتقلت» بدل «ظهرت واحدة واختفت أخرى». */
@@ -571,6 +588,10 @@ html[data-shell="app"] .appframe{display:block}
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .apptop h1{flex:1;font-size:1rem;font-weight:500;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+/* ⚠ الدفع إلى الحافّة لا يعتمد على العنوان.  كان العنوان هو حامل
+   `flex:1`، فلمّا اختفى تحت ٥٦٠px تجمّع زرّ الخروج قرب زرّ القائمة
+   ووقع تحت المبدّل المتوسّط.  الهامش التلقائي يدفعه في الحالتين. */
+.apptop > .btn{margin-inline-start:auto}
 /* زرّ القائمة للجوّال: الشريط الجانبي مخفيّ تحت ١٠٦٠px */
 .menubtn{display:grid;place-items:center;width:44px;height:44px;border-radius:11px;
   border:1px solid var(--line);background:var(--sunk);color:var(--paper);cursor:pointer;flex:0 0 auto}
@@ -986,6 +1007,15 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
      المعاينة معلَمٌ واحد: لا `main` ولا `footer`. -->
 <a class="skip" href="#main">تخطٍ إلى المحتوى</a>
 
+<!-- ⚠ مبدّل المنطقتين خارج الرأسيتين عن قصد، وعنصرٌ واحد لا اثنان.
+     كان مرسومًا داخل كلٍّ منهما، وكلتاهما تحمل `backdrop-filter` —
+     وأيّ مرشِّح أو تحويل يجعل العنصرَ الأبَ **كتلةَ احتواء** لكل
+     `position:fixed` بداخله.  فكان «ثابتًا بالنسبة للنافذة» اسمًا،
+     وثابتًا بالنسبة للرأسية فعلًا، فيتوسّط رأسيةً تبدأ بعد الشريط
+     الجانبي بـ٢٦٠px ويقفز ١٣٠px بين السياقين.  قِسْتُه: ٥٨٣ ثم ٤٥٣.
+     خارجَهما لا كتلةَ احتواء بينه وبين النافذة. -->
+<div class="areaswitch" id="areaswitch" role="navigation" aria-label="منطقة الموقع"></div>
+
 <!-- رأسية الموقع العام — منتج لا معاينة.  تظهر للزائر وحده: داخل
      الحساب يحمل الشريط الجانبي الهوية، وصفحة الدخول تحملها في بطاقتها. -->
 <header class="pubtop glass" id="pubtop">
@@ -996,7 +1026,7 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
     <a class="brand" href="#cat" data-goto="cat" aria-label="مسار — الصفحة الرئيسية">
       <span class="brand-logo"></span>
     </a>
-    <div class="areaswitch" data-where="pub"></div>
+    <span style="flex:1"></span>
     <button class="btn btn-sm press" data-goto="login">دخول</button>
   </div>
 </header>
@@ -1277,7 +1307,7 @@ html[dir="rtl"] .sk::after{animation-name:skwaveRtl}
           <path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <h1 id="apptitle">سجل النشاط</h1>
-      <div class="areaswitch" data-where="app"></div>
+
       <button class="btn btn-sm press">تسجيل الخروج</button>
     </header>
 
