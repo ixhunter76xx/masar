@@ -6,10 +6,34 @@ copy and knows **nothing** about the work described here.
 
 ---
 
+## ⚠ Status: NOT approved. The visual work continues.
+
+The owner's words at handoff: **«الشكل الجديد الذي وصلنا له ليس مقنع كليا»** —
+the look reached so far does not convince him, and the new session is to
+**carry on developing it from here**, not to polish a finished thing.
+
+So: treat everything in `index.html` as a live draft. The structure and the
+decisions in §3 are settled; **the visual result is not.** The three items in
+§5 are the ones he named out loud, but they are a starting list, not the full
+extent of what is unsatisfying.
+
+Do not open the new session by asking "is this good?" — assume it is not yet,
+and bring something better.
+
+### One honest note on how to converge faster
+
+This has now taken many rounds because taste feedback without a reference
+loops. The single thing that moved it fastest was the **photograph** he sent
+for the hero angle — one image ended more argument than several paragraphs
+had. If the next round stalls again, ask for a reference for the screen being
+worked on (any site, any field) rather than iterating blind.
+
+---
+
 ## Say this to open the new session
 
-> اقرأ `design/vision/HANDOFF.md` أولًا — نحن على فرع `masar-vision` ونكمل
-> معاينة التصميم البصرية.
+> اقرأ `design/vision/HANDOFF.md` أولًا — نحن على فرع `masar-vision`، والشكل
+> الحالي غير مقنع بعد، ونكمل تطويره من حيث توقفنا.
 
 ---
 
@@ -131,7 +155,16 @@ It is a genuine CSS 3D scene, not skewed flat shapes:
 3. **No lamp body** — the reference has a green banker's lamp; ours is light
    with no object.
 
-These three are the next task unless redirected.
+These three are named, but see the status warning at the top: the overall
+look is **not** convincing to him yet, so fixing only these three will likely
+not be enough. Expect to keep pushing the visual quality.
+
+### Screens that have had almost no design attention
+Everything above concerns the catalogue hero. Two screens are still close to
+their first draft and are the weakest in the file:
+- **الدراسة (study)** — a player and a list, no character at all.
+- **بطاقات المقررات** — uniform rectangles; the course code watermark is not
+  enough personality.
 
 ---
 
@@ -193,8 +226,12 @@ unrelated, do not confuse them.
 
 ## 9 · Open questions for the owner
 
-1. Is «مقرَّرك، مفهومًا.» the headline, or one of the alternatives?
-2. Fix the three weak points in §5, or change direction again?
+The first is the live one; the rest can wait.
+
+1. **Which part of the current look is least convincing** — the hero scene,
+   the type, the colour, the catalogue below it, or the whole composition?
+   A reference image beats a description here.
+2. Is «مقرَّرك، مفهومًا.» the headline, or one of the alternatives in §4?
 3. Delete the four comparison themes now that `مسار` is chosen?
-4. Push `masar-vision` to the remote?
+4. Push `masar-vision` to the remote? **Still local-only at handoff.**
 5. Merge PR #1 (`masar-design-2`) — separate decision, CI is green.
