@@ -43,7 +43,7 @@ worked on (any site, any field) rather than iterating blind.
 |---|---|---|---|---|
 | `master` | `c1afb92` | — | yes | live. Netlify auto-deploys every push to it. |
 | `masar-design-2` | `270bcdf` | +6 | yes | the **real code** design pass. Open as **PR #1**, not merged. |
-| `masar-vision` | `4b3ff4b` | +9 | **NO — local only** | this work. Isolated HTML preview. |
+| `masar-vision` | `0004cea` | +10 | **NO — local only** | this work. Isolated HTML preview. |
 
 **⚠ `masar-vision` has never been pushed.** Nine commits exist only on this
 machine. Push it before relying on it surviving.
@@ -125,6 +125,7 @@ This is the highest-value section. Each was built and killed for a reason.
 | Five-stop journey timeline in the hero | text disguised as a picture; a column of phrases beside a column of prose |
 | Side-view student silhouette | replaced by the over-the-shoulder angle from the owner's reference photo |
 | Visible `border` on scene objects | reads as vector art. Edges must come from light and shadow only |
+| **Depicting a scene with CSS boxes at all** | 2026-08-13. See §5a. The frame's loudest objects carried no information and its only informative object was its smallest. Not a polish problem — a ceiling |
 
 **Current headline: «مقرَّرك، مفهومًا.»** on one line (`white-space:nowrap`).
 Owner has not endorsed it either. Live alternatives offered: «افهم مقرَّرك.» ·
@@ -132,7 +133,56 @@ Owner has not endorsed it either. Live alternatives offered: «افهم مقرَ
 
 ---
 
-## 5 · The hero scene (most recent work)
+## 5 · The hero — replaced 2026-08-13. Read §5a first.
+
+### 5a · Current: «اللوح» — the explanation *is* the picture
+
+The desk below was diagnosed as having a ceiling, and the ceiling was
+reached. Rendered in CSS boxes, a night desk reads as a pile of grey
+rectangles: nothing in the frame is nameable except the three white
+sheets, which are the **brightest and largest objects and carry no
+information**. The laptop screen — the only element that says what
+Masar does — was the **smallest** thing in the frame and the most
+foreshortened. The hierarchy was inverted, so polish could not fix it.
+
+**What replaced it.** The explanation itself, at full size and legible,
+in a warm lamp pool. The mood survives; the drawn objects do not,
+because drawing objects with boxes is what read as clip art.
+
+Two content shapes, because the knowledge has two shapes:
+- **`parse`** — إعراب: each word large in **Amiri**, its ruling hung
+  beneath on a hairline tie. This is the strongest asset on the page —
+  Arabic set well is the one thing no English competitor has, and it
+  was previously being spent on a 12px label.
+- **`steps`** — an expression, steps revealing one by one, a result.
+
+Rotates every 7.2s over **three** faculties, and the dots are buttons
+so nobody waits. Toggle `اللوح / المكتب` under the hero switches
+directions; the loser gets deleted.
+
+**Decisions worth not re-litigating:**
+- **Three faculties, not four.** An `ENGG201` example was running in the
+  hero while «كلية الهندسة» says «لم تُطرح بعد» one screen below. The
+  page contradicted itself. What rotates now is exactly what is lit.
+- **Fixed height (`min-height` + footer pinned by `margin-top:auto`).**
+  The states differed by **73px**, so the hero resized every 7.2s.
+- **The result value uses `--accent-bright`, not `--spark`.** Amber
+  stays reserved for progress/achievement per §3. A correct answer is
+  not progress.
+- **The board is content, so it is *not* `aria-hidden`.** The desk was,
+  correctly, because it was decoration.
+- **Colour via tokens, never raw `rgba`** — the desk hard-coded black
+  and broke in «ورق». Verified in all five themes.
+
+**Two overflow bugs fixed on the way**, both invisible behind
+`body{overflow-x:hidden}` and both of which made *every phone
+screenshot a lie* by shifting the page sideways:
+- the preview's own top bar didn't fit under 760px (**+350px**),
+- the lamp pool's negative horizontal inset (**+35px**). It is now
+  clipped to its box — the glow still spills, because `filter:blur`
+  paints outside the box without counting toward layout.
+
+### 5b · Previous: the desk (kept behind the toggle)
 
 Built from a reference photo the owner supplied: **looking down past a
 student's shoulder at a lit desk at night.**
@@ -155,9 +205,10 @@ It is a genuine CSS 3D scene, not skewed flat shapes:
 3. **No lamp body** — the reference has a green banker's lamp; ours is light
    with no object.
 
-These three are named, but see the status warning at the top: the overall
-look is **not** convincing to him yet, so fixing only these three will likely
-not be enough. Expect to keep pushing the visual quality.
+**These were not fixed, and deliberately so.** They are three symptoms of
+the diagnosis in §5a — the approach itself, not its execution. Fixing
+them would have bought a better pile of grey rectangles. If the owner
+picks `المكتب` over `اللوح`, fix them then.
 
 ### Screens that have had almost no design attention
 Everything above concerns the catalogue hero. Two screens are still close to
@@ -228,9 +279,11 @@ unrelated, do not confuse them.
 
 The first is the live one; the rest can wait.
 
-1. **Which part of the current look is least convincing** — the hero scene,
-   the type, the colour, the catalogue below it, or the whole composition?
-   A reference image beats a description here.
+1. **`اللوح` or `المكتب`?** The toggle under the hero switches them. This
+   is now the live question, and the loser should be deleted rather than
+   left to rot. If neither convinces, the next thing to ask for is a
+   **reference image** — one photo ended more argument here than several
+   paragraphs had.
 2. Is «مقرَّرك، مفهومًا.» the headline, or one of the alternatives in §4?
 3. Delete the four comparison themes now that `مسار` is chosen?
 4. Push `masar-vision` to the remote? **Still local-only at handoff.**
