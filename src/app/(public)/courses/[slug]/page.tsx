@@ -9,6 +9,8 @@ import { Price } from "@/components/public/Price";
 import { getPublicCourse } from "@/lib/data/courses";
 import { ownedLessonIdsForViewer } from "@/lib/data/access";
 import { bundleSaving, formatFils } from "@/lib/price";
+import { arPrice } from "@/lib/numerals";
+import { Num, Counted } from "@/components/ui/Num";
 import { cn } from "@/lib/utils";
 
 /**
@@ -123,7 +125,7 @@ export default async function PublicCoursePage({ params }: Params) {
             </span>
           )}
           <span className="flex items-center gap-2.5">
-            <span className="numeric">{course.lessons.length}</span> دروس
+            <Counted n={course.lessons.length} few="دروس" many="درسًا" />
             <Dot />
             وصول دائم
           </span>
@@ -276,7 +278,7 @@ function PreviewPlayer({
 
         {duration && (
           <span className="absolute bottom-3.5 end-3.5 z-10 rounded-md bg-black/55 px-2 py-1 text-[11px] backdrop-blur-sm">
-            <span className="numeric">{duration}</span>
+            <Num>{duration}</Num>
           </span>
         )}
       </div>
@@ -328,7 +330,7 @@ function LessonPath({
                   : "border-line text-subtle group-hover:border-accent-deep group-hover:text-accent",
               )}
             >
-              <span className="numeric">{index + 1}</span>
+              <Num>{index + 1}</Num>
             </span>
 
             <div
@@ -443,7 +445,7 @@ function ProductCard({
             {/* السعر الكامل مشطوبًا بجانبه: الفرق هو الحجّة، وإخفاء
                 الأصل يجعل الخصم دعوى بلا مرجع */}
             <span className="ms-2 text-[13px] text-subtle line-through">
-              <span className="numeric">{formatFils(product.priceFils)}</span>
+              <Num>{arPrice(formatFils(product.priceFils))}</Num>
             </span>
           </>
         ) : (
@@ -460,12 +462,12 @@ function ProductCard({
         <Included>
           {coversAll ? (
             <>
-              كل دروس المقرر — <span className="numeric">{lessonCount}</span> دروس
+              كل دروس المقرر — <Counted n={lessonCount} few="دروس" many="درسًا" />
             </>
           ) : (
             <>
-              <span className="numeric">{product.itemCount}</span> من{" "}
-              <span className="numeric">{lessonCount}</span> دروس
+              <Num>{product.itemCount}</Num> من{" "}
+              <Counted n={lessonCount} few="دروس" many="درسًا" />
             </>
           )}
         </Included>
@@ -480,7 +482,7 @@ function ProductCard({
                   className="inline-flex items-center gap-1.5 rounded-full border
                     border-line bg-ink/70 px-2 py-[0.2rem] text-[11px] text-muted"
                 >
-                  <span className="numeric text-subtle">{number}</span>
+                  <Num className="text-subtle">{number}</Num>
                   {lesson.title}
                 </span>
               ))}
@@ -491,7 +493,7 @@ function ProductCard({
         <Included>وصول دائم بلا انتهاء</Included>
         {saving > 0 && (
           <Included>
-            توفير <span className="numeric">{formatFils(saving)}</span> د.ب
+            توفير <Num>{arPrice(formatFils(saving))}</Num> د.ب
           </Included>
         )}
       </ul>

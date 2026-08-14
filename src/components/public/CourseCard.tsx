@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Play } from "lucide-react";
 
 import { Price } from "@/components/public/Price";
+import { Counted } from "@/components/ui/Num";
 import type { CourseCard as CourseCardData } from "@/lib/data/courses";
 
 /**
@@ -32,7 +33,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 
       <div className="flex items-start justify-between gap-4">
         <h3 className="text-title-sm">{course.title}</h3>
-        <span className="numeric shrink-0 rounded-[7px] border border-line bg-ink/80 px-2 py-[0.3rem] text-[11px] text-accent">
+        <span className="code shrink-0 rounded-[7px] border border-line bg-ink/80 px-2 py-[0.3rem] text-[11px] text-accent">
           {course.code}
         </span>
       </div>
@@ -49,7 +50,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
           </Tag>
         )}
         <Tag>
-          <span className="numeric">{course.lessonCount}</span> دروس مسجّلة
+          <Counted n={course.lessonCount} few="دروس" many="درسًا" /> مسجّلة
         </Tag>
       </div>
 

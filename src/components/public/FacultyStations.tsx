@@ -4,6 +4,7 @@ import * as React from "react";
 import { Atom, Cpu, GraduationCap, Layers, Wrench, type LucideIcon } from "lucide-react";
 
 import { CourseCard } from "@/components/public/CourseCard";
+import { Counted } from "@/components/ui/Num";
 import { NOT_OFFERED_LABEL, type FacultyIconKey, type Station } from "@/lib/faculties";
 import type { CourseCard as CourseCardData } from "@/lib/data/courses";
 
@@ -142,7 +143,7 @@ export function FacultyStations({
                           NOT_OFFERED_LABEL
                         ) : (
                           <>
-                            <span className="numeric">{s.courses.length}</span> مقرر
+                            <Counted n={s.courses.length} few="مقررات" many="مقررًا" />
                           </>
                         )}
                       </span>
@@ -171,8 +172,8 @@ export function FacultyStations({
               "لا مقررات على المنصة من هذه الكلية"
             ) : (
               <>
-                <span className="numeric">{station.courses.length}</span> مقرر ·{" "}
-                <span className="numeric">{lessons}</span> درسًا مسجّلًا
+                <Counted n={station.courses.length} few="مقررات" many="مقررًا" /> ·{" "}
+                <Counted n={lessons} few="دروس" many="درسًا" /> مسجّلة
               </>
             )}
           </p>

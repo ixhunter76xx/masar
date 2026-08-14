@@ -1,3 +1,4 @@
+import { Num, Counted } from "@/components/ui/Num";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClipboardList, Inbox } from "lucide-react";
@@ -49,11 +50,11 @@ export default async function GradesPage() {
                         {c.title}
                       </span>
                       <span className="mt-0.5 block text-[11px] text-subtle">
-                        <span className="numeric">{c.code}</span>
+                        <span className="code">{c.code}</span>
                       </span>
                     </span>
                     <span className="shrink-0 text-[11px] text-subtle">
-                      <span className="numeric">{c.products.length}</span> دورات
+                      <Counted n={c.products.length} few="دورات" many="دورة" />
                     </span>
                   </Link>
                 </Card>
@@ -96,12 +97,12 @@ export default async function GradesPage() {
                   </span>
                 </h2>
                 <p className="text-[12px]">
-                  <span className="numeric text-paper">{c.earned}</span>
+                  <Num className="text-paper">{c.earned}</Num>
                   <span className="text-subtle"> / </span>
-                  <span className="numeric text-muted">{c.total}</span>
+                  <Num className="text-muted">{c.total}</Num>
                   {pct !== null && (
                     <span className="ms-2 text-accent">
-                      <span className="numeric">{pct}%</span>
+                      <Num>{`٪`}</Num>
                     </span>
                   )}
                 </p>

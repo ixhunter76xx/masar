@@ -1,3 +1,4 @@
+import { Num, Counted } from "@/components/ui/Num";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -126,8 +127,8 @@ export default async function AdminCoursesPage() {
                 </p>
                 <p className="mt-0.5 text-[11px] text-subtle">
                   {course.faculty?.name ?? "بلا كلية"} ·{" "}
-                  <span className="numeric">{course._count.materials}</span> دروس ·{" "}
-                  <span className="numeric">{course._count.products}</span> باقات
+                  <Counted n={course._count.materials} few="دروس" many="درسًا" /> ·{" "}
+                  <Counted n={course._count.products} few="باقات" many="باقة" />
                 </p>
               </div>
 

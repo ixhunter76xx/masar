@@ -1,3 +1,4 @@
+import { Num, Counted } from "@/components/ui/Num";
 import type { Metadata } from "next";
 
 import { AppPage } from "@/components/shell/AppPage";
@@ -80,12 +81,12 @@ export default async function UsersPage() {
                   )}
                 </p>
                 <p className="mt-0.5 text-[11px] text-subtle">
-                  <span className="numeric">{u.username}</span> · {ROLE_LABELS[u.role]}
+                  <span className="code">{u.username}</span> · {ROLE_LABELS[u.role]}
                   {u.role === Role.STUDENT && (
-                    <> · <span className="numeric">{u._count.enrollments}</span> مقررات</>
+                    <> · <Counted n={u._count.enrollments} few="مقررات" many="مقررًا" /></>
                   )}
                   {u.role === Role.INSTRUCTOR && (
-                    <> · <span className="numeric">{u._count.coursesPresented}</span> مقررات</>
+                    <> · <Counted n={u._count.coursesPresented} few="مقررات" many="مقررًا" /></>
                   )}
                   {u.mustChangePassword && (
                     <> · <span className="text-warning">لم يغيّر كلمته</span></>
