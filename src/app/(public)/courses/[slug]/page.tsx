@@ -84,21 +84,31 @@ export default async function PublicCoursePage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-[1120px] px-4 sm:px-8">
-      <Link
-        href="/courses"
-        className="press group mt-2 inline-flex min-h-touch items-center gap-2 text-[13px] text-subtle hover:text-paper"
+      {/* ── فتات الطريق ═════════════════════════════════════════════
+          كان رابطًا واحدًا «كل المقررات». والفتات يقول أين أنت في
+          الشجرة لا كيف تخرج منها فحسب — والكلية فيه تعود إلى الكتالوج
+          عند محطّتها، فيصير الطريق الراجع خطوةً لا قفزة. */}
+      <nav
+        aria-label="مسار التنقّل"
+        className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12px] font-medium text-subtle"
       >
-        <ArrowRight
-          size={15}
-          strokeWidth={2}
-          aria-hidden="true"
-          className="transition-transform duration-200 ease-out group-hover:translate-x-1"
-        />
-        كل المقررات
-      </Link>
+        <Link href="/courses" className="press py-1 hover:text-paper hover:underline">
+          الكتالوج
+        </Link>
+        {/* ⚠ انحرافٌ أُعلنه: المعاينة تضع الكلية خطوةً وسطى
+            («الكتالوج · كلية الآداب · …»). و`getPublicCourse` لا تُرجع
+            الكلية، وملفّها داخل البصمة المنطقية المجمَّدة — فإضافة حقلٍ
+            إلى `select` تكسر الضمانة التي أبني عليها كل تقرير.
+            فالخطوة الوسطى محذوفة حتى تأذن بفكّ التجميد لأجلها؛
+            والفتات يؤدّي وظيفته الأساسية بدونها. */}
+        <span aria-hidden="true">·</span>
+        <span aria-current="page" className="text-muted">
+          {course.code}
+        </span>
+      </nav>
 
       <header className="pb-10 pt-4">
-        <span className="numeric inline-block rounded-[7px] border border-line bg-panel/90 px-2 py-[0.3rem] text-[11px] text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]">
+        <span className="code inline-block rounded-[7px] border border-line bg-panel/90 px-2 py-[0.3rem] text-[11px] text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]">
           {course.code}
         </span>
         <h1 className="mt-3.5 text-[clamp(1.5rem,4vw,2.25rem)] font-semibold leading-[1.35] tracking-[-0.03em]">
@@ -244,7 +254,7 @@ function PreviewPlayer({
   return (
     <div>
       <div
-        className="group relative grid aspect-video place-items-center overflow-hidden
+        className="group relative aspect-video overflow-hidden
           rounded-[20px] border border-line/85 transition-colors duration-[320ms]
           ease-out hover:border-accent-deep/75
           shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_24px_60px_-18px_rgba(0,0,0,0.7)]
@@ -262,18 +272,48 @@ function PreviewPlayer({
           درس مجاني
         </span>
 
-        {/* المشغّل الحقيقي يأتي في مرحلة الشراء — هذا زرّ يمهّد له */}
+        {/* ── الملصق: ما يُشرح، لا مستطيلٌ أسود ═══════════════════════
+            كان أكبر عنصر في صفحةٍ وظيفتُها الإقناع بالدفع، ولا يحمل
+            شيئًا. وصفحةُ بيعٍ تعرض مربّعًا أسود تطلب الدفع على الثقة.
+
+            ⚠ انحرافٌ أُعلنه: المعاينة تعرض هنا **إعرابًا** لجملة من
+            درس «الاستفهام». وذلك محتوى تحريريّ لدرسٍ بعينه، ولا حقل
+            في المخطط يحمل «مثالًا محلولًا» لأي مقرر. فالمعروض هنا
+            عنوانُ الدرس المجاني ومطلعُ المسار من بيانات المقرر نفسه:
+            نفس **وظيفة** الملصق (يُري ما يُشترى) بمصدرٍ يعمّ كل مقرر
+            بدل نصٍّ ثابت يكذب على مقرر غير عربي. */}
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-center gap-3 p-6 sm:p-8">
+          <span className="text-[11px] font-medium text-subtle">الدرس المجاني</span>
+          <p className="text-balance text-[clamp(1.125rem,2.6vw,1.75rem)] font-semibold leading-[1.4] tracking-[-0.02em] text-paper">
+            {title}
+          </p>
+        </div>
+
+        {/* ستارٌ يهبط نحو القاع فيبقى الزرّ أعلى تباينًا ممّا تحته */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-10
+            [background:linear-gradient(0deg,color-mix(in_srgb,var(--color-ink)_88%,transparent)_0%,color-mix(in_srgb,var(--color-ink)_34%,transparent)_34%,color-mix(in_srgb,var(--color-ink)_14%,transparent)_100%)]"
+        />
+
+        {/* ⚠ زرٌّ مُسمّى في القاع، لا قرصٌ في المنتصف.
+            القرص المركزيّ يحجب المتن الذي يُفترض أن يعلن عنه — جُرّب
+            في المعاينة فاختفت الكلمة الوسطى تحته. والمُسمّى يقول ما
+            سيحدث بدل أن يرمز إليه. */}
         <button
           type="button"
           aria-label={`تشغيل الدرس التجريبي: ${title}`}
-          className="relative z-10 grid size-[76px] place-items-center rounded-full
-            transition-[transform,box-shadow] duration-200 ease-out
-            hover:scale-105 active:scale-[0.98]
-            shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_14px_44px_-10px_rgba(0,0,0,0.7)]
-            hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.075),0_18px_52px_-10px_rgba(0,0,0,0.75),0_0_0_12px_color-mix(in_srgb,var(--color-action)_9%,transparent)]
+          className="press absolute bottom-4 z-20 inline-flex items-center gap-2.5 rounded-full
+            border-0 py-1.5 pe-4 ps-1.5 text-[13px] font-semibold text-ink
+            transition-transform duration-200 ease-out group-hover:-translate-y-0.5
+            shadow-[0_16px_40px_-14px_var(--shadow-lift)]
+            [inset-inline-start:clamp(1rem,3vw,1.6rem)]
             [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]"
         >
-          <Play size={26} className="fill-ink ms-[3px]" strokeWidth={0} aria-hidden="true" />
+          <span className="grid size-[34px] place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-ink)_12%,transparent)]">
+            <Play size={15} className="fill-ink ms-[2px]" strokeWidth={0} aria-hidden="true" />
+          </span>
+          شغّل الدرس المجاني
         </button>
 
         {duration && (

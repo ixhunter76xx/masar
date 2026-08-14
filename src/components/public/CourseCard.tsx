@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Play } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { Price } from "@/components/public/Price";
 import { Counted } from "@/components/ui/Num";
+import { cn } from "@/lib/utils";
 import type { CourseCard as CourseCardData } from "@/lib/data/courses";
 
 /**
@@ -42,16 +43,35 @@ export function CourseCard({ course }: { course: CourseCardData }) {
         <p className="mt-3 text-body-sm text-muted">{course.summary}</p>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {course.hasFreePreview && (
-          <Tag tone="free">
-            <Play size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" />
-            درس مجاني
-          </Tag>
-        )}
-        <Tag>
-          <Counted n={course.lessonCount} few="دروس" many="درسًا" /> مسجّلة
-        </Tag>
+      {/* ── عمود الدروس ═══════════════════════════════════════════════
+          الشكوى المعالَجة: «مستطيلات متماثلة». والعلاج ليس زخرفة
+          تُضاف من خارج، بل بيانٌ يُعرض — عدد الدروس يتفاوت بين
+          المقررات، فرسمُه علاماتٍ يجعل البطاقة تُظهر مقاسها بنفسها،
+          فتختلف البطاقات لأن محتواها مختلف لا لأننا زخرفناها.
+
+          والدرس المجاني علامة **أطول** لا ملوّنة — تمييزٌ بالامتلاء
+          والحجم، كما يقتضي نظامٌ أحاديّ مأخوذ من لوغو أحاديّ. */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="flex h-[18px] items-end gap-[3px]" aria-hidden="true">
+          {Array.from({ length: course.lessonCount }, (_, i) => {
+            const lit = course.hasFreePreview && i === 0;
+            return (
+              <i
+                key={i}
+                className={cn(
+                  "w-2 rounded-[2px] transition-[height,background-color] duration-200",
+                  lit
+                    ? "h-[18px] bg-accent group-hover:bg-accent-bright"
+                    : "h-2 bg-line group-hover:bg-accent-deep",
+                )}
+              />
+            );
+          })}
+        </span>
+        <span className="text-[11px] text-subtle">
+          <Counted n={course.lessonCount} few="دروس" many="درسًا" />
+          {course.hasFreePreview && " · أوّلها مجاني"}
+        </span>
       </div>
 
       <div className="mt-auto flex items-end justify-between gap-4 border-t border-line/75 pt-[1.125rem]">
@@ -95,25 +115,5 @@ export function CourseCard({ course }: { course: CourseCardData }) {
         />
       </span>
     </Link>
-  );
-}
-
-function Tag({
-  children,
-  tone,
-}: {
-  children: React.ReactNode;
-  tone?: "free";
-}) {
-  return (
-    <span
-      className={
-        tone === "free"
-          ? "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-success/50 bg-success/10 px-2.5 py-[0.3rem] text-[11px] font-medium text-success"
-          : "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-ink/70 px-2.5 py-[0.3rem] text-[11px] font-medium text-subtle"
-      }
-    >
-      {children}
-    </span>
   );
 }
