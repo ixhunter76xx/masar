@@ -2,6 +2,16 @@
 
 This file gives Claude Code the context that would otherwise need to be re-explained. Read this in full before making changes. Keep it updated as decisions change — it is the project's memory.
 
+> ## ⚠ على فرع `masar-port`: اقرأ [`PORT-HANDOFF.md`](PORT-HANDOFF.md) قبل أي عمل تصميميّ
+>
+> نقل التصميم المعتمد إلى الموقع الحقيقي **جارٍ وغير مكتمل**. ذلك الملف
+> يقول ما تمّ وما بقي بأرقام أسطر المصدر، ويحمل آلية الضبط (البصمة
+> المنطقية + المِجَسّ + الفحص الوظيفي) وأربعة انحرافات تنتظر حكم المالك.
+>
+> **والقاعدة الأولى فيه:** المعاينة المعتمدة تعيش على فرع آخر
+> (`design/vision/` على `masar-vision`). استخرجها واقرأ العنصر بسطره —
+> النقل من الذاكرة هو ما أفسد الجولات الأولى.
+
 ## Project Overview
 
 **Current identity: "مسار" (Masar)** — a public marketplace + learning platform for university course content in Bahrain, starting with Arabic-language courses at the University of Bahrain.
