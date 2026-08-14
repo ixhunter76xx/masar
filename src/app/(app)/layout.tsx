@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { AreaSwitch } from "@/components/shell/AreaSwitch";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { getShellData } from "@/lib/data/shell";
@@ -29,6 +30,9 @@ export default async function AppLayout({
       >
         تخطٍ إلى المحتوى
       </a>
+
+      {/* خارج الرأسية عمدًا — انظر تعليل الموضع في `AreaSwitch` */}
+      <AreaSwitch current="study" />
 
       <Sidebar user={shell.user} counts={shell.counts} />
 

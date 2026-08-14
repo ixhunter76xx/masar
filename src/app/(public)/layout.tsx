@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { AreaSwitch } from "@/components/shell/AreaSwitch";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { Logo } from "@/components/ui/Logo";
 import { SITE } from "@/lib/site";
@@ -30,6 +31,9 @@ export default async function PublicLayout({
 
   return (
     <div className="ambient min-h-dvh bg-ink">
+      {/* خارج الرأسية عمدًا — انظر تعليل الموضع في `AreaSwitch` */}
+      <AreaSwitch current="catalogue" />
+
       <header
         className="sticky top-0 z-40 flex h-[68px] items-center gap-4
           border-b border-line/70 bg-ink/70 px-4 backdrop-blur-xl sm:px-8"
@@ -38,22 +42,19 @@ export default async function PublicLayout({
           <Logo size={40} variant="full" bare />
         </Link>
 
+        {/* ⚠ «المقررات» و«مقرراتي» أُزيلا من هنا: صار عبورُ المنطقتين
+            وظيفةَ المبدّل الثابت أعلاه، فبقاؤهما بابان ثانيان إلى
+            الوجهتين نفسيهما. وما بقي في الرأسية هو ما يخصّ الحساب
+            وحده — وهو ما لا يعرفه المبدّل ولا ينبغي أن يعرفه. */}
         <nav className="ms-auto flex items-center gap-0.5">
-          <Link
-            href="/courses"
-            className="press inline-flex min-h-touch items-center rounded-[10px]
-              px-3.5 text-[13px] font-medium text-paper"
-          >
-            المقررات
-          </Link>
           {session?.user ? (
             <Link
-              href="/learn"
-              className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
+              href="/profile"
+              className="press inline-flex min-h-touch items-center rounded-[10px]
                 border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
                 transition-colors hover:border-accent-deep hover:bg-panel-lift"
             >
-              مقرراتي
+              حسابي
             </Link>
           ) : (
             <>

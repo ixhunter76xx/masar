@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowLeft, Compass } from "lucide-react";
 
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -42,45 +41,11 @@ export function SidebarContent({
         <SidebarNav counts={counts} role={user.role} onNavigate={onNavigate} />
       </div>
 
-      {/* ══ العودة إلى الكتالوج العام ══════════════════════════════════
-          لم يكن للكتالوج `/courses` أيّ رابط من داخل المنصة: من سجّل
-          دخوله لا يجد طريقًا ليتصفّح مقرَّرًا آخر أو يشتريه — وهو أهمّ
-          مسار تجاري في المنتج.
-
-          ولماذا ليس عنصرًا سابعًا في `NAV_ITEMS`: نظام التصميم يحدّد
-          ستة عناصر جذرية كحدّ أقصى، والطالب عنده ستة بالفعل. فهذا
-          إجراء من فئة أخرى — استكشاف لا تنقّل داخلي — ويأخذ موضعًا
-          ونبرة مختلفين ليُقرأ كذلك.
-
-          موضعه في `SidebarContent` يعني أنه يظهر في الشريط الجانبي
-          وفي اللوحة المنسحبة على الهاتف معًا — أي في كل صفحة. */}
-      <div className="px-3 pb-1">
-        <Link
-          href="/courses"
-          onClick={onNavigate}
-          className="press group flex min-h-touch items-center gap-3 rounded-field border
-            border-line/80 bg-ink/45 px-3 text-[13px] transition-colors
-            hover:border-accent-deep hover:bg-panel-lift"
-        >
-          <Compass
-            size={16}
-            strokeWidth={1.75}
-            aria-hidden="true"
-            className="shrink-0 text-accent transition-colors group-hover:text-accent-bright"
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block font-medium text-paper">تصفّح المقررات</span>
-            <span className="block text-[10.5px] text-subtle">الكتالوج العام</span>
-          </span>
-          <ArrowLeft
-            size={14}
-            strokeWidth={2}
-            aria-hidden="true"
-            className="shrink-0 text-disabled transition-transform duration-200 ease-out group-hover:-translate-x-1"
-          />
-        </Link>
-      </div>
-
+      {/* ⚠ زال من هنا رابط «تصفّح المقررات».
+          كان علاج غياب أي طريق من داخل المنصّة إلى الكتالوج — وهي
+          ثغرة حقيقية — لكن `AreaSwitch` صار يحملها في الرأسية، ظاهرًا
+          في المنطقتين معًا وفي موضع واحد لا يتبدّل. وبابان إلى الوجهة
+          نفسها يجعلان أحدهما ضجيجًا. */}
       <div className="mx-5 mt-3 border-t border-line" />
 
       {/* المستخدم */}
