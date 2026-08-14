@@ -333,6 +333,36 @@
     animation: anim-rise var(--dur-slow) var(--ease-out) both;
   }
 
+  /* الخطّ النسخيّ — لكلمات الإعراب في لوح الأبطل وحدها */
+  .font-amiri {
+    font-family: var(--font-amiri), serif;
+  }
+
+  /* تبدّل اللوح: يتقدّم نحو العين بدل أن ينزلق جانبًا — الانزلاق
+     الأفقي يحتاج قلبًا في RTL، والتقدّم في العمق لا اتجاه له. */
+  @keyframes boardIn {
+    from {
+      opacity: 0.2;
+      transform: translateZ(-30px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* كشف كلمة الإعراب أو خطوة الحلّ، واحدةً بعد أخرى */
+  @keyframes pwIn {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   @keyframes anim-rise {
     from {
       opacity: 0;
