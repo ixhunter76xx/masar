@@ -22,18 +22,17 @@ export function Topbar({
             لأن الشريط الجانبي يحمله على الشاشات الكبيرة */}
         <Logo size={36} className="lg:hidden" />
 
-        {/* ⚠ يختفي تحت ٦٤٠px.
+        {/* ⚠ يختفي تحت ٥٦٠px — العتبة من المعاينة المعتمدة حرفيًّا
+            (كنت نفّذتُها عند ٦٤٠ من الذاكرة، وهو خطأ).
             المبدّل ثابتٌ في منتصف النافذة، فالمساحة المتاحة للعنوان
-            محدودة بحافّته لا بحافّة الشاشة — وفي العروض الضيّقة يزحف
-            تحته. والصفحة تحمل عنوانها في متنها مباشرةً (`PageHeader`)،
-            أما الباب فلا بديل عنه. */}
-        <h1 className="hidden flex-1 truncate text-base font-medium text-paper sm:block">
+            محدودة بحافّته لا بحافّة الشاشة. والصفحة تحمل عنوانها في
+            متنها (`PageHeader`)، أما الباب فلا بديل عنه. */}
+        <h1 className="hidden flex-1 truncate text-base font-medium text-paper min-[560px]:block">
           {title}
         </h1>
-        {/* حاجزٌ يدفع الخروج إلى الحافّة حين يختفي العنوان — كان
-            العنوان حاملَ `flex-1`، فبدونه يتجمّع الزرّ قرب القائمة
-            ويقع تحت المبدّل. */}
-        <span className="flex-1 sm:hidden" aria-hidden="true" />
+        {/* حاجزٌ يدفع الخروج إلى الحافّة حين يختفي العنوان — نظير
+            `.apptop > .btn{margin-inline-start:auto}` في المعاينة. */}
+        <span className="flex-1 min-[560px]:hidden" aria-hidden="true" />
 
         {/* ⚠ زال من هنا مدخل الكتالوج المختصر — `AreaSwitch` يحمله
             الآن في كل عرض، لا دون ١٠٢٤px وحدها. */}

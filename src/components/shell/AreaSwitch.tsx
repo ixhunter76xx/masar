@@ -64,9 +64,13 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
             aria-current={isHere ? "page" : undefined}
             className={cn(
               "press inline-flex items-center rounded-full whitespace-nowrap",
-              "px-3.5 py-2 text-[13px] font-medium transition-colors",
+              /* المقاسات من المعاينة حرفيًّا: ‎.78rem/‎.4rem ‎.85rem،
+                 وتصغيرٌ تحت ٦٢٠px إلى ‎.73rem/‎.4rem ‎.6rem — وهو علاج
+                 المعاينة للضيق: يتقلّص المبدّل، لا يُختصر ما حوله. */
+              "py-1.5 text-[0.73rem] px-2.5 sm:px-3.5 sm:text-[0.78rem]",
+              "font-medium transition-colors",
               isHere
-                ? "bg-panel-high text-paper"
+                ? "bg-panel-high font-semibold text-paper"
                 : "text-subtle hover:text-paper",
             )}
           >
