@@ -132,9 +132,7 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
               onChange={(event) => setNote(event.target.value)}
               disabled={pending}
               placeholder="مرجع التحويل (اختياري)"
-              className="field-motion min-h-touch flex-1 rounded-[10px] border border-line
-                bg-ink px-3.5 text-xs text-paper placeholder:text-disabled
-                hover:border-accent-deep focus:border-accent focus:outline-none"
+              className="input-field flex-1 text-xs"
             />
 
             <button
@@ -192,9 +190,7 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
                   onChange={(event) => setRefundRef(event.target.value)}
                   disabled={pending}
                   placeholder="مرجع التحويل العكسي (مطلوب)"
-                  className="field-motion min-h-touch flex-1 rounded-[10px] border border-line
-                    bg-ink px-3.5 text-xs text-paper placeholder:text-disabled
-                    hover:border-accent-deep focus:border-accent focus:outline-none"
+                  className="input-field flex-1 text-xs"
                 />
 
                 <button

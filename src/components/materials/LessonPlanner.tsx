@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ar } from "@/lib/numerals";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -109,7 +110,7 @@ export function LessonPlanner({
     <section className="mb-8">
       <h3 className="mb-3 text-sm font-medium text-paper">
         سكّة المقرر{" "}
-        <span className="numeric text-[11px] text-subtle">{lessons.length}</span>
+        <span className="numeric text-[11px] text-subtle">{ar(lessons.length)}</span>
       </h3>
 
       <Card className="mb-3 px-4 py-3.5">
@@ -123,9 +124,7 @@ export function LessonPlanner({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="عنوان الدرس — مثال: الاستفهام"
-            className="field-motion min-h-touch flex-1 rounded-[10px] border border-line
-              bg-ink px-3.5 text-[13px] text-paper placeholder:text-disabled
-              hover:border-accent-deep focus:border-accent focus:outline-none"
+            className="input-field flex-1 text-[13px]"
           />
           <button
             type="submit"
@@ -153,7 +152,7 @@ export function LessonPlanner({
             <Card className="px-4 py-3">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="numeric w-5 shrink-0 text-[11px] text-subtle">
-                  {index + 1}
+                  {ar(index + 1)}
                 </span>
 
                 <span className="min-w-0 flex-1 truncate text-[13px] text-paper">
@@ -313,7 +312,7 @@ function Status({
 }) {
   if (percent !== undefined) {
     return (
-      <span className="numeric shrink-0 text-[11px] text-accent">{percent}%</span>
+      <span className="numeric shrink-0 text-[11px] text-accent">{ar(percent)}٪</span>
     );
   }
   if (lesson.isReady) {

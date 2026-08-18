@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ar } from "@/lib/numerals";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 
@@ -123,7 +124,7 @@ export function ProductManager({
                   disabled={busy}
                   className="size-4 accent-[var(--color-action)]"
                 />
-                <span className="numeric text-[11px] text-subtle">{index + 1}</span>
+                <span className="numeric text-[11px] text-subtle">{ar(index + 1)}</span>
                 {lesson.title}
                 {lesson.isFreePreview && (
                   <span className="ms-auto rounded-full border border-success/50 px-2 py-0.5 text-[10px] text-success">
@@ -173,8 +174,8 @@ export function ProductManager({
                   )}
                 </p>
                 <p className="mt-0.5 text-[11px] text-subtle">
-                  <span className="numeric">{product.price}</span> د.ب ·{" "}
-                  <span className="numeric">{product.lessonIds.length}</span> دروس
+                  <span className="numeric">{ar(product.price)}</span> د.ب ·{" "}
+                  <span className="numeric">{ar(product.lessonIds.length)}</span> دروس
                 </p>
               </div>
 
@@ -237,10 +238,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className={`field-motion min-h-touch w-full rounded-[10px] border border-line
-          bg-ink px-3.5 text-[13px] text-paper placeholder:text-disabled
-          hover:border-accent-deep focus:border-accent focus:outline-none
-          ${mono ? "numeric" : ""}`}
+        className={`input-field text-[13px] ${mono ? "numeric" : ""}`}
       />
     </div>
   );
