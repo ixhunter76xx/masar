@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ar } from "@/lib/numerals";
 
 import type { Gradebook } from "@/lib/data/grades";
 
@@ -36,7 +37,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                     {c.title}
                   </Link>
                   <span className="numeric mt-0.5 block text-[10px] font-normal text-subtle">
-                    من {c.totalPoints} · {c.kind === "quiz" ? "اختبار" : "واجب"}
+                    من {ar(c.totalPoints)} · {c.kind === "quiz" ? "اختبار" : "واجب"}
                   </span>
                 </th>
               ))}
@@ -83,22 +84,22 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                             —
                           </span>
                         ) : (
-                          <span className="numeric text-paper">{v}</span>
+                          <span className="numeric text-paper">{ar(v)}</span>
                         )}
                       </td>
                     );
                   })}
 
                   <td className="px-[1.15rem] py-[0.9rem] text-center">
-                    {r.total === 0 ? (
+                    {pct === null ? (
                       <span className="text-subtle">—</span>
                     ) : (
                       <>
-                        <span className="numeric text-paper">{r.earned}</span>
+                        <span className="numeric text-paper">{ar(r.earned)}</span>
                         <span className="text-subtle"> / </span>
-                        <span className="numeric text-muted">{r.total}</span>
+                        <span className="numeric text-muted">{ar(r.total)}</span>
                         <span className="numeric block text-[10px] text-subtle">
-                          {pct}%
+                          {ar(pct)}٪
                         </span>
                       </>
                     )}

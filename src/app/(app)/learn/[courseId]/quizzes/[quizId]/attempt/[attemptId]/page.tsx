@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ar } from "@/lib/numerals";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
@@ -66,16 +67,16 @@ export default async function AttemptPage({ params }: Params) {
         <Card className="mb-6 px-5 py-6 text-center">
           <p className="text-[13px] text-muted">
             نتيجة المحاولة{" "}
-            <span className="numeric">{attempt.attemptNumber}</span>
+            <span className="numeric">{ar(attempt.attemptNumber)}</span>
           </p>
           <p className="mt-3">
             <span className="numeric text-3xl font-bold text-paper">
-              {earned}
+              {ar(earned)}
             </span>
             <span className="text-xl text-subtle"> / </span>
-            <span className="numeric text-xl text-muted">{total}</span>
+            <span className="numeric text-xl text-muted">{ar(total)}</span>
           </p>
-          <p className="numeric mt-2 text-[13px] text-accent">{pct}%</p>
+          <p className="numeric mt-2 text-[13px] text-accent">{ar(pct)}٪</p>
         </Card>
 
         <h3 className="mb-3 text-sm font-medium text-paper">مراجعة الأسئلة</h3>
@@ -103,11 +104,11 @@ export default async function AttemptPage({ params }: Params) {
                     />
                   )}
                   <p className="flex-1 text-[13px] leading-relaxed text-paper">
-                    <span className="numeric text-subtle">{i + 1}. </span>
+                    <span className="numeric text-subtle">{ar(i + 1)}. </span>
                     {q.text}
                   </p>
                   <span className="numeric shrink-0 text-[11px] text-subtle">
-                    {a?.earnedPoints ?? 0} / {q.points}
+                    {ar(a?.earnedPoints ?? 0)} / {ar(q.points)}
                   </span>
                 </Card>
               </li>

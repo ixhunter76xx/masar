@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ar } from "@/lib/numerals";
 import { FileQuestion, Timer, Repeat } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
@@ -84,19 +85,19 @@ export function QuizList({
 
                   <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-subtle">
                     <span>
-                      <span className="numeric">{q.questionCount}</span> أسئلة ·{" "}
-                      <span className="numeric">{q.totalPoints}</span> درجة
+                      <span className="numeric">{ar(q.questionCount)}</span> أسئلة ·{" "}
+                      <span className="numeric">{ar(q.totalPoints)}</span> درجة
                     </span>
                     {q.timeLimitMin !== null && (
                       <span className="inline-flex items-center gap-1">
                         <Timer size={12} strokeWidth={1.75} aria-hidden="true" />
-                        <span className="numeric">{q.timeLimitMin}</span> دقيقة
+                        <span className="numeric">{ar(q.timeLimitMin)}</span> دقيقة
                       </span>
                     )}
                     {q.maxAttempts > 1 && (
                       <span className="inline-flex items-center gap-1">
                         <Repeat size={12} strokeWidth={1.75} aria-hidden="true" />
-                        <span className="numeric">{q.maxAttempts}</span> محاولات
+                        <span className="numeric">{ar(q.maxAttempts)}</span> محاولات
                       </span>
                     )}
                     </p>

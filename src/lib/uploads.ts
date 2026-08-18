@@ -1,3 +1,5 @@
+import { ar } from "@/lib/numerals";
+
 /** قيود رفع الفيديو — مشتركة بين المتصفح والخادم */
 
 /** الحد الأقصى لحجم ملف الفيديو: 1 جيجابايت */
@@ -19,7 +21,7 @@ export const MAX_PART_RETRIES = 3;
 
 /** صياغة حجم بالبايت إلى نص عربي مقروء */
 export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} بايت`;
+  if (bytes < 1024) return `${ar(bytes)} بايت`;
   const units = ["كيلوبايت", "ميجابايت", "جيجابايت"];
   let value = bytes / 1024;
   let i = 0;
@@ -27,7 +29,8 @@ export function formatBytes(bytes: number): string {
     value /= 1024;
     i++;
   }
-  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`;
+    /* الفاصلة العشرية العربية كما في الأسعار — «٢٤٫٥ ميجابايت» لا «٢٤.٥» */
+  return `${ar(value.toFixed(value < 10 ? 1 : 0)).replace(".", "٫")} ${units[i]}`;
 }
 
 /** تحقّق من الملف قبل بدء الرفع — تجربة مستخدم، والخادم يتحقق مجددًا */

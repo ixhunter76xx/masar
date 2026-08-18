@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { ar } from "@/lib/numerals";
 
 /**
  * عدّاد دائري صغير.
@@ -26,7 +27,7 @@ export function CountBadge({
         className,
       )}
     >
-      {count > 99 ? "99+" : count}
+      {count > 99 ? `${ar(99)}+` : ar(count)}
     </span>
   );
 }

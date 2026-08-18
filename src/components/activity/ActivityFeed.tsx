@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { relativeTime } from "@/lib/format";
+import { ar } from "@/lib/numerals";
 import { ACTIVITY_META, type ActivityEvent } from "@/lib/data/activity";
 import { cn } from "@/lib/utils";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
@@ -56,7 +57,10 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
 
                   {event.detail && (
                     <p className="mt-2 line-clamp-2 whitespace-pre-line text-[13px] leading-relaxed text-muted">
-                      {event.detail}
+                      {/* الأرقام تُعرَّب في درجةٍ ولّدها التطبيق («٤ من ٤»)، ولا
+                          تُمسّ في إعلانٍ أو رسالةٍ كتبها إنسان: تعريب رقمٍ
+                          داخل نصّ المستخدم يغيّر ما كتبه. */}
+                      {event.kind === "grade" ? ar(event.detail) : event.detail}
                     </p>
                   )}
                 </div>

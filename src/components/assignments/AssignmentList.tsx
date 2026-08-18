@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ar } from "@/lib/numerals";
 import { ClipboardList, CalendarClock, CheckCircle2 } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
@@ -72,13 +73,13 @@ export function AssignmentList({
                   )}
                   {canManage && (
                     <span>
-                      <span className="numeric">{a.submissionCount}</span> تسليم
+                      <span className="numeric">{ar(a.submissionCount)}</span> تسليم
                     </span>
                   )}
                   {a.mySubmission?.earnedPoints !== null &&
                     a.mySubmission !== null && (
                       <span className="numeric text-success">
-                        {a.mySubmission.earnedPoints} / {a.totalPoints}
+                        {ar(a.mySubmission.earnedPoints)} / {ar(a.totalPoints)}
                       </span>
                     )}
                 </p>

@@ -13,6 +13,7 @@ import { requireAdmin } from "@/lib/data/admin";
 import { listOrdersForAdmin } from "@/lib/data/orders";
 import { adminFollowUpLink, displayPhone } from "@/lib/whatsapp";
 import { formatFils } from "@/lib/price";
+import { ar, arPrice } from "@/lib/numerals";
 import { formatDate } from "@/lib/format";
 import { OrderStatus } from "@/generated/prisma/enums";
 
@@ -34,7 +35,7 @@ export default async function AdminOrdersPage() {
       number: order.number,
       status: order.status,
       title,
-      priceLabel: formatFils(order.totalFils),
+      priceLabel: arPrice(formatFils(order.totalFils)),
       createdLabel: formatDate(order.createdAt),
       student: {
         name: order.user.name,
@@ -78,7 +79,7 @@ export default async function AdminOrdersPage() {
               بانتظار التأكيد
               {pending.length > 0 && (
                 <span className="numeric ms-2 text-subtle">
-                  ({pending.length})
+                  ({ar(pending.length)})
                 </span>
               )}
             </h2>

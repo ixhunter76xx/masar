@@ -15,6 +15,7 @@ import {
 } from "@/lib/data/materials";
 import { getCourseQuizzes } from "@/lib/data/quizzes";
 import { getCourseAssignments } from "@/lib/data/assignments";
+import { ar } from "@/lib/numerals";
 
 type Params = { params: Promise<{ courseId: string }> };
 
@@ -64,7 +65,7 @@ export default async function CourseContentPage({ params }: Params) {
             <h3 className="mb-3 text-sm font-medium text-paper">
               المحاضرات{" "}
               <span className="numeric text-[11px] text-subtle">
-                {materials.length}
+                {ar(materials.length)}
               </span>
             </h3>
 
@@ -90,7 +91,7 @@ export default async function CourseContentPage({ params }: Params) {
                   <h3 className="mb-3 text-sm font-medium text-paper">
                     الاختبارات{" "}
                     <span className="numeric text-[11px] text-subtle">
-                      {quizzes.length}
+                      {ar(quizzes.length)}
                     </span>
                   </h3>
                   <QuizList
@@ -106,7 +107,7 @@ export default async function CourseContentPage({ params }: Params) {
                   <h3 className="mb-3 text-sm font-medium text-paper">
                     الواجبات{" "}
                     <span className="numeric text-[11px] text-subtle">
-                      {assignments.length}
+                      {ar(assignments.length)}
                     </span>
                   </h3>
                   <AssignmentList

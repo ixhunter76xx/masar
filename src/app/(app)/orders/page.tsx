@@ -10,6 +10,7 @@ import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 import { listMyOrders } from "@/lib/data/orders";
 import { formatFils } from "@/lib/price";
+import { arPrice } from "@/lib/numerals";
 import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "طلباتي" };
@@ -54,7 +55,7 @@ export default async function OrdersPage() {
                   </div>
 
                   <span className="shrink-0 text-sm font-medium text-paper">
-                    <span className="numeric">{formatFils(order.totalFils)}</span>{" "}
+                    <span className="numeric">{arPrice(formatFils(order.totalFils))}</span>{" "}
                     <span className="text-[11px] text-subtle">د.ب</span>
                   </span>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ar } from "@/lib/numerals";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -82,7 +83,7 @@ export default async function AssignmentPage({ params }: Params) {
         <h3 className="mb-3 text-sm font-medium text-paper">
           التسليمات{" "}
           <span className="numeric text-[11px] text-subtle">
-            {a.submissions.length}
+            {ar(a.submissions.length)}
           </span>
         </h3>
 
@@ -117,7 +118,7 @@ export default async function AssignmentPage({ params }: Params) {
 
                     {s.earnedPoints !== null && (
                       <p className="numeric text-sm text-paper">
-                        {s.earnedPoints}
+                        {ar(s.earnedPoints)}
                         <span className="text-subtle"> / </span>
                         <span className="text-muted">{a.totalPoints}</span>
                         {s.rawPoints !== null &&
@@ -245,7 +246,7 @@ export default async function AssignmentPage({ params }: Params) {
 
             {mine.earnedPoints !== null ? (
               <p className="numeric text-sm text-paper">
-                {mine.earnedPoints}
+                {ar(mine.earnedPoints)}
                 <span className="text-subtle"> / </span>
                 <span className="text-muted">{a.totalPoints}</span>
               </p>

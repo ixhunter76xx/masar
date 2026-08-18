@@ -11,6 +11,7 @@ import { CancelOrderButton } from "@/components/orders/CancelOrderButton";
 import { getMyOrder } from "@/lib/data/orders";
 import { studentPaymentLink } from "@/lib/whatsapp";
 import { formatFils } from "@/lib/price";
+import { arPrice } from "@/lib/numerals";
 import { formatDate } from "@/lib/format";
 import { OrderStatus } from "@/generated/prisma/enums";
 
@@ -68,7 +69,7 @@ export default async function OrderPage({ params }: Params) {
         <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
           <span className="text-[13px] text-muted">المبلغ</span>
           <span className="ms-auto text-2xl font-semibold text-paper">
-            <span className="numeric">{formatFils(order.totalFils)}</span>
+            <span className="numeric">{arPrice(formatFils(order.totalFils))}</span>
           </span>
           <span className="text-xs text-subtle">د.ب</span>
         </div>

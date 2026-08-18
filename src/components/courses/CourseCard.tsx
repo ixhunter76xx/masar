@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ar } from "@/lib/numerals";
 import { UserRound, Layers, Play, ArrowLeft } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
@@ -64,13 +65,13 @@ export function CourseCard({
           )}
           <span className="inline-flex items-center gap-1.5">
             <Layers size={13} strokeWidth={1.75} aria-hidden="true" />
-            <span className="numeric">{course.products.length}</span>
+            <span className="numeric">{ar(course.products.length)}</span>
             {course.products.length === 1 ? "دورة" : "دورات"}
           </span>
           {resume && resume.ownedReady > 0 && (
             <span className="inline-flex items-center gap-1.5">
               <Play size={12} fill="currentColor" strokeWidth={0} aria-hidden="true" />
-              <span className="numeric">{resume.ownedReady}</span>
+              <span className="numeric">{ar(resume.ownedReady)}</span>
               {resume.ownedReady === 1 ? "درس جاهز" : "دروس جاهزة"}
             </span>
           )}
@@ -100,8 +101,8 @@ export function CourseCard({
                 />
               </div>
               <p className="mt-1.5 text-[11px] text-subtle">
-                أنهيت <span className="numeric">{resume.completed}</span> من{" "}
-                <span className="numeric">{resume.ownedReady}</span>
+                أنهيت <span className="numeric">{ar(resume.completed)}</span> من{" "}
+                <span className="numeric">{ar(resume.ownedReady)}</span>
               </p>
             </div>
           )}

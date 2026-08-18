@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ar } from "@/lib/numerals";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -134,7 +135,7 @@ export default async function QuizEditorPage({ params }: Params) {
       <h3 className="mb-3 text-sm font-medium text-paper">
         الأسئلة{" "}
         <span className="numeric text-[11px] text-subtle">
-          {quiz.questions.length}
+          {ar(quiz.questions.length)}
         </span>
       </h3>
 

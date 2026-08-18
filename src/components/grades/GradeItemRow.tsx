@@ -3,6 +3,7 @@ import { FileQuestion, ClipboardList } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
 import { relativeTime } from "@/lib/format";
+import { ar } from "@/lib/numerals";
 import type { GradeItem } from "@/lib/data/grades";
 
 export function GradeItemRow({ item }: { item: GradeItem }) {
@@ -32,12 +33,12 @@ export function GradeItemRow({ item }: { item: GradeItem }) {
 
         <p className="shrink-0 text-end">
           <span className="numeric text-sm font-medium text-paper">
-            {item.earnedPoints}
+            {ar(item.earnedPoints)}
           </span>
           <span className="text-subtle"> / </span>
-          <span className="numeric text-sm text-muted">{item.totalPoints}</span>
+          <span className="numeric text-sm text-muted">{ar(item.totalPoints)}</span>
           <span className="numeric block text-[11px] text-subtle">
-            {pct}%
+            {ar(pct)}٪
           </span>
         </p>
       </Link>
