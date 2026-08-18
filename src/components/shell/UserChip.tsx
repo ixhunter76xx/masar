@@ -17,16 +17,16 @@ export function UserChip({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-center gap-3 min-w-0", className)}>
+    <div className={cn("flex min-w-0 w-full items-center gap-[0.65rem] rounded-[12px] p-[0.55rem]", className)}>
       <span
         aria-hidden="true"
-        className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-ink text-sm text-muted"
+        className="grid size-8 shrink-0 place-items-center rounded-full border border-line bg-ink text-[13px] text-muted"
       >
         {initial(name)}
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[13px] font-medium text-paper">{name}</p>
-        <p className="truncate text-[11px] text-muted">{ROLE_LABELS[role]}</p>
+        <p className="truncate text-[0.81rem] font-semibold text-paper">{name}</p>
+        <p className="truncate text-[0.68rem] text-subtle">{ROLE_LABELS[role]}</p>
       </div>
     </div>
   );

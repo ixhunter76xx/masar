@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { setCoursePresenter } from "@/app/(app)/settings/courses/actions";
+import { Select } from "@/components/ui/Field";
 
 /**
  * إسناد مقدّم إلى مقرر من صفّه في القائمة.
@@ -52,15 +53,13 @@ export function CoursePresenterSelect({
       <label htmlFor={`presenter-${courseId}`} className="sr-only">
         مقدّم {courseTitle}
       </label>
-      <select
+      {/* كسابقتها: ضابطٌ في صفّ، يتجاوز المقاس وحده */}
+      <Select
         id={`presenter-${courseId}`}
         defaultValue={current}
         onChange={onChange}
         disabled={busy}
-        className="field-motion min-h-touch rounded-[10px] border border-line bg-ink
-          px-2.5 text-[11px] text-paper hover:border-accent-deep
-          focus:border-accent focus:outline-none
-          disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-touch w-auto px-2.5 text-[11px]"
       >
         <option value="">— بلا مقدّم —</option>
         {instructors.map((instructor) => (
@@ -68,7 +67,7 @@ export function CoursePresenterSelect({
             {instructor.name}
           </option>
         ))}
-      </select>
+      </Select>
 
       {error && (
         <p role="alert" className="basis-full text-[11px] text-danger">

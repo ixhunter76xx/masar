@@ -21,15 +21,18 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
+  /* الحشو مرن: `clamp(1.6rem,4vw,2.3rem)` كما في `.authcard` */
   return (
-    <Card className="px-7 py-8">
-      {/* الهوية */}
-      <header className="flex flex-col items-center text-center mb-7">
-        <Logo size={80} />
-        <h1 className="mt-5 text-[22px] font-bold tracking-tight text-paper">
-          تسجيل الدخول
-        </h1>
-        <p className="mt-1.5 text-[13px] text-muted">{SITE.tagline}</p>
+    <Card className="p-[clamp(1.6rem,4vw,2.3rem)]">
+      {/* الهوية — `.authhead`: شبكة مركزيّة بفجوة ‎.9rem */}
+      <header className="mb-[1.8rem] grid justify-items-center gap-[0.9rem] text-center">
+        <Logo size={44} variant="full" bare />
+        <div>
+          <h1 className="mb-[0.3rem] text-[22px] font-bold tracking-tight text-paper">
+            أهلًا بعودتك
+          </h1>
+          <p className="text-[13px] text-muted">ادخل لتتابع من حيث توقّفت.</p>
+        </div>
       </header>
 
       {/* Suspense مطلوب: النموذج يقرأ معامل ?next من الرابط */}

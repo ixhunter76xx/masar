@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FormField, Label, Checkbox } from "@/components/ui/Field";
+import { FormField, Label, Checkbox, Textarea } from "@/components/ui/Field";
 import {
   createAssignment,
   updateAssignment,
@@ -92,16 +92,12 @@ export function AssignmentForm({
 
         <div>
           <Label htmlFor="a-desc">وصف المطلوب</Label>
-          <textarea
+          <Textarea
             id="a-desc"
             name="description"
             rows={3}
             defaultValue={assignment?.description ?? ""}
             placeholder="حلّ التمارين من ١ إلى ١٠ وارفع الحل بصيغة PDF…"
-            className="w-full rounded-[10px] bg-ink px-4 py-3 text-sm text-paper
-              border border-line placeholder:text-disabled leading-relaxed
-              transition-colors duration-150 hover:border-accent-deep
-              focus:border-accent focus:outline-none resize-y"
           />
         </div>
 

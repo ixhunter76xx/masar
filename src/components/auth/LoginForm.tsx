@@ -9,9 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { PasswordField } from "@/components/ui/PasswordField";
 import { Input, Label, HelpText, Checkbox } from "@/components/ui/Field";
+import { FormAlert } from "@/components/ui/FormAlert";
 import { loginSchema, type LoginInput, type LoginValues } from "@/lib/validation";
 import { authenticate } from "@/app/(auth)/login/actions";
-import { SITE } from "@/lib/site";
 
 export function LoginForm() {
   const [formError, setFormError] = React.useState<string | null>(null);
@@ -37,41 +37,35 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-[1.15rem]">
       {/* رسالة خطأ عامة على مستوى النموذج */}
       {passwordChanged && !formError && (
-        <div className="rounded-[10px] border border-success/50 bg-success/10 px-4 py-3 text-xs leading-relaxed text-success">
-          تم تغيير كلمة المرور. سجّل الدخول بها.
-        </div>
+        <FormAlert tone="success">تم تغيير كلمة المرور. سجّل الدخول بها.</FormAlert>
       )}
 
-      {formError && (
-        <div
-          role="alert"
-          className="rounded-[10px] border border-danger/60 bg-danger/10 px-4 py-3 text-xs leading-relaxed text-danger"
-        >
-          {formError}
-        </div>
-      )}
+      {formError && <FormAlert>{formError}</FormAlert>}
 
       <div>
         {/* تسمية حقيقية لا placeholder: النص النائب يختفي عند الكتابة
             فيفقد المستخدم مرجعه، ولا يُعدّ تسمية في معايير الوصولية. */}
-        <Label htmlFor="email">البريد الإلكتروني</Label>
+        <Label htmlFor="email">البريد الجامعي</Label>
         <Input
           id="email"
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="name@example.com"
+          dir="ltr"
+          placeholder="you@stu.uob.edu.bh"
           invalid={Boolean(errors.email)}
-          aria-describedby={errors.email ? "email-error" : undefined}
+          aria-describedby={errors.email ? "email-error" : "email-hint"}
           {...register("email")}
         />
-        {errors.email && (
+        {errors.email ? (
           <HelpText id="email-error" tone="danger" role="alert">
             {errors.email.message}
           </HelpText>
+        ) : (
+          <HelpText id="email-hint">استعمل بريدك الجامعي إن وُجد.</HelpText>
         )}
       </div>
 
@@ -87,32 +81,23 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="pt-1">
-        <Checkbox id="remember" label="تذكّرني" {...register("remember")} />
-      </div>
-
-      <Button type="submit" fullWidth loading={isSubmitting} className="mt-1">
-        {isSubmitting ? "جارٍ التحقق" : "دخول"}
-      </Button>
-
-      <div className="flex items-center justify-between text-xs">
-        {/* الحد الأدنى ٤٤ بكسل للمس. الحشو يوسّع منطقة النقر، و`-ms-2`
-            يعيد النص إلى محاذاته الأصلية فلا يبدو مزاحًا عن الحافة. */}
+      <div className="flex items-center justify-between gap-4">
+        <Checkbox id="remember" label="أبقني داخلًا" {...register("remember")} />
         <Link
           href="/forgot-password"
-          className="-ms-2 inline-flex min-h-touch items-center rounded-[10px] px-2
-            text-accent-bright transition-colors hover:text-paper"
+          className="-me-2 inline-flex min-h-touch items-center rounded-[10px] px-2
+            text-xs text-accent-bright transition-colors hover:text-paper"
         >
           نسيت كلمة المرور؟
         </Link>
-        <span className="text-subtle">
-          الدعم الفني:{" "}
-          <span className="numeric text-muted">{SITE.supportPhone}</span>
-        </span>
       </div>
 
-      <p className="border-t border-line pt-3 text-center text-xs text-subtle">
-        ليس لديك حساب؟{" "}
+      <Button type="submit" fullWidth loading={isSubmitting}>
+        {isSubmitting ? "جارٍ التحقق" : "دخول"}
+      </Button>
+
+      <p className="mt-1 text-center text-xs text-subtle">
+        ليس لك حساب؟{" "}
         <Link
           href="/signup"
           className="inline-flex min-h-touch items-center rounded-[10px] px-2

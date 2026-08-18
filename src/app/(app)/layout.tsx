@@ -37,7 +37,7 @@ export default async function AppLayout({
       <Sidebar user={shell.user} counts={shell.counts} />
 
       {/* الهامش يقابل عرض الشريط الجانبي — ms أي يمين في RTL ويسار في LTR */}
-      <div className="lg:ms-[260px]">
+      <div className="min-[1060px]:ms-[260px]">
         <PageTransition>{children}</PageTransition>
       </div>
     </div>

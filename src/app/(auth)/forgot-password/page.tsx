@@ -18,8 +18,8 @@ export const metadata: Metadata = { title: "استعادة كلمة المرور
 
 export default function ForgotPasswordPage() {
   return (
-    <Card className="px-7 py-8 text-center">
-      <Logo size={72} className="mx-auto" />
+    <Card className="p-[clamp(1.6rem,4vw,2.3rem)] text-center">
+      <Logo size={44} variant="full" bare className="mx-auto" />
       <h1 className="mt-5 text-[20px] font-bold text-paper">
         استعادة كلمة المرور
       </h1>

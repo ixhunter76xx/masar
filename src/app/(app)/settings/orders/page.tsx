@@ -84,7 +84,7 @@ export default async function AdminOrdersPage() {
             </h2>
 
             {pending.length === 0 ? (
-              <p className="rounded-[14px] border border-line bg-panel px-5 py-8 text-center text-[13px] text-subtle">
+              <p className="rounded-card border border-line bg-panel px-5 py-8 text-center text-[13px] text-subtle">
                 لا شيء ينتظرك.
               </p>
             ) : (

@@ -18,11 +18,11 @@ export function CountBadge({
   return (
     <span
       className={cn(
-        "inline-flex min-w-[22px] h-[22px] items-center justify-center",
-        "rounded-full px-1.5 numeric text-[11px] leading-none",
+        "inline-flex min-w-5 h-5 items-center justify-center",
+        "rounded-full px-[0.35rem] numeric text-[0.66rem] font-semibold leading-none",
         tone === "danger"
-          ? "bg-danger text-paper"
-          : "bg-line text-muted",
+          ? "bg-danger/20 text-danger"
+          : "bg-panel-high text-muted",
         className,
       )}
     >

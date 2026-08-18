@@ -99,7 +99,7 @@ export function QuizOverview({
             </span>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-spark">
+              <p className="text-[11px] font-medium text-spark">
                 أفضل نتيجة
               </p>
               <p className="mt-1.5 text-2xl font-semibold leading-none text-paper">

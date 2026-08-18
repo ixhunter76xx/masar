@@ -1,20 +1,19 @@
 import Link from "next/link";
 
-import { Card } from "@/components/ui/Card";
 import { relativeTime } from "@/lib/format";
 import { ACTIVITY_META, type ActivityEvent } from "@/lib/data/activity";
 import { cn } from "@/lib/utils";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
 
 const TONE_CLASSES = {
-  neutral: "text-accent border-line",
-  warning: "text-warning border-warning/30",
-  success: "text-success border-success/30",
+  neutral: "text-accent",
+  warning: "text-warning",
+  success: "text-success",
 } as const;
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
   return (
-    <StaggerList className="space-y-3">
+    <StaggerList className="space-y-[0.55rem]">
       {events.map((event) => {
         const meta = ACTIVITY_META[event.kind];
         const Icon = meta.icon;
@@ -26,11 +25,13 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
 
         return (
           <StaggerItem key={event.id}>
-            <Card className="lift hover:border-accent-deep">
-              <Link href={href} className="flex gap-4 px-5 py-4">
+            <Link
+              href={href}
+              className="flex items-start gap-[0.85rem] rounded-field border border-line-soft bg-[var(--sunk-2)] px-[1.05rem] py-[0.9rem] transition-colors hover:border-accent-deep"
+            >
                 <span
                   className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-full border bg-ink",
+                    "grid size-[30px] shrink-0 place-items-center rounded-[9px] border border-line bg-[var(--sunk)]",
                     TONE_CLASSES[meta.tone],
                   )}
                 >
@@ -59,8 +60,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
                     </p>
                   )}
                 </div>
-              </Link>
-            </Card>
+            </Link>
           </StaggerItem>
         );
       })}

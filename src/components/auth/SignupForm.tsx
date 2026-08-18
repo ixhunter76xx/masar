@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { PasswordField } from "@/components/ui/PasswordField";
 import { Input, Label, HelpText } from "@/components/ui/Field";
+import { FormAlert } from "@/components/ui/FormAlert";
 import { signupSchema, type SignupInput, type SignupValues } from "@/lib/validation";
 import { signup } from "@/app/(auth)/signup/actions";
 
@@ -36,14 +37,7 @@ export function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
-      {formError && (
-        <div
-          role="alert"
-          className="rounded-[10px] border border-danger/60 bg-danger/10 px-4 py-3 text-xs leading-relaxed text-danger"
-        >
-          {formError}
-        </div>
-      )}
+      {formError && <FormAlert>{formError}</FormAlert>}
 
       <div>
         <Label htmlFor="name">الاسم</Label>

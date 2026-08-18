@@ -5,7 +5,7 @@ import { Check, CheckCheck, Send } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/Button";
-import { HelpText } from "@/components/ui/Field";
+import { HelpText, Textarea } from "@/components/ui/Field";
 import { EASE, DUR, SPRING } from "@/lib/motion";
 import { relativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,7 @@ export function MessageThread({
   return (
     <div className="space-y-4">
       {messages.length === 0 ? (
-        <p className="rounded-[14px] border border-line bg-panel px-5 py-8 text-center text-sm text-subtle">
+        <p className="rounded-card border border-line bg-panel px-5 py-8 text-center text-sm text-subtle">
           لا رسائل بعد. اكتب أول رسالة إلى {peerName}.
         </p>
       ) : (
@@ -84,7 +84,7 @@ export function MessageThread({
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-[14px] px-4 py-3 text-sm leading-relaxed",
+                    "max-w-[85%] rounded-field px-4 py-3 text-sm leading-relaxed",
                     message.isMine
                       ? "bg-accent-deep text-paper"
                       : "border border-line bg-panel text-paper",
@@ -130,7 +130,7 @@ export function MessageThread({
         <label htmlFor="body" className="sr-only">
           نص الرسالة إلى {peerName}
         </label>
-        <textarea
+        <Textarea
           id="body"
           name="body"
           rows={3}
@@ -139,10 +139,7 @@ export function MessageThread({
           disabled={pending}
           placeholder={`اكتب رسالة إلى ${peerName}…`}
           aria-describedby={error ? "message-error" : undefined}
-          className="field-motion w-full resize-y rounded-[10px] border border-line
-            bg-ink px-4 py-3 text-sm text-paper placeholder:text-disabled
-            hover:border-accent-deep focus:border-accent focus:outline-none
-            disabled:cursor-not-allowed disabled:text-subtle"
+          invalid={Boolean(error)}
         />
 
         {error && (

@@ -61,6 +61,7 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
           <Link
             key={area.key}
             href={area.href}
+            prefetch={area.key === "study" ? false : undefined}
             aria-current={isHere ? "page" : undefined}
             className={cn(
               "press inline-flex items-center rounded-full whitespace-nowrap",

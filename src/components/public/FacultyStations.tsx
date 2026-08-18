@@ -39,6 +39,102 @@ const ICONS: Record<FacultyIconKey, LucideIcon> = {
   other: Layers,
 };
 
+const ARTS_GLYPHS = [
+  { glyph: "ب", top: 12, start: 8, size: 2.5, duration: 15, offset: 0, rotate: 7 },
+  { glyph: "ن", top: 58, start: 22, size: 1.7, duration: 18.4, offset: -2.7, rotate: -6 },
+  { glyph: "ر", top: 26, start: 38, size: 3.1, duration: 21.8, offset: -5.4, rotate: 7 },
+  { glyph: "ك", top: 72, start: 52, size: 1.9, duration: 25.2, offset: -8.1, rotate: -6 },
+  { glyph: "ع", top: 40, start: 66, size: 2.2, duration: 28.6, offset: -10.8, rotate: 7 },
+  { glyph: "م", top: 16, start: 80, size: 1.6, duration: 32, offset: -13.5, rotate: -6 },
+  { glyph: "ه", top: 64, start: 92, size: 2.8, duration: 35.4, offset: -16.2, rotate: 7 },
+] as const;
+
+/** رسمٌ دلالي خفيف يميّز كل كلية، من نفس SVG المعتمد في المعاينة. */
+function FacultyScene({ icon }: { icon: FacultyIconKey }) {
+  return (
+    <div className="faculty-scene" aria-hidden="true">
+      {icon === "arts" && (
+        <>
+          <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+            <g className="faculty-drift">
+              <path className="faculty-draw" strokeWidth="1.4" d="M40,210 C170,60 300,250 430,140 S690,40 860,170" />
+              <path className="faculty-draw" strokeWidth="1" opacity=".55" d="M40,250 C200,120 320,270 470,180 S720,90 860,215" />
+              <path className="faculty-draw" strokeWidth=".8" opacity=".35" d="M60,150 C200,40 330,180 480,90 S700,10 850,120" />
+              <path className="faculty-flow" strokeWidth="2.2" stroke="var(--color-spark)" strokeLinecap="round" d="M40,210 C170,60 300,250 430,140 S690,40 860,170" />
+              <path className="faculty-flow" strokeWidth="1.6" stroke="var(--color-accent-bright)" strokeLinecap="round" opacity=".5" style={{ animationDuration: "34s", animationDelay: "-9s" }} d="M40,250 C200,120 320,270 470,180 S720,90 860,215" />
+            </g>
+          </svg>
+          <div className="faculty-glyphs">
+            {ARTS_GLYPHS.map((item) => (
+              <span
+                key={item.glyph}
+                style={{
+                  top: `${item.top}%`,
+                  insetInlineStart: `${item.start}%`,
+                  fontSize: `${item.size}rem`,
+                  "--glyph-duration": `${item.duration}s`,
+                  "--glyph-offset": `${item.offset}s`,
+                  "--glyph-rotate": `${item.rotate}deg`,
+                } as React.CSSProperties}
+              >
+                {item.glyph}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+
+      {icon === "it" && (
+        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+          <g strokeWidth="1" opacity=".22">
+            {[50, 102, 154, 206, 258].map((y) => <line key={y} x1="30" y1={y} x2="870" y2={y} />)}
+          </g>
+          <g strokeWidth="1.3" opacity=".7">
+            <path className="faculty-draw" d="M150,96 L150,164 L184,164 A34,34 0 0 0 184,96 Z" />
+            <line className="faculty-draw" x1="104" y1="112" x2="150" y2="112" /><line className="faculty-draw" x1="104" y1="148" x2="150" y2="148" />
+            <line className="faculty-draw" x1="218" y1="130" x2="300" y2="130" />
+            <path className="faculty-draw" d="M340,96 Q372,130 340,164 Q392,164 414,130 Q392,96 340,164" />
+            <path className="faculty-draw" d="M340,96 Q372,130 340,164" />
+            <line className="faculty-draw" x1="300" y1="112" x2="344" y2="112" /><line className="faculty-draw" x1="300" y1="148" x2="344" y2="148" />
+            <line className="faculty-draw" x1="414" y1="130" x2="520" y2="130" />
+            <path className="faculty-draw" d="M560,100 L560,160 L610,130 Z" />
+            <circle className="faculty-draw" cx="617" cy="130" r="7" />
+            <line className="faculty-draw" x1="520" y1="130" x2="560" y2="130" /><line className="faculty-draw" x1="624" y1="130" x2="760" y2="130" />
+          </g>
+          <path className="faculty-flow" d="M104,112 L150,112 M218,130 L300,130 M414,130 L520,130 M624,130 L760,130" stroke="var(--color-spark)" strokeWidth="2.4" strokeLinecap="round" style={{ animationDuration: "14s" }} />
+          {[300, 520, 760].map((x, i) => <circle key={x} className="faculty-pulse" cx={x} cy="130" r="4" fill="var(--color-spark)" stroke="none" style={{ animationDelay: `${i * 1.6}s` }} />)}
+        </svg>
+      )}
+
+      {icon === "science" && (
+        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+          <g className="faculty-spin" style={{ transformOrigin: "450px 150px" }}>
+            <ellipse className="faculty-draw" cx="450" cy="150" rx="300" ry="96" strokeWidth="1.2" />
+            <ellipse className="faculty-draw" cx="450" cy="150" rx="300" ry="96" strokeWidth="1" opacity=".6" transform="rotate(60 450 150)" />
+            <ellipse className="faculty-draw" cx="450" cy="150" rx="300" ry="96" strokeWidth="1" opacity=".6" transform="rotate(-60 450 150)" />
+          </g>
+          <circle className="faculty-pulse" cx="450" cy="150" r="7" fill="var(--color-spark)" stroke="none" />
+        </svg>
+      )}
+
+      {(icon === "engineering" || icon === "other") && (
+        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+          {[{ x: 0, opacity: .55 }, { x: 400, opacity: .38 }].map((part, i) => (
+            <g key={part.x} className="faculty-breathe" style={{ transformOrigin: `${250 + part.x}px 260px`, animationDelay: i ? "-7s" : undefined }}>
+              <g strokeWidth="1.1" opacity={part.opacity}>
+                <path className="faculty-draw" d={`M${80 + part.x},260 L${250 + part.x},60 L${420 + part.x},260 Z`} />
+                <path className="faculty-draw" d={`M${250 + part.x},60 L${250 + part.x},260`} />
+                <path className="faculty-draw" d={`M${165 + part.x},160 L${335 + part.x},160`} />
+              </g>
+              <path className="faculty-flow" d={`M${80 + part.x},260 L${250 + part.x},60 L${420 + part.x},260 Z`} stroke={i ? "var(--color-accent-bright)" : "var(--color-spark)"} strokeWidth={i ? 1.8 : 2.2} strokeLinecap="round" opacity={i ? .6 : 1} style={{ animationDuration: i ? "26s" : "20s", animationDelay: i ? "-11s" : undefined }} />
+            </g>
+          ))}
+        </svg>
+      )}
+    </div>
+  );
+}
+
 export function FacultyStations({
   stations,
 }: {
@@ -63,10 +159,10 @@ export function FacultyStations({
   if (!station) return null;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[16.5rem_1fr] lg:gap-10">
+    <div className="grid gap-[2.6rem] min-[1000px]:grid-cols-[16.5rem_minmax(0,1fr)] min-[1000px]:gap-12">
       {/* ══ السكّة ══════════════════════════════════════════════════ */}
-      <div>
-        <p className="mb-4 text-eyebrow">كليات جامعة البحرين</p>
+      <div className="min-w-0">
+        <p className="mb-[0.9rem] text-eyebrow">المضاءة فيها مقررات الآن</p>
 
         <div className="relative">
           {/* السكّة الكاملة — تُرسم مرة واحدة عند الدخول */}
@@ -106,7 +202,7 @@ export function FacultyStations({
                     type="button"
                     onClick={() => setActive(s.slug)}
                     aria-current={on ? "true" : undefined}
-                    className={`group flex w-full items-center gap-3 rounded-[11px] py-2 pe-3 ps-1.5
+                    className={`group flex w-full items-center gap-3 rounded-field py-2 pe-3 ps-1.5
                       text-start transition-colors duration-200
                       ${on ? "bg-panel-lift/70" : "hover:bg-panel/60"}`}
                   >
@@ -164,7 +260,8 @@ export function FacultyStations({
       </div>
 
       {/* ══ المحتوى — حاضر من الإطار الأول ═════════════════════════ */}
-      <div key={active} className="anim-rise">
+      <div key={active} className="relative isolate min-w-0 anim-rise">
+        <FacultyScene icon={station.icon} />
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-4">
           <h2 className="text-title-lg">{station.name}</h2>
           <p className="text-xs text-subtle">
@@ -187,7 +284,7 @@ export function FacultyStations({
             </p>
           </div>
         ) : (
-          <div className="grid items-start gap-[1.125rem] [grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
+          <div className="grid grid-cols-1 items-start gap-[1.125rem] min-[520px]:[grid-template-columns:repeat(auto-fit,minmax(18.5rem,1fr))]">
             {station.courses.map((c, i) => (
               <div
                 key={c.id}

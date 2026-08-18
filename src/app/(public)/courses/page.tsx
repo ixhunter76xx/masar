@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Play } from "lucide-react";
+import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { FacultyStations } from "@/components/public/FacultyStations";
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
 export default async function CatalogPage() {
   const groups = await listCatalogueByFaculty();
   const courses = groups.flatMap((group) => group.courses);
-  const free = courses.filter((c) => c.hasFreePreview).length;
+  const previewCourse = courses.find((course) => course.hasFreePreview);
 
   return (
-    <div className="mx-auto max-w-[1120px] px-4 sm:px-8">
+    <div className="mx-auto max-w-[1180px] px-4 sm:px-8">
       {/* ── الأبطل عمودان: الوعد، والدليل عليه ─────────────────────────
           العمود الثاني ليس زخرفة — هو الشرح نفسه بحجمه الكامل. الوعد
           وحده يقوله كل موقع تعليمي؛ والدليل بجانبه هو ما لا يُنسخ. */}
-      <section className="grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14">
+      <section className="grid items-center gap-[clamp(2rem,4vw,3.5rem)] pb-[clamp(2rem,5vw,3.5rem)] pt-[clamp(3rem,8vw,6rem)] min-[940px]:grid-cols-[0.92fr_1.08fr]">
         <div>
         {/* البطل يدخل بترتيب يقرأ به: الوسم، ثم العنوان، ثم الشرح،
             ثم الدعوة. التأخيرات صغيرة (٦٠ms) — تكفي لصنع تسلسل ولا
@@ -37,7 +37,7 @@ export default async function CatalogPage() {
         <Reveal delay={0}>
           <span className="inline-flex items-center gap-2 text-xs text-accent">
             <span className="h-0.5 w-3.5 rounded-full bg-accent-deep" />
-            جامعة البحرين · مقررات اللغة العربية
+            جامعة البحرين
           </span>
         </Reveal>
 
@@ -51,10 +51,7 @@ export default async function CatalogPage() {
             و`text-wrap:balance` تقسمه سطرين متوازنين بدل سطرٍ طويل
             وكلمةٍ يتيمة تحته. */}
         <Reveal delay={0.06}>
-          <h1
-            className="mt-4 text-balance text-[clamp(1.875rem,4.6vw,2.875rem)]
-              font-semibold leading-[1.28] tracking-[-0.03em]"
-          >
+          <h1 className="mt-4 text-display text-balance">
             حين يكون للمقرر{" "}
             <em
               className="bg-clip-text not-italic text-transparent
@@ -67,7 +64,7 @@ export default async function CatalogPage() {
         </Reveal>
 
         <Reveal delay={0.12}>
-          <p className="mt-5 max-w-[44ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
+          <p className="mt-5 max-w-[38ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
             دروس بالعربية، مبنية على توصيف مقرَّرك نفسه — وحداته،
             ومصطلحاته، وما يُسأل عنه فعلًا.
           </p>
@@ -78,29 +75,38 @@ export default async function CatalogPage() {
             مجاني». الرقم يخدم المنصة الكبيرة؛ أما هنا فهو يعلن صغر
             الكتالوج في أول ما تقع عليه العين، ولا يجيب سؤال الزائر:
             هل عندكم مقرري؟ الجواب في البطاقات أسفله، فنُقدّمها. */}
-        {free > 0 && (
-          <Reveal delay={0.18}>
-            <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/[0.07] px-3.5 py-2 text-[13px] text-success">
-              <Play size={11} fill="currentColor" strokeWidth={0} aria-hidden="true" />
-              جرّب درسًا كاملًا مجانًا قبل أن تدفع
-            </p>
-          </Reveal>
-        )}
+        <Reveal delay={0.18}>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {previewCourse && (
+              <Link
+                href={`/courses/${previewCourse.slug}`}
+                className="press inline-flex min-h-touch items-center rounded-[10px] bg-action px-5 text-sm font-semibold text-ink hover:bg-accent-bright"
+              >
+                شاهد درسًا كاملًا مجانًا
+              </Link>
+            )}
+            <a
+              href="#examples"
+              className="press inline-flex min-h-touch items-center rounded-[10px] border border-line bg-panel px-5 text-sm font-medium text-paper hover:border-accent-deep hover:bg-panel-lift"
+            >
+              كيف يُبنى الشرح؟
+            </a>
+          </div>
+        </Reveal>
         </div>
 
         <Reveal delay={0.1}>
+          <div id="examples" className="scroll-mt-24">
           <LessonBoard />
+          </div>
         </Reveal>
       </section>
 
-      <hr className="h-px border-0 bg-gradient-to-l from-transparent via-line to-transparent" />
-
-      <div className="mb-7 mt-12 flex items-baseline justify-between gap-4">
-        <h2 className="flex items-center gap-2.5 text-title-md">
+      <div className="mb-4 flex items-center gap-2.5">
+        <h2 className="flex items-center gap-2.5 text-title-lg">
           <span className="h-[19px] w-[3px] rounded-sm bg-gradient-to-b from-accent-bright to-accent-deep" />
           اختر كليتك
         </h2>
-        <span className="text-xs text-subtle">المضاءة فيها مقررات الآن</span>
       </div>
 
       {courses.length === 0 ? (

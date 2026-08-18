@@ -1,6 +1,3 @@
-import { UserRound, Hash } from "lucide-react";
-
-import { Card } from "@/components/ui/Card";
 import { CourseTabs } from "@/components/courses/CourseTabs";
 /** يُمرَّر من `requireCourseAccess` — لا فصل دراسي في مسار */
 type CourseHeader = {
@@ -13,7 +10,7 @@ type CourseHeader = {
 };
 import type { CourseTabCounts } from "@/lib/course-tabs";
 
-/** رأس المقرر: الرمز، العنوان، الوصف، البيانات، ثم شريط التبويبات */
+/** رأس المقرر: عنوانٌ داخل الصفحة ثم شريط التبويبات، كما في المرجع. */
 export function CourseHeaderCard({
   course,
   counts,
@@ -23,54 +20,30 @@ export function CourseHeaderCard({
 }) {
 
   return (
-    <Card className="mb-6 overflow-hidden">
-      <div className="px-5 pt-5">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-lg font-bold text-paper">{course.title}</h2>
-          <span className="numeric shrink-0 text-xs text-accent">
+    <section className="mb-6">
+      <div className="mb-[1.4rem] flex flex-wrap items-center gap-4">
+        <div className="min-w-[14rem] flex-1">
+          <p className="text-eyebrow">تدرس الآن</p>
+          <h1 className="mt-1 text-title-lg">{course.title}</h1>
+          {(course.description || course.summary) && (
+            <p className="mt-2 max-w-[62ch] text-[13px] leading-[1.8] text-muted">
+              {course.description ?? course.summary}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-[12px] text-subtle">
+          {course.presenter?.name && <span>{course.presenter.name}</span>}
+          {course.presenter?.name && <span aria-hidden="true">·</span>}
+          <span className="code rounded-full border border-line bg-[var(--sunk)] px-2.5 py-1 text-accent">
             {course.code}
           </span>
         </div>
-
-        {course.description && (
-          <p className="mt-3 text-[13px] leading-relaxed text-muted">
-            {course.description}
-          </p>
-        )}
-
-        <dl className="mt-5 grid gap-4 text-[13px] sm:grid-cols-3">
-          <Meta icon={UserRound} label="المقدّم" value={course.presenter?.name ?? ""} />
-          {/* عدد الطلاب أُزيل: في مسار المقرر ليس صفًّا دراسيًا بل
-              مجموعة دورات تُباع، وحجم "الصف" ليس معلومة يحتاجها أحد. */}
-          <Meta icon={Hash} label="رمز المقرر" value={course.code} numeric />
-        </dl>
       </div>
 
-      <div className="mt-5 border-t border-line px-2">
+      <div className="border-b border-line-soft">
         <CourseTabs courseId={course.id} counts={counts} />
       </div>
-    </Card>
-  );
-}
-
-function Meta({
-  icon: Icon,
-  label,
-  value,
-  numeric = false,
-}: {
-  icon: typeof UserRound;
-  label: string;
-  value: string;
-  numeric?: boolean;
-}) {
-  return (
-    <div>
-      <dt className="flex items-center gap-1.5 text-[11px] text-subtle">
-        <Icon size={13} strokeWidth={1.75} aria-hidden="true" />
-        {label}
-      </dt>
-      <dd className={`mt-1 text-paper ${numeric ? "numeric" : ""}`}>{value}</dd>
-    </div>
+    </section>
   );
 }

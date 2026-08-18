@@ -58,46 +58,9 @@ export default async function CourseContentPage({ params }: Params) {
         />
       ) : (
         <>
-          {quizzes.length > 0 && (
-            <section className="mb-8">
-              <h3 className="mb-3 text-sm font-medium text-paper">
-                الاختبارات{" "}
-                <span className="numeric text-[11px] text-subtle">
-                  {quizzes.length}
-                </span>
-              </h3>
-              <QuizList
-                quizzes={quizzes}
-                courseId={courseId}
-                canManage={canManage}
-              />
-            </section>
-          )}
-
-          {assignments.length > 0 && (
-            <section className="mb-8">
-              <h3 className="mb-3 text-sm font-medium text-paper">
-                الواجبات{" "}
-                <span className="numeric text-[11px] text-subtle">
-                  {assignments.length}
-                </span>
-              </h3>
-              <AssignmentList
-                assignments={assignments}
-                courseId={courseId}
-                canManage={canManage}
-              />
-            </section>
-          )}
-
-          {/*
-            قسم المحاضرات يُعرض حتى وهو فارغ.
-            كان يُحذف كليًّا، فيرى مشتري «الدورة الكاملة» اختبارًا
-            وواجبًا ولا يجد ذكرًا للمحاضرات أصلًا — لا قسمًا ولا سببًا.
-            فلا يعرف: أهو مقرر بلا فيديو، أم لم تُنشر بعد، أم تعطّل شيء؟
-            الحالة الفارغة تجيب، والحذف يترك السؤال معلّقًا لمن دفع.
-          */}
-          <section>
+          {/* المشغّل أولًا ومسار الدروس إلى جانبه؛ وهو ترتيب شاشة
+              الدراسة في المرجع، ويمنع تكرار مشغّل كامل داخل كل بطاقة. */}
+          <section className="mb-8">
             <h3 className="mb-3 text-sm font-medium text-paper">
               المحاضرات{" "}
               <span className="numeric text-[11px] text-subtle">
@@ -119,6 +82,42 @@ export default async function CourseContentPage({ params }: Params) {
               </p>
             )}
           </section>
+
+          {(quizzes.length > 0 || assignments.length > 0) && (
+            <div className="grid items-start gap-6 xl:grid-cols-2">
+              {quizzes.length > 0 && (
+                <section>
+                  <h3 className="mb-3 text-sm font-medium text-paper">
+                    الاختبارات{" "}
+                    <span className="numeric text-[11px] text-subtle">
+                      {quizzes.length}
+                    </span>
+                  </h3>
+                  <QuizList
+                    quizzes={quizzes}
+                    courseId={courseId}
+                    canManage={canManage}
+                  />
+                </section>
+              )}
+
+              {assignments.length > 0 && (
+                <section>
+                  <h3 className="mb-3 text-sm font-medium text-paper">
+                    الواجبات{" "}
+                    <span className="numeric text-[11px] text-subtle">
+                      {assignments.length}
+                    </span>
+                  </h3>
+                  <AssignmentList
+                    assignments={assignments}
+                    courseId={courseId}
+                    canManage={canManage}
+                  />
+                </section>
+              )}
+            </div>
+          )}
         </>
       )}
 

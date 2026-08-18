@@ -1,17 +1,16 @@
 import Link from "next/link";
 
-import { Card } from "@/components/ui/Card";
 import type { Gradebook } from "@/lib/data/grades";
 
 export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
   const { columns, rows } = gradebook;
 
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-x-auto overflow-y-hidden rounded-card border border-line bg-panel [scrollbar-width:thin]">
       {/* الجدول قد يتجاوز عرض الشاشة عند كثرة العناصر */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-[13px]">
-          <caption className="sr-only">
+      <div>
+        <table className="min-w-[32rem] w-full border-collapse text-[0.86rem]">
+          <caption className="px-[1.15rem] pb-[0.2rem] pt-4 text-start text-[0.74rem] text-subtle">
             درجات الطلاب في كل عنصر تقييم بالمقرر
           </caption>
 
@@ -19,7 +18,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
             <tr className="border-b border-line">
               <th
                 scope="col"
-                className="sticky start-0 z-10 bg-panel px-5 py-3 text-start font-medium text-muted"
+                className="sticky start-0 z-10 bg-panel px-[1.15rem] py-[0.85rem] text-start text-[0.73rem] font-semibold text-subtle"
               >
                 الطالب
               </th>
@@ -28,7 +27,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                 <th
                   key={c.id}
                   scope="col"
-                  className="whitespace-nowrap px-4 py-3 text-center font-medium"
+                  className="whitespace-nowrap px-[1.15rem] py-[0.85rem] text-center text-[0.73rem] font-semibold text-subtle"
                 >
                   <Link
                     href={c.href}
@@ -44,7 +43,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
 
               <th
                 scope="col"
-                className="whitespace-nowrap px-4 py-3 text-center font-medium text-paper"
+                className="whitespace-nowrap px-[1.15rem] py-[0.85rem] text-center text-[0.73rem] font-semibold text-subtle"
               >
                 المجموع
               </th>
@@ -59,11 +58,11 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
               return (
                 <tr
                   key={r.studentId}
-                  className="border-b border-line last:border-0"
+                  className="border-b border-line-soft transition-colors last:border-0 hover:bg-panel-lift"
                 >
                   <th
                     scope="row"
-                    className="sticky start-0 z-10 bg-panel px-5 py-3 text-start font-normal"
+                    className="sticky start-0 z-10 bg-inherit px-[1.15rem] py-[0.9rem] text-start font-normal"
                   >
                     <span className="block truncate text-paper">{r.name}</span>
                     <span className="numeric block text-[11px] text-subtle">
@@ -74,7 +73,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                   {columns.map((c) => {
                     const v = r.cells[c.id];
                     return (
-                      <td key={c.id} className="px-4 py-3 text-center">
+                      <td key={c.id} className="px-[1.15rem] py-[0.9rem] text-center">
                         {v === null ? (
                           <span
                             className="text-subtle"
@@ -90,7 +89,7 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
                     );
                   })}
 
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-[1.15rem] py-[0.9rem] text-center">
                     {r.total === 0 ? (
                       <span className="text-subtle">—</span>
                     ) : (
@@ -110,6 +109,6 @@ export function GradebookTable({ gradebook }: { gradebook: Gradebook }) {
           </tbody>
         </table>
       </div>
-    </Card>
+    </div>
   );
 }

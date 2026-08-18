@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FormField, Label, Checkbox } from "@/components/ui/Field";
+import { FormField, Label, Checkbox, Textarea } from "@/components/ui/Field";
 import {
   createQuiz,
   updateQuiz,
@@ -77,16 +77,12 @@ export function QuizSettingsForm({
 
         <div>
           <Label htmlFor="quiz-desc">تعليمات للطالب (اختياري)</Label>
-          <textarea
+          <Textarea
             id="quiz-desc"
             name="description"
             rows={2}
             defaultValue={quiz?.description ?? ""}
             placeholder="اقرأ كل سؤال بعناية قبل الإجابة…"
-            className="w-full rounded-[10px] bg-ink px-4 py-3 text-sm text-paper
-              border border-line placeholder:text-disabled leading-relaxed
-              transition-colors duration-150 hover:border-accent-deep
-              focus:border-accent focus:outline-none resize-y"
           />
         </div>
 

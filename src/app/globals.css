@@ -78,13 +78,13 @@
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
   /* --- أنصاف الأقطار --- */
-  --radius-field: 10px; /* الحقول والأزرار */
-  --radius-card: 14px; /* البطاقات */
+  --radius-field: 12px; /* الحقول والأزرار — مطابق للمرجع المعتمد */
+  --radius-card: 18px; /* البطاقات — مطابق للمرجع المعتمد */
 
   /* --- الحركة: مطابقة لـ src/lib/motion.ts --- */
   --dur-fast: 150ms;
-  --dur-base: 220ms;
-  --dur-slow: 320ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -175,6 +175,8 @@
     background-color: var(--color-ink);
     color: var(--color-paper);
     font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.85;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -264,16 +266,16 @@
      ========================================================================== */
 
   .text-display {
-    font-size: clamp(2rem, 5.4vw, 3.5rem);
-    line-height: 1.22;
-    letter-spacing: -0.035em;
-    font-weight: 600;
+    font-size: clamp(2.1rem, 5.4vw, 3.8rem);
+    line-height: 1.16;
+    letter-spacing: -0.04em;
+    font-weight: 700;
   }
 
   .text-title-lg {
-    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
-    line-height: 1.4;
-    letter-spacing: -0.025em;
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    line-height: 1.38;
+    letter-spacing: -0.026em;
     font-weight: 600;
   }
 
@@ -317,14 +319,10 @@
      الأسطح — درجة واحدة معرَّفة في موضع واحد
      ========================================================================== */
   .surface-card {
-    background: linear-gradient(
-      168deg,
-      var(--color-panel-lift) 0%,
-      var(--color-panel) 58%
-    );
+    background: var(--color-panel);
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.045),
-      0 1px 2px rgb(0 0 0 / 0.35);
+      inset 0 1px 0 var(--hair),
+      0 2px 4px var(--shadow);
   }
 
   /* دخول موحّد: صعود قصير مع تلاشٍ — `transform` و`opacity` فقط،
@@ -503,13 +501,131 @@
       var(--glow-soft) 55%,
       transparent 100%
     );
-    animation: shimmer 1.9s var(--ease-in-out) infinite;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  html[dir="rtl"] .shimmer::after {
+    animation-name: shimmer-rtl;
   }
 
   @keyframes shimmer {
     to {
       transform: translateX(100%);
     }
+  }
+
+  @keyframes shimmer-rtl {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  /* المشهد الخاص بكل كلية في الكتالوج. الرسم زخرفي، خفيف، ويرث لوحة
+     مسار نفسها؛ ولا يضيف صورة مخزون أو أصلًا شبكيًا جديدًا. */
+  .faculty-scene {
+    position: absolute;
+    inset-block-start: -2.5rem;
+    inset-inline: 0;
+    z-index: -1;
+    height: 360px;
+    pointer-events: none;
+    opacity: 0;
+    mask-image: linear-gradient(to bottom, #000 42%, transparent 96%);
+    animation: faculty-scene-in 620ms var(--ease-out) both;
+  }
+
+  .faculty-scene svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .faculty-scene path,
+  .faculty-scene circle,
+  .faculty-scene line,
+  .faculty-scene ellipse,
+  .faculty-scene rect {
+    stroke: var(--color-accent);
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .faculty-scene .faculty-draw {
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+    animation: faculty-draw-in 1100ms var(--ease-out) 80ms forwards;
+  }
+
+  .faculty-scene .faculty-pulse {
+    fill: var(--color-spark);
+    stroke: none;
+    animation: faculty-pulse 6s ease-in-out infinite;
+  }
+
+  .faculty-scene .faculty-spin {
+    transform-origin: center;
+    animation: faculty-spin 34s linear infinite;
+  }
+
+  .faculty-scene .faculty-flow {
+    stroke-dasharray: 26 340;
+    animation: faculty-flow 26s linear infinite;
+  }
+
+  .faculty-scene .faculty-drift {
+    animation: faculty-drift 18s ease-in-out infinite;
+  }
+
+  .faculty-scene .faculty-breathe {
+    transform-origin: center;
+    animation: faculty-breathe 14s ease-in-out infinite;
+  }
+
+  .faculty-glyphs {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .faculty-glyphs span {
+    position: absolute;
+    color: var(--color-accent);
+    font-family: "Amiri", serif;
+    font-weight: 700;
+    opacity: 0;
+    animation: faculty-glyph var(--glyph-duration) ease-in-out var(--glyph-offset) infinite;
+  }
+
+  @keyframes faculty-scene-in {
+    from { opacity: 0; transform: translateY(-10px) scale(1.04); }
+    to { opacity: 0.5; transform: none; }
+  }
+
+  @keyframes faculty-draw-in { to { stroke-dashoffset: 0; } }
+  @keyframes faculty-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
+  @keyframes faculty-spin { to { transform: rotate(360deg); } }
+  @keyframes faculty-flow { to { stroke-dashoffset: -1464; } }
+  @keyframes faculty-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes faculty-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+  @keyframes faculty-glyph {
+    0% { opacity: 0; transform: translateY(14px) rotate(var(--glyph-rotate)); }
+    22%, 78% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-26px) rotate(var(--glyph-rotate)); }
+  }
+
+  [data-offer-segment].offer-off {
+    opacity: 0.4;
+  }
+
+  [data-offer-segment].offer-on {
+    border-color: color-mix(in srgb, var(--color-accent-bright) 55%, transparent);
+  }
+
+  section[data-offer-segment].offer-on {
+    background: color-mix(in srgb, var(--color-panel-lift) 45%, transparent);
   }
 
   /* ══ المسار: رسم السكّة وحياة العقدة ═══════════════════════════════
@@ -580,6 +696,80 @@
     transition:
       border-color var(--dur-base) var(--ease-out),
       background-color var(--dur-base) var(--ease-out);
+  }
+
+  /* ══ الحقل — المرجع الواحد ══════════════════════════════════════════
+     منقول من `.input` في المعاينة المعتمدة (`design/vision/index.html`
+     السطر ٦٢٨ على فرع `masar-vision`).
+
+     صنفٌ واحد لا مجموعةَ أدوات مكرّرة، لأن `<input>` و`<textarea>`
+     و`<select>` تشترك في الشكل نفسه.  وهذا ليس تنظيمًا استباقيًّا:
+     المصدر اليوم فيه **ستّ** مناطق نصّ و**ثلاث** قوائم، كُتبت كلٌّ
+     منها على حدة بقيم منسوخة باليد — و`admin/Select.tsx` نسخةٌ حرفية
+     من أنماط `Input` تفرّعت عنها بالفعل.  هذا الانحراف هو ما وُجد
+     هذا الصنف ليمنعه، ولذلك رُتّبت الحقول أولى مراحل النقل. */
+  .input-field {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-field);
+    background: var(--sunk);
+    border: 1px solid var(--color-line);
+    color: var(--color-paper);
+    font: inherit;
+    font-size: 0.92rem;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .input-field::placeholder {
+    color: var(--color-faint);
+  }
+
+  /* التصويب خلف `hover:hover`: على اللمس يعلق `:hover` بعد النقر فيبقى
+     الحقل مُصوَّبًا عليه بلا مؤشّر يبرّر ذلك. */
+  @media (hover: hover) {
+    .input-field:hover:not(:disabled) {
+      border-color: var(--color-accent-deep);
+    }
+  }
+
+  /* التركيز حلقةٌ **داخل** الحدّ لا `outline` خارجه: الحقل عنصرٌ محاطٌ
+     بحدّ أصلًا، فحلقتان متداخلتان تُقرأان ضجيجًا.  وهذا هو الاستثناء
+     الوحيد المأذون له بإلغاء حلقة `:focus-visible` العامّة أعلاه —
+     أُلغيت هنا لأن البديل أوضح، لا لأنها مزعجة. */
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-accent-bright);
+    background: var(--sunk-2);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--color-accent-bright) 20%, transparent);
+  }
+
+  .input-field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+
+  .input-field[aria-invalid="true"]:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--color-danger) 22%, transparent);
+  }
+
+  .input-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--color-panel);
+    border-color: var(--color-line-soft);
+  }
+
+  /* منطقة النصّ تنمو رأسيًّا وحدها: `min-height` الموروث يفرض سطرًا
+     واحدًا عاليًا، و`resize:horizontal` يكسر الشبكة في RTL. */
+  textarea.input-field {
+    min-height: auto;
+    resize: vertical;
   }
 
   /* حلقة التركيز الموحّدة — بلا ظلال ملوّنة، فقط إطار واضح */

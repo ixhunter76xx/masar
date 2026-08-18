@@ -34,49 +34,26 @@ export default async function PublicLayout({
       {/* خارج الرأسية عمدًا — انظر تعليل الموضع في `AreaSwitch` */}
       <AreaSwitch current="catalogue" />
 
-      <header
-        className="sticky top-0 z-40 flex h-[68px] items-center gap-4
-          border-b border-line/70 bg-ink/70 px-4 backdrop-blur-xl sm:px-8"
-      >
-        <Link href="/courses" aria-label={SITE.name} className="press">
-          <Logo size={40} variant="full" bare />
-        </Link>
+      <header className="sticky top-0 z-40 border-b border-line/70 bg-ink/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1180px] items-center gap-4 px-4 sm:px-8">
+          <Link href="/courses" aria-label={SITE.name} className="press">
+            <Logo size={40} variant="full" bare />
+          </Link>
 
-        {/* ⚠ «حسابي» أُزيل — كان اختراعي لا شيئًا في التصميم المعتمد.
-            رأسية المعاينة: الشعار، ثم فاصل، ثم زرّ «دخول» فحسب.
-
-            ⚠⚠ وهنا فجوةٌ حقيقية في التصميم المعتمد أُعلنها ولا أحسمها:
-            المعاينة لا تُمثّل الرأسية العامّة **لمستخدمٍ مسجَّل** أصلًا
-            — عندها حالةٌ واحدة. والموقع الحقيقي له حالتان، وPR #1
-            أصلح تحديدًا عيب عرض «تسجيل الدخول» لمن سجّل دخوله قبل
-            دقيقة.
-
-            فالمعتمد هنا: للزائر ما تقوله المعاينة، وللمسجَّل لا شيء —
-            لأن `AreaSwitch` صار بابه إلى «الدراسة». و«إنشاء حساب»
-            أُبقي للزائر رغم أن المعاينة تعرض زرًّا واحدًا، لأن حذف
-            مسار التسجيل من رأسية سوقٍ قرارُ منتجٍ لا قرارُ نقل.
-            كلاهما ينتظر حكمك. */}
-        <nav className="ms-auto flex items-center gap-0.5">
-          {!session?.user && (
-            <>
+          {/* رأسية المرجع للزائر تحمل بابًا واحدًا فقط. أمّا المسجّل
+              فبابه الثابت إلى منطقة الدراسة هو `AreaSwitch`. */}
+          <nav className="ms-auto flex items-center">
+            {!session?.user && (
               <Link
                 href="/login"
-                className="press inline-flex min-h-touch items-center rounded-[10px]
-                  px-3.5 text-[13px] text-muted hover:text-paper"
+                className="press inline-flex min-h-[34px] items-center rounded-full border border-line
+                  bg-[var(--sunk)] px-[0.85rem] text-[0.78rem] text-paper hover:border-accent-deep hover:bg-panel-lift"
               >
-                تسجيل الدخول
+                دخول
               </Link>
-              <Link
-                href="/signup"
-                className="press ms-1.5 inline-flex min-h-touch items-center rounded-[10px]
-                  border border-line bg-panel px-3.5 text-[13px] font-medium text-paper
-                  transition-colors hover:border-accent-deep hover:bg-panel-lift"
-              >
-                إنشاء حساب
-              </Link>
-            </>
-          )}
-        </nav>
+            )}
+          </nav>
+        </div>
       </header>
 
       <main>
@@ -85,7 +62,7 @@ export default async function PublicLayout({
 
       <footer className="mt-20 border-t border-line py-8">
         <div
-          className="mx-auto flex max-w-[1120px] flex-wrap items-center
+          className="mx-auto flex max-w-[1180px] flex-wrap items-center
             justify-between gap-4 px-4 text-xs text-subtle sm:px-8"
         >
           <span>

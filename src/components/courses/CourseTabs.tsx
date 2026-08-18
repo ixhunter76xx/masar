@@ -34,7 +34,7 @@ export function CourseTabs({
 
   return (
     <nav aria-label="أقسام المقرر" className="-mb-px">
-      <ul className="flex items-center gap-1 overflow-x-auto">
+      <ul className="flex items-center gap-[0.2rem] overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {COURSE_TABS.map(({ segment, label, countKey }) => {
           const href = tabHref(courseId, segment);
           const isActive = segment
@@ -49,7 +49,7 @@ export function CourseTabs({
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "inline-flex items-center gap-2 whitespace-nowrap px-4 py-3",
-                  "border-b-2 border-transparent text-[13px]",
+                  "border-b-2 border-transparent text-[0.87rem] font-medium",
                   "transition-colors duration-200",
                   isActive ? "text-paper font-medium" : "text-muted hover:text-paper",
                 )}
@@ -63,7 +63,7 @@ export function CourseTabs({
                   layoutId="course-tab-indicator"
                   transition={SPRING.indicator}
                   aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-bright"
+                  className="absolute inset-x-[0.55rem] bottom-0 h-0.5 rounded-full bg-gradient-to-l from-accent-bright to-accent-deep"
                 />
               )}
             </li>

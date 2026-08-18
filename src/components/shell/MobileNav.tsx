@@ -23,7 +23,7 @@ import {
 import type { NavCounts } from "@/lib/navigation";
 import type { Role } from "@/generated/prisma/enums";
 
-const PANEL_WIDTH = 280;
+const PANEL_WIDTH = 300;
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -136,12 +136,12 @@ export function MobileNav({
   const panel = (
     <AnimatePresence>
       {open && (
-        <div className="lg:hidden fixed inset-0 z-[100]">
+        <div className="fixed inset-0 z-[100] min-[1060px]:hidden">
           <motion.button
             type="button"
             aria-label="إغلاق القائمة"
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-ink/80"
+            className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
             style={{ opacity: overlayOpacity }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -156,7 +156,7 @@ export function MobileNav({
             role="dialog"
             aria-modal="true"
             aria-label="التنقّل"
-            className="absolute inset-y-0 start-0 flex w-[280px] max-w-[85vw]
+            className="absolute inset-y-0 start-0 flex w-[300px] max-w-[86vw]
               flex-col border-e border-line bg-panel touch-pan-y"
             style={{ x }}
             initial={{ x: closedX }}
@@ -224,8 +224,8 @@ export function MobileNav({
         onClick={() => setOpen(true)}
         aria-label="فتح القائمة"
         aria-expanded={open}
-        className="lg:hidden grid size-11 place-items-center rounded-[10px] text-muted
-          transition-colors hover:bg-panel hover:text-paper press"
+        className="grid size-11 place-items-center rounded-[11px] border border-line min-[1060px]:hidden
+          bg-[var(--sunk)] text-paper transition-colors hover:border-accent-deep press"
       >
         <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
       </button>

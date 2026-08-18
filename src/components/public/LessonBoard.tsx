@@ -63,8 +63,8 @@ export function LessonBoard() {
 
       <article
         key={index}
-        className="animate-[boardIn_620ms_var(--ease-out)_both] relative flex min-h-[clamp(380px,42vw,460px)]
-          flex-col rounded-[22px] p-6 sm:p-7
+        className="animate-[boardIn_620ms_var(--ease-out)_both] relative flex min-h-[clamp(390px,44vw,480px)]
+          flex-col rounded-[24px] p-6 sm:p-7
           shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-warning)_24%,transparent),0_46px_68px_-36px_var(--shadow-lift),0_12px_28px_-18px_var(--shadow)]
           [background:radial-gradient(120%_92%_at_80%_-12%,color-mix(in_srgb,var(--color-warning)_12%,transparent),transparent_58%),linear-gradient(166deg,var(--color-panel-high)_0%,var(--color-panel)_58%,var(--color-ink-lift)_100%)]"
       >
@@ -90,7 +90,7 @@ export function LessonBoard() {
                     className="grid animate-[pwIn_520ms_var(--ease-out)_both] justify-items-center gap-2"
                     style={{ animationDelay: `${200 + i * 280}ms` }}
                   >
-                    <span className="font-amiri text-[clamp(2rem,4.4vw,3rem)] leading-[1.18] text-paper">
+                    <span className="font-amiri text-[clamp(2.2rem,4.8vw,3.5rem)] leading-[1.18] text-paper">
                       {w.word}
                     </span>
                     <span className="h-[0.95rem] w-px [background:linear-gradient(180deg,color-mix(in_srgb,var(--color-paper)_32%,transparent),transparent)]" />

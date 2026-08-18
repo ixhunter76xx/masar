@@ -104,7 +104,7 @@ export const PasswordField = React.forwardRef<
             onChange?.(event);
           }}
           /* مساحة للزرّ على جهة النهاية — منطقية فتنقلب مع الاتجاه */
-          className="pe-12"
+          className="pe-[3.1rem]"
           {...inputProps}
         />
 
@@ -117,8 +117,12 @@ export const PasswordField = React.forwardRef<
           aria-controls={id}
           aria-label="إظهار كلمة المرور"
           title={visible ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-          className="press absolute inset-y-0 end-0 grid w-11 place-items-center
-            rounded-e-[10px] text-subtle hover:text-paper"
+          /* مربّع ٤٠px مركّزٌ رأسيًّا داخل الحقل، لا شريطٌ ملتصق بحافّته:
+             الحقل ٤٦px فالزرّ يطفو داخله بهامشٍ ظاهر.  و`rounded-field`
+             رمزٌ لا رقمٌ مكتوب — نصف القطر يتغيّر من مكانٍ واحد. */
+          className="press absolute end-[0.3rem] top-1/2 grid size-10 -translate-y-1/2
+            place-items-center rounded-field text-subtle
+            transition-colors hover:bg-panel-lift hover:text-paper"
         >
           {visible ? (
             <EyeOff size={17} strokeWidth={1.75} aria-hidden="true" />

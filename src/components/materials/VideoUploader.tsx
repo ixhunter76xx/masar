@@ -126,7 +126,7 @@ export function VideoUploader({ courseId }: { courseId: string }) {
               file:bg-action file:px-4 file:py-2.5
               file:text-[13px] file:font-medium file:text-ink
               hover:file:bg-accent-bright
-              file:disabled:bg-disabled"
+              disabled:file:bg-disabled"
           />
           {file && (
             <HelpText>

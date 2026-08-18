@@ -6,7 +6,7 @@ import { Trash2, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Input, Label } from "@/components/ui/Field";
+import { Input, Label, Textarea } from "@/components/ui/Field";
 import {
   updateQuestion,
   deleteQuestion,
@@ -85,18 +85,13 @@ export function QuestionEditor({
 
         <div>
           <Label htmlFor={`q-${question.id}-text`}>نص السؤال</Label>
-          <textarea
+          <Textarea
             id={`q-${question.id}-text`}
             name="text"
             rows={2}
             defaultValue={question.text}
             disabled={locked}
             placeholder="اكتب نص السؤال…"
-            className="w-full rounded-[10px] bg-ink px-4 py-3 text-sm text-paper
-              border border-line placeholder:text-disabled leading-relaxed
-              transition-colors duration-150 hover:border-accent-deep
-              focus:border-accent focus:outline-none resize-y
-              disabled:text-disabled disabled:cursor-not-allowed"
           />
         </div>
 

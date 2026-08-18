@@ -7,11 +7,11 @@ export default function CourseLoading() {
       role="status"
       aria-busy="true"
       aria-live="polite"
-      className="mx-auto max-w-3xl px-4 py-8 sm:px-6"
+      className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6"
     >
       <span className="sr-only">جارٍ تحميل المقرر…</span>
 
-      <div className="mb-6 rounded-[14px] border border-line bg-panel">
+      <div className="mb-6 rounded-card border border-line bg-panel">
         <div className="px-5 pt-5">
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="mt-3 h-3 w-full" />

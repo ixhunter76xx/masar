@@ -21,7 +21,7 @@ export default function AppLoading() {
         role="status"
         aria-busy="true"
         aria-live="polite"
-        className="mx-auto max-w-3xl px-4 py-8 sm:px-6"
+        className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6"
       >
         <span className="sr-only">جارٍ التحميل…</span>
 

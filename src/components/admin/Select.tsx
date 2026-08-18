@@ -1,6 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/Field";
+import { Label, Select } from "@/components/ui/Field";
 
 export function SelectField({
   id,
@@ -17,24 +16,16 @@ export function SelectField({
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
-      <select
-        id={id}
-        className={cn(
-          "w-full h-11 px-3 rounded-[10px]",
-          "bg-ink text-paper text-sm border border-line",
-          "transition-colors duration-150 hover:border-accent-deep",
-          "focus:border-accent focus:outline-none",
-          "disabled:text-disabled disabled:cursor-not-allowed",
-        )}
-        {...props}
-      >
+      {/* كانت هنا نسخةٌ حرفية من أنماط `Input` — الشكل نفسه مكتوبًا
+          مرّتين، وهو ما يجعل تغييرًا في الحقل يُصلح أحدهما ويترك الآخر. */}
+      <Select id={id} {...props}>
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

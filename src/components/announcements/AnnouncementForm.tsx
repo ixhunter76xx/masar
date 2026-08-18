@@ -6,7 +6,7 @@ import { Megaphone, Pin } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FormField, Label, Checkbox } from "@/components/ui/Field";
+import { FormField, Label, Checkbox, Textarea } from "@/components/ui/Field";
 import {
   createAnnouncement,
   updateAnnouncement,
@@ -76,17 +76,13 @@ export function AnnouncementForm({
 
         <div>
           <Label htmlFor={`${idPrefix}-body`}>النص</Label>
-          <textarea
+          <Textarea
             id={`${idPrefix}-body`}
             name="body"
             rows={4}
             defaultValue={editing?.body}
             placeholder="اكتب تفاصيل الإعلان للطلاب…"
             required
-            className="w-full rounded-[10px] bg-ink px-4 py-3 text-sm text-paper
-              border border-line placeholder:text-disabled leading-relaxed
-              transition-colors duration-150 hover:border-accent-deep
-              focus:border-accent focus:outline-none resize-y"
           />
         </div>
 

@@ -11,7 +11,7 @@ export function AdminTabs() {
 
   return (
     <nav aria-label="أقسام الإدارة" className="mb-6 border-b border-line">
-      <ul className="flex items-center gap-1 overflow-x-auto">
+      <ul className="flex items-center gap-1 overflow-x-auto overflow-y-hidden">
         {ADMIN_TABS.map(({ segment, label }) => {
           const href = `/settings/${segment}`;
           const isActive = pathname.startsWith(href);

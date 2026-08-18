@@ -16,15 +16,17 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <Card className="px-7 py-8">
-      <header className="mb-7 flex flex-col items-center text-center">
-        <Logo size={80} />
-        <h1 className="mt-5 text-[22px] font-bold tracking-tight text-paper">
-          إنشاء حساب
-        </h1>
-        <p className="mt-1.5 text-[13px] text-muted">
-          دقيقة واحدة، ثم تختار ما تحتاجه من الدورات.
-        </p>
+    <Card className="p-[clamp(1.6rem,4vw,2.3rem)]">
+      <header className="mb-[1.8rem] grid justify-items-center gap-[0.9rem] text-center">
+        <Logo size={44} variant="full" bare />
+        <div>
+          <h1 className="mb-[0.3rem] text-[22px] font-bold tracking-tight text-paper">
+            إنشاء حساب
+          </h1>
+          <p className="text-[13px] text-muted">
+            دقيقة واحدة، ثم تختار ما تحتاجه من الدورات.
+          </p>
+        </div>
       </header>
 
       {/* Suspense مطلوب: النموذج يقرأ معامل ?next من الرابط */}

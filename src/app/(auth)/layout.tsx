@@ -14,7 +14,8 @@ export default function AuthLayout({
         <div className="size-[720px] rounded-full bg-accent-deep/[0.07] blur-[120px]" />
       </div>
 
-      <div className="relative w-full max-w-[400px]">{children}</div>
+      {/* `.authcard` في المعاينة: `width:min(430px,100%)` */}
+      <div className="relative w-full max-w-[430px]">{children}</div>
     </main>
   );
 }

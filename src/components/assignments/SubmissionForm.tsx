@@ -6,7 +6,7 @@ import { Upload, Paperclip } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Label, HelpText } from "@/components/ui/Field";
+import { Label, HelpText, Textarea } from "@/components/ui/Field";
 import { formatBytes } from "@/lib/uploads";
 
 export function SubmissionForm({
@@ -162,7 +162,7 @@ export function SubmissionForm({
               file:me-3 file:rounded-[10px] file:border-0
               file:bg-action file:px-4 file:py-2.5
               file:text-[13px] file:font-medium file:text-ink
-              hover:file:bg-accent-bright file:disabled:bg-disabled"
+              hover:file:bg-accent-bright disabled:file:bg-disabled"
           />
           {file && (
             <HelpText>
@@ -184,18 +184,13 @@ export function SubmissionForm({
 
         <div>
           <Label htmlFor="submission-note">ملاحظة (اختياري)</Label>
-          <textarea
+          <Textarea
             id="submission-note"
             rows={3}
             value={note}
             disabled={busy}
             onChange={(e) => setNote(e.target.value)}
             placeholder="أي توضيح تودّ إضافته للمدرب…"
-            className="w-full rounded-[10px] bg-ink px-4 py-3 text-sm text-paper
-              border border-line placeholder:text-disabled leading-relaxed
-              transition-colors duration-150 hover:border-accent-deep
-              focus:border-accent focus:outline-none resize-y
-              disabled:text-disabled"
           />
         </div>
       </div>

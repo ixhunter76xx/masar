@@ -15,7 +15,7 @@ export function VideoPlayer({
   poster?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[10px] border border-line bg-black">
+    <div className="overflow-hidden rounded-card border border-line bg-black">
       <video
         src={src}
         poster={poster}

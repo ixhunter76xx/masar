@@ -26,7 +26,7 @@ export async function AppPage({
   return (
     <>
       <Topbar title={title} user={shell.user} counts={shell.counts} />
-      <main id="main" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <main id="main" className="mx-auto max-w-[1180px] px-4 py-[2.2rem] sm:px-8">
         {!hidePageHeader && (
           <PageHeader title={title} description={description} />
         )}

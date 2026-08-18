@@ -53,7 +53,7 @@ export function OrderReviewCard({ order }: { order: AdminOrderView }) {
   }
 
   return (
-    <li className="rounded-[14px] border border-line bg-panel px-5 py-4">
+    <li className="rounded-card border border-line bg-panel px-5 py-4">
       <div className="flex flex-wrap items-start justify-between gap-2.5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">

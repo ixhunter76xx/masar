@@ -27,7 +27,7 @@ export function SidebarContent({
         onClick={onNavigate}
         className="press flex items-center gap-3 px-5 py-5 transition-colors hover:bg-panel-lift/60"
       >
-        <Logo size={44} />
+        <Logo size={40} variant="full" bare />
         <div className="min-w-0">
           <p className="text-sm font-bold text-paper truncate">{SITE.name}</p>
           <p className="text-[11px] text-muted truncate">{SITE.shortTagline}</p>
@@ -67,7 +67,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden lg:block fixed inset-y-0 w-[260px] bg-panel",
+        "hidden min-[1060px]:block fixed inset-y-0 w-[260px] bg-panel",
         // start = يمين في RTL، ويسار تلقائيًا في LTR
         "start-0",
         // الحدّ على الوجه المقابل للمحتوى

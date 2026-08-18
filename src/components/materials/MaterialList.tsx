@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { CircleAlert, Clock, Play } from "lucide-react";
 
 import { VideoPlayer } from "@/components/materials/VideoPlayer";
@@ -7,6 +10,7 @@ import { formatBytes } from "@/lib/uploads";
 import { relativeTime } from "@/lib/format";
 import type { MaterialListItem } from "@/lib/data/materials";
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
+import { cn } from "@/lib/utils";
 
 /**
  * ═══ المسار — عنصر التوقيع ═══════════════════════════════════════════
@@ -36,118 +40,136 @@ export function MaterialList({
   courseId: string;
   canManage: boolean;
 }) {
+  const first = materials.find((material) => material.status === MaterialStatus.READY) ?? materials[0];
+  const [selectedId, setSelectedId] = React.useState(first?.id ?? "");
+  const active = materials.find((material) => material.id === selectedId) ?? first;
+
   return (
-    <div className="relative ps-[2.375rem]">
-      {/* السكّة: طبقتان — قضيب خافت ثابت، وفوقه ضوء يُرسم عند الدخول */}
-      <span
-        aria-hidden="true"
-        className="absolute inset-y-4 start-[15px] w-0.5 rounded-full bg-line/70"
-      />
-      <span
-        aria-hidden="true"
-        className="track-draw absolute inset-y-4 start-[15px] w-0.5 origin-top rounded-full
-          [background:linear-gradient(180deg,var(--color-spark)_0%,var(--color-accent-deep)_45%,transparent_100%)]"
-      />
-
-      <StaggerList className="space-y-3">
-        {materials.map((m, index) => {
-          const ready = m.status === MaterialStatus.READY;
-          const failed = m.status === MaterialStatus.FAILED;
-
-          return (
-            <StaggerItem key={m.id} className="group relative">
-              {/* العقدة — خارج البطاقة لتجلس على السكّة نفسها.
-                  `numeric` على الرقم وحده: الصنف يضبط direction:ltr،
-                  ووضعه على العنصر المُوضَّع يقلب `-start-` إلى الجهة
-                  المقابلة (القاعدة موثّقة في globals.css). */}
-              <span
-                className={
-                  "absolute -start-[2.375rem] top-[18px] z-10 grid size-8 place-items-center " +
-                  "rounded-full border bg-ink text-[11px] shadow-[0_0_0_5px_var(--color-ink)] " +
-                  "transition-[transform,border-color,color,box-shadow] duration-[320ms] ease-out " +
-                  (failed
-                    ? "border-danger/45 text-danger"
-                    : ready
-                      ? "node-live border-spark/55 text-spark group-hover:scale-110"
-                      : "border-warning/35 text-warning")
-                }
-              >
-                {failed ? (
-                  <CircleAlert size={15} strokeWidth={1.75} aria-hidden="true" />
-                ) : ready ? (
-                  <span className="numeric">{index + 1}</span>
-                ) : (
-                  <Clock size={14} strokeWidth={1.75} aria-hidden="true" />
+    <div className="grid items-start gap-[1.6rem] min-[1060px]:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="min-w-0">
+        {active?.status === MaterialStatus.READY ? (
+          <>
+            <VideoPlayer
+              src={`/api/courses/${courseId}/videos/${active.id}/stream`}
+              title={active.title}
+            />
+            <div className="mt-[1.1rem]">
+              <h3 className="text-title-sm">{active.title}</h3>
+              {active.description && (
+                <p className="mt-1.5 max-w-[62ch] text-[13px] leading-[1.9] text-muted">
+                  {active.description}
+                </p>
+              )}
+              <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-subtle">
+                <time>{relativeTime(active.createdAt)}</time>
+                {active.sizeBytes !== null && (
+                  <span className="numeric">{formatBytes(active.sizeBytes)}</span>
                 )}
-              </span>
+                {canManage && !active.isPublished && (
+                  <span className="text-warning">مسودة غير منشورة</span>
+                )}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="grid min-h-[18rem] place-items-center rounded-card border border-line bg-panel px-6 text-center">
+            <div>
+              <Clock className="mx-auto text-warning" size={24} strokeWidth={1.5} aria-hidden="true" />
+              <p className="mt-3 text-sm font-medium text-paper">{active?.title}</p>
+              <p className="mt-1 text-xs text-subtle">
+                {active?.status === MaterialStatus.FAILED
+                  ? "تعذّر تجهيز هذا الدرس."
+                  : "هذا الدرس قيد التجهيز وسيظهر هنا فور اكتماله."}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
 
-              <div
-                className={
-                  "glow-edge rounded-[14px] border px-5 py-4 " +
-                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_1px_2px_rgba(0,0,0,0.35)] " +
-                  "transition-[transform,border-color,box-shadow] duration-[320ms] ease-out " +
-                  /* رأسية لا أفقية: `translateX` تتحرّك نحو اليسار
-                     الفيزيائي مهما كان اتجاه الصفحة، فمعناها ينقلب
-                     بين LTR وRTL. نفس الإصلاح المطبَّق في صفحة البيع. */
-                  "group-hover:-translate-y-[2px] " +
-                  (ready
-                    ? "border-line group-hover:border-spark/40"
-                    : "border-line/70") +
-                  " [background:linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_62%)]"
-                }
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="flex min-w-0 items-center gap-2 text-sm font-medium leading-snug text-paper">
+      <aside>
+        <p className="mb-[0.8rem] text-eyebrow">دروس المقرر</p>
+        <div className="relative ps-[2.6rem]">
+          <span
+            aria-hidden="true"
+            className="track-draw absolute inset-y-[14px] start-[15px] w-0.5 origin-top rounded-sm bg-line"
+          />
+
+          <StaggerList className="space-y-[0.6rem]">
+            {materials.map((material, index) => {
+              const ready = material.status === MaterialStatus.READY;
+              const failed = material.status === MaterialStatus.FAILED;
+              const selected = material.id === active?.id;
+
+              return (
+                <StaggerItem key={material.id} className="group relative">
+                  <span
+                    className={cn(
+                      "absolute -start-[2.6rem] top-[14px] z-10 grid size-8 place-items-center rounded-full border",
+                      "bg-ink text-[11px] shadow-[0_0_0_5px_var(--color-ink)] transition-all duration-[320ms] ease-out",
+                      selected
+                        ? "border-transparent bg-gradient-to-b from-accent-bright to-action text-ink"
+                        : failed
+                          ? "border-danger/45 text-danger"
+                          : ready
+                            ? "border-line text-subtle group-hover:border-accent-deep group-hover:text-accent"
+                            : "border-dashed border-warning/45 text-warning",
+                    )}
+                  >
+                    {failed ? (
+                      <CircleAlert size={14} strokeWidth={1.75} aria-hidden="true" />
+                    ) : ready ? (
+                      <span className="numeric">{index + 1}</span>
+                    ) : (
+                      <Clock size={13} strokeWidth={1.75} aria-hidden="true" />
+                    )}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(material.id)}
+                    aria-pressed={selected}
+                    className={cn(
+                      "press flex w-full items-center gap-[0.9rem] rounded-field border px-[1.2rem] py-4 text-start",
+                      "transition-[transform,border-color,background-color] duration-200 ease-out hover:-translate-y-0.5",
+                      selected
+                        ? "border-accent-deep bg-panel-lift"
+                        : "border-line-soft bg-panel hover:border-accent-deep",
+                    )}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[0.92rem] font-medium text-paper">
+                        {material.title}
+                      </span>
+                      <span className="mt-1 block text-[11px] text-subtle">
+                        {ready ? relativeTime(material.createdAt) : failed ? "فشل الرفع" : "قيد الرفع"}
+                      </span>
+                    </span>
                     {ready && (
                       <Play
                         size={12}
                         fill="currentColor"
                         strokeWidth={0}
                         aria-hidden="true"
-                        className="shrink-0 text-spark/70 transition-transform duration-200 ease-out group-hover:scale-125"
+                        className={selected ? "text-accent-bright" : "text-subtle"}
                       />
                     )}
-                    {m.title}
-                  </p>
+                  </button>
 
-                  <div className="flex shrink-0 items-start gap-2">
-                    <time className="mt-1 text-[11px] text-subtle">
-                      {relativeTime(m.createdAt)}
-                    </time>
-                    {canManage && (
+                  {canManage && (
+                    <div className="mt-1 flex justify-end">
                       <DeleteMaterialButton
                         courseId={courseId}
-                        materialId={m.id}
-                        title={m.title}
+                        materialId={material.id}
+                        title={material.title}
                       />
-                    )}
-                  </div>
-                </div>
-
-                <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-subtle">
-                  {m.sizeBytes !== null && (
-                    <span className="numeric">{formatBytes(m.sizeBytes)}</span>
+                    </div>
                   )}
-                  {failed && <span className="text-danger">فشل الرفع</span>}
-                  {!ready && !failed && <span className="text-warning">قيد الرفع</span>}
-                  {canManage && ready && !m.isPublished && (
-                    <span className="text-warning">مسودة</span>
-                  )}
-                </p>
-
-                {ready && (
-                  <div className="mt-3">
-                    <VideoPlayer
-                      src={`/api/courses/${courseId}/videos/${m.id}/stream`}
-                      title={m.title}
-                    />
-                  </div>
-                )}
-              </div>
-            </StaggerItem>
-          );
-        })}
-      </StaggerList>
+                </StaggerItem>
+              );
+            })}
+          </StaggerList>
+        </div>
+      </aside>
     </div>
   );
 }

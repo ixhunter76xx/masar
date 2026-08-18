@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { setUserRole } from "@/app/(app)/settings/actions";
+import { Select } from "@/components/ui/Field";
 import { Role } from "@/generated/prisma/enums";
 
 const OPTIONS = [
@@ -59,22 +60,22 @@ export function UserRoleSelect({
       <label htmlFor={`role-${userId}`} className="sr-only">
         دور {name}
       </label>
-      <select
+      {/* ضابطٌ داخل صفّ جدول، لا حقلُ نموذج: يرث اللون والحدّ وحلقة
+          التركيز من `.input-field`، ويتجاوز المقاس وحده — فما يختلف
+          فعلًا هو الحجم لا المعالجة. */}
+      <Select
         id={`role-${userId}`}
         defaultValue={role}
         onChange={onChange}
         disabled={busy || disabled}
-        className="field-motion min-h-touch rounded-[10px] border border-line bg-ink
-          px-2.5 text-[11px] text-paper hover:border-accent-deep
-          focus:border-accent focus:outline-none
-          disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-touch w-auto px-2.5 text-[11px]"
       >
         {OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
 
       {error && (
         <p role="alert" className="basis-full text-[11px] text-danger">

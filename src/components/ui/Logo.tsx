@@ -28,8 +28,9 @@ const FULL_LOGO_MIN_SIZE = 64;
  * ─────────────────────────────────────────────────────────────────────
  */
 const SOURCES: Record<Exclude<LogoVariant, "auto">, string> = {
-  full: "/logo-masar.png",
-  mark: "/logo-masar-mark.png",
+  full: "/logo-masar.png?v=vision-20260814",
+  /* المرجع المعتمد يقدّم هويةً واحدة لا رمزًا أزرق بديلًا. */
+  mark: "/logo-masar.png?v=vision-20260814",
 };
 
 export function Logo({
@@ -69,9 +70,31 @@ export function Logo({
     />
   );
 
-  /* بلا مربّع: الشعار أزرق فاتح على خلفية داكنة مباشرةً. مناسب للرأسية
-     والصفحات العامة حيث المربّع المتدرّج يثقل الواجهة. */
+  /* بلا مربّع: الشعار المعتمد على الخلفية الداكنة مباشرةً. مناسب للرأسية
+     والصفحات العامة حيث إطارٌ إضافي يثقل الواجهة. */
   if (bare) {
+    /* ملف الهوية مربع وفي وسطه توقيع أفقي. نقصّ فراغه الرأسي داخل
+       غلاف أفقي بدل تصغير المربع كله حتى يصير التوقيع غير مقروء. */
+    if (resolved === "full") {
+      const width = Math.round(size * 2.45);
+      return (
+        <span
+          className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", className)}
+          style={{ width, height: size }}
+        >
+          <Image
+            src={SOURCES.full}
+            alt={`شعار ${SITE.name}`}
+            width={width}
+            height={width}
+            priority
+            className="max-w-none object-contain"
+            style={{ width, height: width }}
+          />
+        </span>
+      );
+    }
+
     return (
       <span
         className={cn("inline-flex shrink-0 items-center justify-center", className)}

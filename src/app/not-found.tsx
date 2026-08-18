@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "الصفحة غير موجودة" };
 export default function NotFound() {
   return (
     <main className="grid min-h-dvh place-items-center bg-ink px-4">
-      <div className="w-full max-w-md rounded-[14px] border border-line bg-panel px-6 py-8 text-center">
+      <div className="w-full max-w-md rounded-card border border-line bg-panel px-6 py-8 text-center">
         <span className="mx-auto grid size-12 place-items-center rounded-full border border-line bg-ink text-muted">
           <FileQuestion size={22} strokeWidth={1.75} aria-hidden="true" />
         </span>

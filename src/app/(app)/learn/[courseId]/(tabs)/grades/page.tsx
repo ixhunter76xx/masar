@@ -78,9 +78,8 @@ export default async function CourseGradesPage({ params }: Params) {
       {/* الملخّص: الحلقة تحمل النسبة والرقم يحمل التفصيل. كان السطر
           كله نصًّا رماديًا متساوي الوزن، فلا شيء فيه يقول «هذا أنت». */}
       <div
-        className="mb-5 flex items-center gap-4 rounded-[14px] border border-line px-5 py-4
-          shadow-[inset_0_1px_0_rgba(255,255,255,0.045)]
-          [background:linear-gradient(168deg,var(--color-panel-lift)_0%,var(--color-panel)_62%)]"
+        className="mb-5 flex items-center gap-4 rounded-card border border-line bg-panel px-5 py-4
+          shadow-[inset_0_1px_0_var(--hair),0_2px_4px_var(--shadow)]"
       >
         {pct !== null && (
           <ScoreRing percent={pct}>

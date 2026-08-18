@@ -15,19 +15,19 @@ export function EmptyState({
   action?: { href: string; label: string };
 }) {
   return (
-    <Card className="flex flex-col items-center px-6 py-14 text-center">
-      <span className="grid size-12 place-items-center rounded-full border border-line bg-ink text-subtle">
+    <Card className="grid justify-items-center gap-[0.7rem] px-6 py-[3.2rem] text-center">
+      <span className="grid size-[54px] place-items-center rounded-[17px] border border-line bg-[var(--sunk)] text-subtle">
         <Icon size={22} strokeWidth={1.5} aria-hidden="true" />
       </span>
-      <p className="mt-4 text-sm font-medium text-paper">{title}</p>
-      <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted">
+      <p className="max-w-[34ch] text-sm font-medium text-paper">{title}</p>
+      <p className="max-w-[34ch] text-[13px] leading-relaxed text-muted">
         {description}
       </p>
 
       {action && (
         <Link
           href={action.href}
-          className="press mt-5 inline-flex min-h-touch items-center rounded-[10px]
+          className="press mt-2 inline-flex min-h-touch items-center rounded-field
             bg-action px-5 text-sm font-medium text-ink hover:bg-accent-bright"
         >
           {action.label}

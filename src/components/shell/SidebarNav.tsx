@@ -57,7 +57,7 @@ export function SidebarNav({
                   "before:transition-[background-color,transform] before:duration-200",
                   isActive
                     ? "bg-panel-lift text-paper font-medium before:bg-accent-bright before:scale-y-100"
-                    : "text-muted hover:text-paper hover:bg-panel before:bg-transparent before:scale-y-0",
+                    : "text-muted hover:text-paper hover:bg-panel-lift before:bg-transparent before:scale-y-0",
                 )}
               >
                 <Icon

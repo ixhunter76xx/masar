@@ -11,7 +11,7 @@ export function Skeleton({ className }: { className?: string }) {
       aria-hidden="true"
       /* `shimmer` بدل `animate-pulse`: النبض يقول «شيء يحدث»، والمسحة
          تقول «المحتوى قادم» — اتجاه الحركة نفسه يحمل المعنى. */
-      className={cn("shimmer rounded-[10px] bg-line/35", className)}
+      className={cn("shimmer rounded-lg bg-panel-lift", className)}
     />
   );
 }
@@ -19,7 +19,7 @@ export function Skeleton({ className }: { className?: string }) {
 /** هيكل بطاقة — يطابق أبعاد البطاقات الحقيقية فلا يحدث قفز تخطيط */
 export function CardSkeleton({ lines = 2 }: { lines?: number }) {
   return (
-    <div className="rounded-[14px] border border-line bg-panel px-5 py-4">
+    <div className="rounded-card border border-line bg-panel px-5 py-4">
       <div className="flex gap-4">
         <Skeleton className="size-9 shrink-0 rounded-full" />
         <div className="flex-1 space-y-2.5">

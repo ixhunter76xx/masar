@@ -6,6 +6,7 @@ import { KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PasswordField } from "@/components/ui/PasswordField";
+import { FormAlert } from "@/components/ui/FormAlert";
 import {
   changePassword,
   signOutAfterChange,
@@ -85,11 +86,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
           required
         />
 
-        {error && (
-          <p role="alert" className="text-xs leading-relaxed text-danger">
-            {error}
-          </p>
-        )}
+        {error && <FormAlert>{error}</FormAlert>}
 
         <Button type="submit" size="sm" loading={busy}>
           حفظ كلمة المرور
