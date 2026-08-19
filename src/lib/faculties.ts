@@ -80,10 +80,21 @@ export type Station<TCourse> = {
  */
 export function buildStations<TCourse>(
   groups: readonly { slug: string | null; name: string; courses: TCourse[] }[],
+  /**
+   * كليات أخفاها المالك من لوحة التحكم.
+   *
+   * الإخفاء استثناء لا قاعدة: المحطة الفارغة تُعرض «لم تُطرح بعد» عمدًا
+   * لأنها وعدٌ بالتوسّع. وحارس `setFacultyVisible` يمنع إخفاء كلية تحمل
+   * مقررًا منشورًا، فما يُخفى هنا لا يحجب محتوى قابلًا للشراء.
+   */
+  hiddenSlugs: readonly string[] = [],
 ): Station<TCourse>[] {
   const bySlug = new Map(groups.filter((g) => g.slug).map((g) => [g.slug!, g]));
+  const hidden = new Set(hiddenSlugs);
 
-  const known: Station<TCourse>[] = UOB_FACULTIES.map((f) => ({
+  const known: Station<TCourse>[] = UOB_FACULTIES.filter(
+    (f) => !hidden.has(f.slug),
+  ).map((f) => ({
     slug: f.slug,
     name: f.name,
     icon: f.icon,

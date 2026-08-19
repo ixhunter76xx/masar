@@ -141,6 +141,12 @@ model Faculty {
   slug String @unique
   name String
 
+  /// تُعرض محطّتها في مسار الكتالوج.
+  ///
+  /// إخفاءٌ لا حذف: الكلية قد تحمل مقررات مؤرشفة أو قادمة، وحذفها
+  /// يقطع `Course.facultyId`. والمحطة المخفية لا تُرسم أصلًا.
+  isVisible Boolean @default(true)
+
   sortOrder Int @default(0)
 
   courses Course[]
@@ -176,6 +182,13 @@ model Course {
   coverKey String?
 
   /// لا يظهر في الكتالوج العام قبل نشره
+  /// أُرشِف — حذفٌ ناعم.
+  ///
+  /// الحذف الصلب يقطع `OrderItem` عن منتجه ويُتلف ما يفتحه
+  /// `Enrollment` — أي يُتلف سجلّ من اشترى ماذا. الأرشفة تُخفي المقرر
+  /// من الكتالوج ومن شاشات الإدارة، وتُبقي التاريخ سليمًا.
+  archivedAt DateTime?
+
   isPublished Boolean @default(false)
   sortOrder   Int     @default(0)
 

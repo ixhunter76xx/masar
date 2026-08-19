@@ -11,6 +11,7 @@ import { FormField } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { CoursePublishToggle } from "@/components/admin/CoursePublishToggle";
 import { CoursePresenterSelect } from "@/components/admin/CoursePresenterSelect";
+import { ArchiveCourseButton } from "@/components/admin/ArchiveCourseButton";
 import { requireAdmin } from "@/lib/data/admin";
 import { db } from "@/server/db";
 import { createCourse } from "@/app/(app)/settings/courses/actions";
@@ -23,6 +24,8 @@ export default async function AdminCoursesPage() {
 
   const [courses, faculties, instructors] = await Promise.all([
     db.course.findMany({
+      /* المؤرشف مخفيّ: موجودٌ للتاريخ لا للعمل اليومي */
+      where: { archivedAt: null },
       orderBy: [{ code: "asc" }],
       select: {
         id: true,
@@ -143,13 +146,18 @@ export default async function AdminCoursesPage() {
                   courseId={course.id}
                   isPublished={course.isPublished}
                 />
+                <ArchiveCourseButton
+                  courseId={course.id}
+                  title={course.title}
+                  archived={false}
+                />
                 <Link
                   href={`/settings/courses/${course.id}`}
                   className="press inline-flex min-h-touch items-center gap-1 rounded-[10px]
                     border border-line bg-ink px-3 text-xs text-paper
                     transition-colors hover:border-accent-deep"
                 >
-                  الباقات
+                  إدارة المقرر
                   <ChevronLeft size={13} strokeWidth={1.75} aria-hidden="true" />
                 </Link>
               </div>

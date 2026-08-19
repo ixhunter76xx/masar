@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import {
   getPublicCourse,
   listCatalogueByFaculty,
+  listHiddenFacultySlugs,
 } from "@/lib/data/courses";
 
 /**
@@ -26,6 +27,13 @@ export const getCachedCatalogue = unstable_cache(
 export const getCachedPublicCourse = unstable_cache(
   async (slug: string) => getPublicCourse(slug),
   ["public-course-v1"],
+  { revalidate: 60, tags: [PUBLIC_COURSES_TAG] },
+);
+
+/** بنفس الوسم: إخفاء كلية من اللوحة يُبطلها فورًا مع الكتالوج. */
+export const getCachedHiddenFaculties = unstable_cache(
+  async () => listHiddenFacultySlugs(),
+  ["public-hidden-faculties-v1"],
   { revalidate: 60, tags: [PUBLIC_COURSES_TAG] },
 );
 

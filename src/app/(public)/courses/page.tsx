@@ -6,7 +6,7 @@ import { FacultyStations } from "@/components/public/FacultyStations";
 import { LessonBoard } from "@/components/public/LessonBoard";
 import { amiri } from "@/lib/amiri-font";
 import { buildStations } from "@/lib/faculties";
-import { getCachedCatalogue } from "@/lib/public-course-cache";
+import { getCachedCatalogue, getCachedHiddenFaculties } from "@/lib/public-course-cache";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -21,7 +21,10 @@ export const metadata: Metadata = {
  * استدعاء لـ `auth()` هنا يخلط العام بالخاص بلا سبب.
  */
 export default async function CatalogPage() {
-  const groups = await getCachedCatalogue();
+  const [groups, hiddenFaculties] = await Promise.all([
+    getCachedCatalogue(),
+    getCachedHiddenFaculties(),
+  ]);
   const courses = groups.flatMap((group) => group.courses);
   const previewCourse = courses.find((course) => course.hasFreePreview);
 
@@ -124,7 +127,7 @@ export default async function CatalogPage() {
 
            المحطّات تحلّ الاثنين معًا: الصفحة تمتلئ بالكليات لا
            بالمقررات، والاختيار حاضر بلا بوّابة تسبق المحتوى. */
-        <FacultyStations stations={buildStations(groups)} />
+        <FacultyStations stations={buildStations(groups, hiddenFaculties)} />
       )}
     </div>
   );

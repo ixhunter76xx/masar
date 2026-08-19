@@ -268,3 +268,203 @@ export async function setProductPublished(
   revalidatePublicCourses();
   return ok;
 }
+
+/* -------------------------------------------------------------------------- */
+/*  تحرير المقرر وأرشفته — لوحة التحكم                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * تعديل بيانات مقرر قائم.
+ *
+ * الرمز قابل للتعديل، والمسار يُشتقّ منه كما في الإنشاء — فلا يفترقان
+ * أبدًا. وتغيير الرمز يغيّر الرابط العام، وهو مقصود: الرابط صورةٌ من
+ * الرمز لا معرّفٌ مستقلّ.
+ */
+export async function updateCourse(input: {
+  courseId: string;
+  code: string;
+  title: string;
+  summary?: string;
+  description?: string;
+  facultyId: string;
+}): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = courseSchema
+    .omit({ presenterId: true })
+    .safeParse(input);
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+
+  const { code, title, summary, description, facultyId } = parsed.data;
+  const slug = slugFromCode(code);
+
+  const clash = await db.course.findFirst({
+    where: { NOT: { id: input.courseId }, OR: [{ code }, { slug }] },
+    select: { id: true },
+  });
+  if (clash) return fail("رمز المقرر مستخدَم بالفعل.");
+
+  const faculty = await db.faculty.findUnique({
+    where: { id: facultyId },
+    select: { id: true },
+  });
+  if (!faculty) return fail("الكلية المختارة غير موجودة.");
+
+  await db.course.update({
+    where: { id: input.courseId },
+    data: {
+      code,
+      slug,
+      title,
+      summary: summary || null,
+      description: description || null,
+      facultyId,
+    },
+  });
+
+  revalidatePath("/settings/courses");
+  revalidatePath(`/settings/courses/${input.courseId}`);
+  revalidatePublicCourses();
+  return ok;
+}
+
+/**
+ * أرشفة مقرر — حذفٌ ناعم.
+ *
+ * ⚠ لا حذف صلب هنا عمدًا. حذف المقرر يُسقط منتجاته (Cascade)، وسقوطها
+ * يقطع `OrderItem` عن منتجه ويُتلف ما يفتحه `Enrollment` — أي يمحو
+ * سجلّ من اشترى ماذا وبكم. والأرشفة تُخفي المقرر من الكتالوج ومن
+ * شاشات الإدارة وتُبقي ذلك السجلّ كاملًا.
+ *
+ * والأرشفة تُلغي النشر معها: مقرر مؤرشف ظاهر في الكتالوج تناقض.
+ */
+export async function setCourseArchived(
+  courseId: string,
+  archived: boolean,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  await db.course.update({
+    where: { id: courseId },
+    data: archived
+      ? { archivedAt: new Date(), isPublished: false }
+      : { archivedAt: null },
+  });
+
+  revalidatePath("/settings/courses");
+  revalidatePublicCourses();
+  return ok;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  تحرير الباقة ومنهجها                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * تعديل بيانات باقة قائمة — الاسم والسعر والوصف.
+ *
+ * ⚠ تغيير السعر **لا يمسّ الطلبات السابقة**، وهذا ليس أثرًا جانبيًا بل
+ * تصميم: `OrderItem.unitPriceFils` و`titleSnapshot` يجمّدان السعر
+ * والاسم وقت الشراء. فمن اشترى بثمانية يبقى سجلّه ثمانية مهما تغيّر
+ * السعر بعده. الشاشة تعرض هذا طمأنةً لا تحذيرًا.
+ *
+ * والمعرّف (`slug`) غير قابل للتعديل: هو ما يربط الباقة بسجلّاتها،
+ * وتغييره يفصل تاريخًا عن حاضره بلا مقابل.
+ */
+export async function updateProduct(input: {
+  productId: string;
+  title: string;
+  priceDinars: number;
+  description?: string;
+}): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = z
+    .object({
+      title: z.string().trim().min(2, "اسم الباقة قصير جدًا.").max(120),
+      priceDinars: z
+        .number({ message: "السعر رقم بالدينار." })
+        .min(0, "السعر لا يكون سالبًا.")
+        .max(9999),
+      description: z.string().trim().max(400).optional(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return fail(firstIssue(parsed.error));
+
+  const { title, priceDinars, description } = parsed.data;
+
+  const product = await db.product.findUnique({
+    where: { id: input.productId },
+    select: { courseId: true },
+  });
+  if (!product) return fail("الباقة غير موجودة.");
+
+  await db.product.update({
+    where: { id: input.productId },
+    data: {
+      title,
+      /* الفلس هو وحدة التخزين — لا عشريّات عائمة على مسار المال */
+      priceFils: Math.round(priceDinars * 1000),
+      description: description || null,
+    },
+  });
+
+  revalidatePath(`/settings/courses/${product.courseId}`);
+  revalidatePublicCourses();
+  return ok;
+}
+
+/**
+ * بناء المنهج: تحديد الدروس التي تفتحها الباقة.
+ *
+ * ── لماذا استبدالٌ كامل لا إضافة/حذف مفردة ─────────────────────────
+ * الشاشة تعرض مربّعات اختيار وتُرسل الحالة النهائية. والاستبدال داخل
+ * معاملة واحدة يجعل النتيجة هي ما رآه المدير بالضبط، ولا يترك حالة
+ * وسطى إن انقطع النداء في منتصفه.
+ *
+ * ⚠ والحذف هنا يمسّ `ProductItem` وحده — أي **ما تفتحه** الباقة، لا
+ * من اشتراها. `Enrollment` و`OrderItem` يشيران إلى `Product` نفسه
+ * فلا يمسّهما تغيير المحتوى. لكن انتبه: تضييق باقة مُباعة يسحب
+ * دروسًا من طلاب يملكونها فعلًا — ولذلك تحذّر الشاشة قبل الحفظ.
+ */
+export async function setProductLessons(input: {
+  productId: string;
+  lessonIds: string[];
+}): Promise<ActionResult> {
+  await requireAdmin();
+
+  const product = await db.product.findUnique({
+    where: { id: input.productId },
+    select: { id: true, courseId: true },
+  });
+  if (!product) return fail("الباقة غير موجودة.");
+
+  /* لا تبيع الباقة محتوى لا يملكه مقررها */
+  const owned = await db.courseMaterial.findMany({
+    where: { id: { in: input.lessonIds }, courseId: product.courseId },
+    select: { id: true },
+  });
+  if (owned.length !== input.lessonIds.length) {
+    return fail("بعض الدروس المختارة ليست من هذا المقرر.");
+  }
+
+  await db.$transaction(async (tx) => {
+    await tx.productItem.deleteMany({
+      where: { productId: product.id, kind: ProductItemKind.LESSON },
+    });
+    if (input.lessonIds.length > 0) {
+      await tx.productItem.createMany({
+        data: input.lessonIds.map((lessonId, index) => ({
+          productId: product.id,
+          kind: ProductItemKind.LESSON,
+          lessonId,
+          position: index,
+        })),
+      });
+    }
+  });
+
+  revalidatePath(`/settings/courses/${product.courseId}`);
+  revalidatePublicCourses();
+  return ok;
+}

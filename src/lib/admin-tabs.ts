@@ -15,6 +15,12 @@ export const ADMIN_TABS = [
      وبقية التبويبات مرجعية تُفتح عند الحاجة. */
   { segment: "orders", label: "الطلبات" },
   { segment: "courses", label: "المقررات" },
+  /* الطلاب قبل المستخدمين: «المستخدمون» شاشة حسابات وأدوار وكلمات
+     مرور، و«الطلاب» شاشة من اشترى ماذا. يقصد المدير الثانية أضعاف ما
+     يقصد الأولى، فتسبقها. */
+  { segment: "students", label: "الطلاب" },
+  { segment: "instructors", label: "المدرّسون" },
+  { segment: "faculties", label: "الكليات" },
   { segment: "users", label: "المستخدمون" },
 ] as const;
 

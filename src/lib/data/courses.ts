@@ -49,7 +49,9 @@ export type FacultyGroup = {
  */
 export async function listPublishedCourses(): Promise<CourseCard[]> {
   const rows = await db.course.findMany({
-    where: { isPublished: true },
+    /* المؤرشف خارج الكتالوج ولو بقي `isPublished` — الأرشفة تُلغي
+       النشر معها، وهذا حارسٌ ثانٍ لصفٍّ أُرشف بمسار آخر. */
+    where: { isPublished: true, archivedAt: null },
     orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
     select: {
       id: true,
@@ -97,7 +99,9 @@ export async function listPublishedCourses(): Promise<CourseCard[]> {
  */
 export async function listCatalogueByFaculty(): Promise<FacultyGroup[]> {
   const rows = await db.course.findMany({
-    where: { isPublished: true },
+    /* المؤرشف خارج الكتالوج ولو بقي `isPublished` — الأرشفة تُلغي
+       النشر معها، وهذا حارسٌ ثانٍ لصفٍّ أُرشف بمسار آخر. */
+    where: { isPublished: true, archivedAt: null },
     orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
     select: {
       id: true,
@@ -404,3 +408,18 @@ export const getCourseResume = cache(async function getCourseResume(
     completed,
   };
 });
+
+/**
+ * أسلاك الكليات التي أخفاها المالك.
+ *
+ * يقرأها الكتالوج ليُسقط محطّاتها من المسار. تعيش هنا لا في وحدة
+ * الإدارة لأن قارئها صفحةٌ عامّة، ولا ينبغي أن تسحب صفحةٌ عامّة حارس
+ * `requireAdmin` إلى شجرتها.
+ */
+export async function listHiddenFacultySlugs(): Promise<string[]> {
+  const rows = await db.faculty.findMany({
+    where: { isVisible: false },
+    select: { slug: true },
+  });
+  return rows.map((r) => r.slug);
+}

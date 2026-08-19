@@ -101,11 +101,22 @@ export async function renameLesson(
 }
 
 /**
- * تعيين درس المعاينة المجانية — **واحد لكل مقرر**.
+ * تعيين درس معاينة مجانية — **أكثر من واحد مسموح**.
  *
- * صفحة المتجر تقرأ أول درس مجاني (`materials.find(...)`), فوجود أكثر
- * من واحد يجعل المعروض رهنَ ترتيب الاستعلام لا رهنَ قرارٍ. لذلك تعيين
- * درس يُلغي العلامة عن غيره في نفس المعاملة بدل ترك التعارض قائمًا.
+ * ── ما تغيّر ولماذا ────────────────────────────────────────────────
+ * كان التعيين يُلغي العلامة عن بقية دروس المقرر، بحجّة أن المتجر يقرأ
+ * `materials.find(m => m.isFreePreview)` فيصير المعروض رهنَ ترتيب
+ * الاستعلام. وتلك الحجّة لم تكن صحيحة: الاستعلام في `getPublicCourse`
+ * مرتَّب بـ`orderBy: { position: "asc" }`، فـ`find` تُرجع **أوّل درس
+ * مجاني بترتيب المنهج** — قرارٌ محدَّد لا صدفة.
+ *
+ * فالقيد كان يحمي من خطر غير قائم، ويمنع المالك من عرض أكثر من درس
+ * للتجربة. والوصول كان صحيحًا أصلًا: `canViewLesson` يفحص علم الدرس
+ * **نفسه** لا علمًا على مستوى المقرر، فتعدّد المعاينات يعمل بلا تغيير.
+ *
+ * ⚠ الأثر الباقي: بطاقة المتجر تعرض في المشغّل **أوّل** مجاني بترتيب
+ * المنهج، وقائمة الدروس تعلّم كلّ المجانية. أي أن ترتيب الدروس صار هو
+ * ما يحدّد الدرس المعروض في البطل — وهو ضابط مفهوم للمالك.
  */
 export async function setFreePreviewLesson(
   courseId: string,
@@ -121,17 +132,9 @@ export async function setFreePreviewLesson(
   });
   if (!lesson) return fail("الدرس غير موجود.");
 
-  await db.$transaction(async (tx) => {
-    if (isFreePreview) {
-      await tx.courseMaterial.updateMany({
-        where: { courseId, isFreePreview: true },
-        data: { isFreePreview: false },
-      });
-    }
-    await tx.courseMaterial.update({
-      where: { id: lesson.id },
-      data: { isFreePreview },
-    });
+  await db.courseMaterial.update({
+    where: { id: lesson.id },
+    data: { isFreePreview },
   });
 
   revalidatePath(`/learn/${courseId}`);

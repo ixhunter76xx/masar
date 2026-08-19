@@ -6,6 +6,9 @@ import { ArrowRight } from "lucide-react";
 import { AppPage } from "@/components/shell/AppPage";
 import { Card } from "@/components/ui/Card";
 import { ProductManager } from "@/components/admin/ProductManager";
+import { AdminTabs } from "@/components/admin/AdminTabs";
+import { CourseEditForm } from "@/components/admin/CourseEditForm";
+import { ProductCurriculumEditor } from "@/components/admin/ProductCurriculumEditor";
 import { requireAdmin } from "@/lib/data/admin";
 import { db } from "@/server/db";
 import { formatFils } from "@/lib/price";
@@ -24,6 +27,9 @@ export default async function CourseProductsPage({ params }: Params) {
       id: true,
       code: true,
       title: true,
+      summary: true,
+      description: true,
+      facultyId: true,
       materials: {
         orderBy: { position: "asc" },
         select: { id: true, title: true, isFreePreview: true },
@@ -36,6 +42,7 @@ export default async function CourseProductsPage({ params }: Params) {
           title: true,
           priceFils: true,
           isPublished: true,
+          description: true,
           items: { select: { lessonId: true } },
           _count: { select: { enrollments: true, orderItems: true } },
         },
@@ -44,6 +51,11 @@ export default async function CourseProductsPage({ params }: Params) {
   });
 
   if (!course) notFound();
+
+  const faculties = await db.faculty.findMany({
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, name: true },
+  });
 
   return (
     <AppPage title="باقات المقرر" hidePageHeader>
@@ -66,6 +78,52 @@ export default async function CourseProductsPage({ params }: Params) {
         </p>
       </Card>
 
+      <h3 className="mb-3 text-sm font-medium text-paper">بيانات المقرر</h3>
+      <Card className="mb-6 px-5 py-4">
+        <CourseEditForm
+          courseId={course.id}
+          faculties={faculties}
+          initial={{
+            code: course.code,
+            title: course.title,
+            summary: course.summary ?? "",
+            description: course.description ?? "",
+            facultyId: course.facultyId ?? faculties[0]?.id ?? "",
+          }}
+        />
+      </Card>
+
+      {/* ── تحرير الباقات ومناهجها ─────────────────────────────── */}
+      {course.products.length > 0 && (
+        <>
+          <h3 className="mb-3 text-sm font-medium text-paper">
+            الباقات ومناهجها
+          </h3>
+          <ul className="mb-6 space-y-3">
+            {course.products.map((product) => (
+              <li key={product.id}>
+                <Card className="px-5 py-4">
+                  <ProductCurriculumEditor
+                    lessons={course.materials}
+                    product={{
+                      id: product.id,
+                      title: product.title,
+                      priceFils: product.priceFils,
+                      description: product.description,
+                      lessonIds: product.items
+                        .map((i) => i.lessonId)
+                        .filter((id): id is string => id !== null),
+                      soldCount: product._count.orderItems,
+                    }}
+                  />
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <h3 className="mb-3 text-sm font-medium text-paper">إنشاء باقة جديدة</h3>
       {course.materials.length === 0 ? (
         <Card className="px-6 py-10 text-center text-[13px] text-subtle">
           لا دروس في هذا المقرر بعد. ارفع درسًا واحدًا على الأقل قبل
