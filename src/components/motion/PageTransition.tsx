@@ -99,8 +99,31 @@ export function PageTransition({
     ? appPageTransitionKey(pathname)
     : pathname;
 
+  /**
+   * ⚠ **`popLayout` لا يتعايش مع حدّ Suspense — والعطل صامت.**
+   *
+   * `popLayout` يلفّ كل ابن في `PopChild`، وهو مكوّن يقيس العنصر ويثبّت
+   * موضعه. وحين يكون تحته حدّ Suspense — وهو ما يُنشئه `loading.tsx` —
+   * **لا تُرطَّب الشجرة كلها**: لا خطأ في السجلّ، ولا رسالة في المتصفّح،
+   * ولا فشل في البناء. الصفحة تُرسَم من الخادم كاملةً وتبدو سليمة،
+   * ثم لا يعمل فيها زرّ ولا حقل ولا `useEffect` واحد.
+   *
+   * وهذا ما شلّ المنطقة المحمية كلها: `(app)/loading.tsx` موجود،
+   * والمنطقة العامّة نجت لأنها بلا `loading.tsx`. عُزل السبب بالتجريب:
+   *
+   *   loading.tsx وحده            → يُرطَّب ✓
+   *   popLayout وحده (العامّة)     → يُرطَّب ✓
+   *   الاثنان معًا                 → لا ترطيب ✗
+   *
+   * فالمنطقة المحمية تأخذ `wait`: لا `PopChild` فيه، فيتعايش مع الحدّ.
+   * ولا يكلّف شيئًا هنا لأن خروجها بزمن صفر أصلًا (انظر `APP_PAGE`) —
+   * أي أن «الانتظار» ينتهي في الإطار نفسه.
+   *
+   * وتبقى العامّة على `popLayout` كما صُمّمت: لا `loading.tsx` تحتها،
+   * وخروجها له زمن فعليّ يستفيد من خروج العنصر من التخطيط فورًا.
+   */
   return (
-    <AnimatePresence mode="popLayout" initial={false}>
+    <AnimatePresence mode={stationary ? "wait" : "popLayout"} initial={false}>
       <motion.div
         key={transitionKey}
         initial={profile.initial}
