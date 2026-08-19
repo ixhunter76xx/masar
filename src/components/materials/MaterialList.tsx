@@ -105,7 +105,7 @@ export function MaterialList({
                   <span
                     className={cn(
                       "absolute -start-[2.6rem] top-[14px] z-10 grid size-8 place-items-center rounded-full border",
-                      "bg-ink text-[11px] shadow-[0_0_0_5px_var(--color-ink)] transition-all duration-[320ms] ease-out",
+                      "bg-ink text-[11px] shadow-[0_0_0_5px_var(--color-ink)] transition-[background-color,border-color,color] duration-[320ms] ease-out",
                       selected
                         ? "border-transparent bg-gradient-to-b from-accent-bright to-action text-ink"
                         : failed

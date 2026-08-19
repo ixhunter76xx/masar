@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { MotionRoot } from "@/components/motion/MotionRoot";
 import { ServiceWorker } from "@/components/pwa/ServiceWorker";
-import { plexArabic, plexMono, amiri } from "@/lib/fonts";
+import { plexArabic, plexMono } from "@/lib/fonts";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -72,7 +72,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${plexArabic.variable} ${plexMono.variable} ${amiri.variable}`}
+      className={`${plexArabic.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-ink text-paper antialiased">

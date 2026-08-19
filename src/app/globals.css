@@ -84,7 +84,7 @@
   /* --- الحركة: مطابقة لـ src/lib/motion.ts --- */
   --dur-fast: 150ms;
   --dur-base: 240ms;
-  --dur-slow: 380ms;
+  --dur-slow: 320ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -533,8 +533,9 @@
     height: 360px;
     pointer-events: none;
     opacity: 0;
+    contain: layout paint;
     mask-image: linear-gradient(to bottom, #000 42%, transparent 96%);
-    animation: faculty-scene-in 620ms var(--ease-out) both;
+    animation: faculty-scene-in 420ms var(--ease-out) both;
   }
 
   .faculty-scene svg {
@@ -553,9 +554,8 @@
   }
 
   .faculty-scene .faculty-draw {
-    stroke-dasharray: 1400;
-    stroke-dashoffset: 1400;
-    animation: faculty-draw-in 1100ms var(--ease-out) 80ms forwards;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
   }
 
   .faculty-scene .faculty-pulse {
@@ -571,7 +571,7 @@
 
   .faculty-scene .faculty-flow {
     stroke-dasharray: 26 340;
-    animation: faculty-flow 26s linear infinite;
+    stroke-dashoffset: 0;
   }
 
   .faculty-scene .faculty-drift {
@@ -588,15 +588,22 @@
     inset: 0;
     overflow: hidden;
     pointer-events: none;
+    animation: faculty-glyph-drift 22s ease-in-out infinite;
   }
 
   .faculty-glyphs span {
     position: absolute;
     color: var(--color-accent);
-    font-family: "Amiri", serif;
+    font-family: var(--font-amiri), serif;
     font-weight: 700;
-    opacity: 0;
-    animation: faculty-glyph var(--glyph-duration) ease-in-out var(--glyph-offset) infinite;
+    opacity: 0.22;
+  }
+
+  /* لا حاجة لتحريك مشهد لا تراه العين. الإيقاف يحافظ على موضع كل
+     عنصر، ثم يُكمل الحركة حين يقترب القسم من إطار العرض. */
+  .faculty-scene[data-paused="true"],
+  .faculty-scene[data-paused="true"] * {
+    animation-play-state: paused !important;
   }
 
   @keyframes faculty-scene-in {
@@ -604,16 +611,13 @@
     to { opacity: 0.5; transform: none; }
   }
 
-  @keyframes faculty-draw-in { to { stroke-dashoffset: 0; } }
   @keyframes faculty-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
   @keyframes faculty-spin { to { transform: rotate(360deg); } }
-  @keyframes faculty-flow { to { stroke-dashoffset: -1464; } }
   @keyframes faculty-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
   @keyframes faculty-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
-  @keyframes faculty-glyph {
-    0% { opacity: 0; transform: translateY(14px) rotate(var(--glyph-rotate)); }
-    22%, 78% { opacity: 0.3; }
-    100% { opacity: 0; transform: translateY(-26px) rotate(var(--glyph-rotate)); }
+  @keyframes faculty-glyph-drift {
+    0%, 100% { opacity: 0.76; transform: translateY(6px); }
+    50% { opacity: 1; transform: translateY(-10px); }
   }
 
   [data-offer-segment].offer-off {
@@ -656,9 +660,20 @@
      استعمال قائم. */
   .node-live {
     --node-glow: var(--color-spark);
+    isolation: isolate;
     box-shadow:
       0 0 0 5px var(--color-ink),
       0 0 0 6px color-mix(in srgb, var(--node-glow) 22%, transparent);
+  }
+
+  .node-live::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    z-index: -1;
+    border: 1px solid color-mix(in srgb, var(--node-glow) 26%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
     animation: node-breathe 3.4s var(--ease-in-out) infinite;
   }
 
@@ -669,14 +684,12 @@
   @keyframes node-breathe {
     0%,
     100% {
-      box-shadow:
-        0 0 0 5px var(--color-ink),
-        0 0 0 6px color-mix(in srgb, var(--node-glow) 18%, transparent);
+      opacity: 0.72;
+      transform: scale(0.88);
     }
     50% {
-      box-shadow:
-        0 0 0 5px var(--color-ink),
-        0 0 0 9px color-mix(in srgb, var(--node-glow) 8%, transparent);
+      opacity: 0.18;
+      transform: scale(1.08);
     }
   }
 

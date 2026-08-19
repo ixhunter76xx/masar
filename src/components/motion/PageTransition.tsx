@@ -65,12 +65,12 @@ function FrozenRouter({
 }
 
 /**
- * انتقال الصفحات: خروج قصير للأعلى ثم دخول من الأسفل.
+ * انتقال الصفحات: خروج خاطف للأعلى ودخول فوري من الأسفل.
  *
- * الخروج (١٦٠ms) أقصر من الدخول (٣٢٠ms) عمدًا — الخروج تنظيف والدخول
- * هو ما ينبغي أن يُلاحَظ. و`mode="wait"` يمنع تراكب الصفحتين.
+ * `popLayout` يخرج الصفحة القديمة من التخطيط فورًا، فتبدأ الجديدة بلا
+ * بوابة انتظار. تبقى نسخة الخروج مجمّدة بسياقها الصحيح حتى تنتهي.
  *
- * المسافة ١٠ بكسل فقط: تكفي ليقرأها المخّ كحركة، ولا تكفي لتبدو
+ * المسافة ٦ بكسلات فقط: تكفي ليقرأها المخّ كحركة، ولا تكفي لتبدو
  * كصفحة تقفز. عند تفعيل `prefers-reduced-motion` يُلغي `MotionRoot`
  * الإزاحة ويُبقي التلاشي.
  */
@@ -78,7 +78,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
         initial={PAGE.initial}

@@ -37,7 +37,7 @@ export function Reveal({
   return (
     <Component
       className={className}
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: DUR.slow, ease: EASE.out, delay }}

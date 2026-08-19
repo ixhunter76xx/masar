@@ -40,19 +40,23 @@ const ICONS: Record<FacultyIconKey, LucideIcon> = {
 };
 
 const ARTS_GLYPHS = [
-  { glyph: "ب", top: 12, start: 8, size: 2.5, duration: 15, offset: 0, rotate: 7 },
-  { glyph: "ن", top: 58, start: 22, size: 1.7, duration: 18.4, offset: -2.7, rotate: -6 },
-  { glyph: "ر", top: 26, start: 38, size: 3.1, duration: 21.8, offset: -5.4, rotate: 7 },
-  { glyph: "ك", top: 72, start: 52, size: 1.9, duration: 25.2, offset: -8.1, rotate: -6 },
-  { glyph: "ع", top: 40, start: 66, size: 2.2, duration: 28.6, offset: -10.8, rotate: 7 },
-  { glyph: "م", top: 16, start: 80, size: 1.6, duration: 32, offset: -13.5, rotate: -6 },
-  { glyph: "ه", top: 64, start: 92, size: 2.8, duration: 35.4, offset: -16.2, rotate: 7 },
+  { glyph: "ب", top: 12, start: 8, size: 2.5, rotate: 7 },
+  { glyph: "ن", top: 58, start: 22, size: 1.7, rotate: -6 },
+  { glyph: "ر", top: 26, start: 38, size: 3.1, rotate: 7 },
+  { glyph: "ك", top: 72, start: 52, size: 1.9, rotate: -6 },
+  { glyph: "ع", top: 40, start: 66, size: 2.2, rotate: 7 },
+  { glyph: "م", top: 16, start: 80, size: 1.6, rotate: -6 },
+  { glyph: "ه", top: 64, start: 92, size: 2.8, rotate: 7 },
 ] as const;
 
 /** رسمٌ دلالي خفيف يميّز كل كلية، من نفس SVG المعتمد في المعاينة. */
-function FacultyScene({ icon }: { icon: FacultyIconKey }) {
+function FacultyScene({ icon, running }: { icon: FacultyIconKey; running: boolean }) {
   return (
-    <div className="faculty-scene" aria-hidden="true">
+    <div
+      className="faculty-scene"
+      data-paused={running ? undefined : "true"}
+      aria-hidden="true"
+    >
       {icon === "arts" && (
         <>
           <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
@@ -72,9 +76,7 @@ function FacultyScene({ icon }: { icon: FacultyIconKey }) {
                   top: `${item.top}%`,
                   insetInlineStart: `${item.start}%`,
                   fontSize: `${item.size}rem`,
-                  "--glyph-duration": `${item.duration}s`,
-                  "--glyph-offset": `${item.offset}s`,
-                  "--glyph-rotate": `${item.rotate}deg`,
+                  transform: `rotate(${item.rotate}deg)`,
                 } as React.CSSProperties}
               >
                 {item.glyph}
@@ -142,24 +144,61 @@ export function FacultyStations({
 }) {
   const first = stations.find((s) => s.courses.length > 0) ?? stations[0];
   const [active, setActive] = React.useState(first?.slug ?? "");
+  const sectionRef = React.useRef<HTMLDivElement>(null);
   const railRef = React.useRef<HTMLUListElement>(null);
-  const [mark, setMark] = React.useState({ y: 0, ready: false });
+  const [sceneVisible, setSceneVisible] = React.useState(true);
+  const [mark, setMark] = React.useState({ y: 0, progress: 0, ready: false });
 
   const station = stations.find((s) => s.slug === active) ?? first;
   const lessons = station?.courses.reduce((n, c) => n + c.lessonCount, 0) ?? 0;
 
   React.useLayoutEffect(() => {
-    const node = railRef.current?.querySelector<HTMLElement>(
-      `[data-slug="${CSS.escape(active)}"] [data-node]`,
-    );
-    if (!node) return;
-    setMark({ y: node.offsetTop + node.offsetHeight / 2, ready: true });
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const measure = () => {
+      const node = rail.querySelector<HTMLElement>(
+        `[data-slug="${CSS.escape(active)}"] [data-node]`,
+      );
+      if (!node) return;
+
+      const y = node.offsetTop + node.offsetHeight / 2;
+      const drawable = Math.max(rail.offsetHeight - 24, 1);
+      const progress = Math.min(Math.max((y - 12) / drawable, 0), 1);
+      setMark((previous) =>
+        previous.ready &&
+        Math.abs(previous.y - y) < 0.5 &&
+        Math.abs(previous.progress - progress) < 0.001
+          ? previous
+          : { y, progress, ready: true },
+      );
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(rail);
+    return () => observer.disconnect();
   }, [active, stations]);
+
+  React.useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setSceneVisible(entry.isIntersecting),
+      { rootMargin: "160px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   if (!station) return null;
 
   return (
-    <div className="grid gap-[2.6rem] min-[1000px]:grid-cols-[16.5rem_minmax(0,1fr)] min-[1000px]:gap-12">
+    <div
+      ref={sectionRef}
+      className="grid gap-[2.6rem] min-[1000px]:grid-cols-[16.5rem_minmax(0,1fr)] min-[1000px]:gap-12"
+    >
       {/* ══ السكّة ══════════════════════════════════════════════════ */}
       <div className="min-w-0">
         <p className="mb-[0.9rem] text-eyebrow">المضاءة فيها مقررات الآن</p>
@@ -173,21 +212,24 @@ export function FacultyStations({
           {/* الجزء المقطوع حتى المحطّة الحالية */}
           <span
             aria-hidden="true"
-            className="absolute start-[19px] top-3 w-0.5 rounded-full
+            className="absolute inset-y-3 start-[19px] w-0.5 origin-top rounded-full
               bg-[linear-gradient(180deg,var(--color-accent-bright),var(--color-accent-deep))]"
             style={{
-              height: Math.max(mark.y - 12, 0),
-              transition: mark.ready ? "height var(--dur-slow) var(--ease-out)" : "none",
+              transform: `scaleY(${mark.progress})`,
+              transition: mark.ready ? "transform var(--dur-slow) var(--ease-out)" : "none",
             }}
           />
           {/* هالة تتبع المحطّة الحالية */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute start-[-14px] size-[68px] rounded-full opacity-70
+            className="pointer-events-none absolute start-[-14px] top-0 size-[68px] rounded-full
               [background:radial-gradient(circle,color-mix(in_srgb,var(--color-accent-bright)_16%,transparent),transparent_70%)]"
             style={{
-              top: mark.y - 34,
-              transition: mark.ready ? "top var(--dur-slow) var(--ease-out)" : "none",
+              opacity: mark.ready ? 0.7 : 0,
+              transform: `translateY(${mark.y - 34}px)`,
+              transition: mark.ready
+                ? "transform var(--dur-slow) var(--ease-out), opacity var(--dur-fast) ease-out"
+                : "none",
             }}
           />
 
@@ -261,7 +303,7 @@ export function FacultyStations({
 
       {/* ══ المحتوى — حاضر من الإطار الأول ═════════════════════════ */}
       <div key={active} className="relative isolate min-w-0 anim-rise">
-        <FacultyScene icon={station.icon} />
+        <FacultyScene icon={station.icon} running={sceneVisible} />
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-4">
           <h2 className="text-title-lg">{station.name}</h2>
           <p className="text-xs text-subtle">

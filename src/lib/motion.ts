@@ -15,8 +15,8 @@ export const DUR = {
   fast: 0.15,
   /** الافتراضي: تبويبات، حالات تفاعل */
   base: 0.24,
-  /** دخول الصفحة وعناصر القوائم */
-  slow: 0.38,
+  /** دخول الأقسام وعناصر القوائم */
+  slow: 0.32,
 } as const;
 
 /** منحنيات التسارع */
@@ -44,21 +44,21 @@ export const SPRING = {
 
 /** انتقال الصفحة: دخول وخروج */
 export const PAGE = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0.72, y: 6 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -6 },
-  enterTransition: { duration: DUR.slow, ease: EASE.out },
-  exitTransition: { duration: 0.16, ease: EASE.in },
+  exit: { opacity: 0, y: -3 },
+  enterTransition: { duration: DUR.base, ease: EASE.out },
+  exitTransition: { duration: 0.1, ease: EASE.in },
 } as const;
 
 /** ظهور تسلسلي: الحاوية توزّع التأخير، والعنصر يحمل الحركة */
 export const STAGGER = {
   container: {
     hidden: {},
-    show: { transition: { staggerChildren: 0.045, delayChildren: 0.02 } },
+    show: { transition: { staggerChildren: 0.035, delayChildren: 0.01 } },
   },
   item: {
-    hidden: { opacity: 0, y: 12 },
+    hidden: { opacity: 0, y: 8 },
     show: {
       opacity: 1,
       y: 0,

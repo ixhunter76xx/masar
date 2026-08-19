@@ -26,14 +26,38 @@ const ROTATE_MS = 7200;
  */
 export function LessonBoard() {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [inView, setInView] = useState(true);
+  const [documentVisible, setDocumentVisible] = useState(true);
+  const board = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const paused = hovered || focused;
+
+  useEffect(() => {
+    const node = board.current;
+    if (!node || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "120px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onVisibility = () => setDocumentVisible(document.visibilityState === "visible");
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   useEffect(() => {
     /* احترام تفضيل تقليل الحركة: الدوران التلقائي حركةٌ لا يطلبها
        المستخدم، والنقاط تبقى فيتصفّح من يريد بيده. */
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (still || paused) return;
+    if (still || paused || !inView || !documentVisible) return;
 
     timer.current = setInterval(
       () => setIndex((i) => (i + 1) % BOARD_EXAMPLES.length),
@@ -42,28 +66,35 @@ export function LessonBoard() {
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [paused, index]);
+  }, [paused, inView, documentVisible, index]);
 
   const example = BOARD_EXAMPLES[index];
 
   return (
     <div
+      ref={board}
       className="relative"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setFocused(false);
+        }
+      }}
     >
       {/* بركة ضوء المصباح — تبقى من المشهد الذي حلّ اللوح محلّه، لأنها
-          كانت أنجح ما فيه. والانسكاب من `blur` لا من إزاحة سالبة: تلك
-          تزيد `scrollWidth` للصفحة، وهذا يرسم خارج الصندوق بلا أثر. */}
+          كانت أنجح ما فيه. حواف التدرّج نفسها ناعمة، فلا نمرّر طبقة
+          بهذا الحجم عبر مرشّح blur في كل إطار. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-x-0 -top-[18%] -bottom-[26%] blur-xl
-          [background:radial-gradient(58%_46%_at_78%_-8%,color-mix(in_srgb,var(--color-warning)_28%,transparent),transparent_68%),radial-gradient(92%_66%_at_52%_44%,color-mix(in_srgb,var(--color-panel-high)_50%,transparent),transparent_74%)]"
+        className="pointer-events-none absolute -inset-x-0 -top-[18%] -bottom-[26%]
+          [background:radial-gradient(58%_46%_at_78%_-8%,color-mix(in_srgb,var(--color-warning)_25%,transparent),transparent_72%),radial-gradient(92%_66%_at_52%_44%,color-mix(in_srgb,var(--color-panel-high)_46%,transparent),transparent_78%)]"
       />
 
       <article
         key={index}
-        className="animate-[boardIn_620ms_var(--ease-out)_both] relative flex min-h-[clamp(390px,44vw,480px)]
+        className="animate-[boardIn_420ms_var(--ease-out)_both] relative flex min-h-[clamp(390px,44vw,480px)]
           flex-col rounded-[24px] p-6 sm:p-7
           shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-warning)_24%,transparent),0_46px_68px_-36px_var(--shadow-lift),0_12px_28px_-18px_var(--shadow)]
           [background:radial-gradient(120%_92%_at_80%_-12%,color-mix(in_srgb,var(--color-warning)_12%,transparent),transparent_58%),linear-gradient(166deg,var(--color-panel-high)_0%,var(--color-panel)_58%,var(--color-ink-lift)_100%)]"
@@ -87,8 +118,8 @@ export function LessonBoard() {
                 {example.words.map((w, i) => (
                   <span
                     key={w.word}
-                    className="grid animate-[pwIn_520ms_var(--ease-out)_both] justify-items-center gap-2"
-                    style={{ animationDelay: `${200 + i * 280}ms` }}
+                    className="grid animate-[pwIn_320ms_var(--ease-out)_both] justify-items-center gap-2"
+                    style={{ animationDelay: `${100 + i * 120}ms` }}
                   >
                     <span className="font-amiri text-[clamp(2.2rem,4.8vw,3.5rem)] leading-[1.18] text-paper">
                       {w.word}
@@ -111,9 +142,9 @@ export function LessonBoard() {
                 {example.steps.map((s, i) => (
                   <li
                     key={s}
-                    className="flex animate-[pwIn_460ms_var(--ease-out)_both] items-start gap-2.5
+                    className="flex animate-[pwIn_300ms_var(--ease-out)_both] items-start gap-2.5
                       text-[13px] leading-[1.8] text-muted"
-                    style={{ animationDelay: `${420 + i * 300}ms` }}
+                    style={{ animationDelay: `${120 + i * 110}ms` }}
                   >
                     <span className="mt-[0.66rem] size-1 shrink-0 rounded-full bg-accent-deep" />
                     <span dangerouslySetInnerHTML={{ __html: s }} />
@@ -148,7 +179,7 @@ export function LessonBoard() {
           >
             <span
               className={cn(
-                "block h-1.5 rounded-full transition-all duration-200",
+                "block h-1.5 rounded-full transition-[width,background-color] duration-200",
                 i === index ? "w-[18px] bg-accent" : "w-1.5 bg-line",
               )}
             />
