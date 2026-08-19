@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { LoginReason } from "@/components/auth/LoginReason";
 import { SITE } from "@/lib/site";
 
 /**
@@ -34,6 +35,11 @@ export default function LoginPage() {
           <p className="text-[13px] text-muted">ادخل لتتابع من حيث توقّفت.</p>
         </div>
       </header>
+
+      {/* سببُ وصوله إلى هنا — يقرأ ?next مثل النموذج، فيُلفّ مثله */}
+      <Suspense fallback={null}>
+        <LoginReason />
+      </Suspense>
 
       {/* Suspense مطلوب: النموذج يقرأ معامل ?next من الرابط */}
       <Suspense fallback={<div className="h-[248px]" />}>
