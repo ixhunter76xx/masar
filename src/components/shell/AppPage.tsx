@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { Topbar } from "@/components/shell/Topbar";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { getShellData } from "@/lib/data/shell";
@@ -20,8 +22,11 @@ export async function AppPage({
   hidePageHeader?: boolean;
   children: React.ReactNode;
 }) {
-  // التخطيط تحقّق من الجلسة قبل تصيير أي صفحة، فالقيمة موجودة هنا
-  const shell = (await getShellData())!;
+  /* قد يُصيّر App Router التخطيط والصفحة بالتوازي؛ فلا نعتمد على أن
+     تحويل التخطيط سبق هذه القراءة. يمنع الحارس استثناءً عابرًا عند
+     طلب RSC مجهول أو جلسة انتهت أثناء التنقّل. */
+  const shell = await getShellData();
+  if (!shell) redirect("/login");
 
   return (
     <>
