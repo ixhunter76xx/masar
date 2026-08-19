@@ -6,6 +6,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { canManageCourse } from "@/lib/data/materials";
+import { revalidatePublicCourses } from "@/lib/public-course-cache";
 import { MaterialStatus } from "@/generated/prisma/enums";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
@@ -73,6 +74,7 @@ export async function createPlannedLesson(
   });
 
   revalidatePath(`/learn/${courseId}`);
+  revalidatePublicCourses();
   return { ok: true };
 }
 
@@ -94,7 +96,7 @@ export async function renameLesson(
   if (count === 0) return fail("الدرس غير موجود.");
 
   revalidatePath(`/learn/${courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return { ok: true };
 }
 
@@ -133,7 +135,7 @@ export async function setFreePreviewLesson(
   });
 
   revalidatePath(`/learn/${courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return { ok: true };
 }
 
@@ -176,7 +178,7 @@ export async function moveLesson(
   );
 
   revalidatePath(`/learn/${courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return { ok: true };
 }
 
@@ -226,6 +228,6 @@ export async function deletePlannedLesson(
   await db.courseMaterial.delete({ where: { id: lesson.id } });
 
   revalidatePath(`/learn/${courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return { ok: true };
 }

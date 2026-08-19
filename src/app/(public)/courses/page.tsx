@@ -4,8 +4,9 @@ import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
 import { FacultyStations } from "@/components/public/FacultyStations";
 import { LessonBoard } from "@/components/public/LessonBoard";
-import { listCatalogueByFaculty } from "@/lib/data/courses";
+import { amiri } from "@/lib/amiri-font";
 import { buildStations } from "@/lib/faculties";
+import { getCachedCatalogue } from "@/lib/public-course-cache";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -20,12 +21,12 @@ export const metadata: Metadata = {
  * استدعاء لـ `auth()` هنا يخلط العام بالخاص بلا سبب.
  */
 export default async function CatalogPage() {
-  const groups = await listCatalogueByFaculty();
+  const groups = await getCachedCatalogue();
   const courses = groups.flatMap((group) => group.courses);
   const previewCourse = courses.find((course) => course.hasFreePreview);
 
   return (
-    <div className="mx-auto max-w-[1180px] px-4 sm:px-8">
+    <div className={`${amiri.variable} mx-auto max-w-[1180px] px-4 sm:px-8`}>
       {/* ── الأبطل عمودان: الوعد، والدليل عليه ─────────────────────────
           العمود الثاني ليس زخرفة — هو الشرح نفسه بحجمه الكامل. الوعد
           وحده يقوله كل موقع تعليمي؛ والدليل بجانبه هو ما لا يُنسخ. */}

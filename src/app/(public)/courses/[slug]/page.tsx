@@ -7,10 +7,10 @@ import { Reveal } from "@/components/motion/Reveal";
 import { BuyButton } from "@/components/public/BuyButton";
 import { OfferMap } from "@/components/public/OfferMap";
 import { Price } from "@/components/public/Price";
-import { getPublicCourse } from "@/lib/data/courses";
 import { ownedLessonIdsForViewer } from "@/lib/data/access";
 import { bundleSaving, formatFils } from "@/lib/price";
 import { arPrice } from "@/lib/numerals";
+import { getCachedPublicCourse } from "@/lib/public-course-cache";
 import { Num, Counted } from "@/components/ui/Num";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const course = await getPublicCourse(slug);
+  const course = await getCachedPublicCourse(slug);
   return {
     title: `${course.code} — ${course.title}`,
     description: course.summary ?? undefined,
@@ -57,7 +57,7 @@ function courseDuration(seconds: number): string | null {
 
 export default async function PublicCoursePage({ params }: Params) {
   const { slug } = await params;
-  const course = await getPublicCourse(slug);
+  const course = await getCachedPublicCourse(slug);
 
   /* أغلى منتج هو الحزمة الكاملة عادةً؛ التوفير يُحسب مقابل مجموع ما
      عداه. لا نكتب «وفّر كذا» يدويًا — يُشتقّ من الأسعار الفعلية. */

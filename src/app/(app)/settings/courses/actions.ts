@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { db } from "@/server/db";
 import { requireAdmin } from "@/lib/data/admin";
+import { revalidatePublicCourses } from "@/lib/public-course-cache";
 import { ProductItemKind, Role } from "@/generated/prisma/enums";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
@@ -93,7 +94,7 @@ export async function createCourse(formData: FormData): Promise<ActionResult> {
   });
 
   revalidatePath("/settings/courses");
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
 
@@ -117,7 +118,7 @@ export async function setCoursePublished(
   await db.course.update({ where: { id: courseId }, data: { isPublished } });
 
   revalidatePath("/settings/courses");
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
 
@@ -150,7 +151,7 @@ export async function setCoursePresenter(
   });
 
   revalidatePath("/settings/courses");
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
 
@@ -225,7 +226,7 @@ export async function createProduct(input: {
   });
 
   revalidatePath(`/settings/courses/${courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
 
@@ -247,7 +248,7 @@ export async function deleteProduct(productId: string): Promise<ActionResult> {
   await db.product.delete({ where: { id: productId } });
 
   revalidatePath(`/settings/courses/${product.courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
 
@@ -264,6 +265,6 @@ export async function setProductPublished(
   });
 
   revalidatePath(`/settings/courses/${product.courseId}`);
-  revalidatePath("/courses");
+  revalidatePublicCourses();
   return ok;
 }
