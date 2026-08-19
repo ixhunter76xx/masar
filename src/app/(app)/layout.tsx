@@ -38,7 +38,7 @@ export default async function AppLayout({
 
       {/* الهامش يقابل عرض الشريط الجانبي — ms أي يمين في RTL ويسار في LTR */}
       <div className="min-[1060px]:ms-[260px]">
-        <PageTransition>{children}</PageTransition>
+        <PageTransition stationary>{children}</PageTransition>
       </div>
     </div>
   );

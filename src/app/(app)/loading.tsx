@@ -11,11 +11,11 @@ export default function AppLoading() {
   return (
     <>
       {/* هيكل الرأسية بنفس ارتفاعها الحقيقي (64px) */}
-      <div className="sticky top-0 z-40 border-b border-line bg-ink/90">
-        <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
+        <div className="flex h-16 items-center gap-3 px-4">
           <Skeleton className="h-5 w-40" />
         </div>
-      </div>
+      </header>
 
       <div
         role="status"

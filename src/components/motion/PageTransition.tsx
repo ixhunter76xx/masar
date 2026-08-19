@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-import { PAGE } from "@/lib/motion";
+import { APP_PAGE, PAGE } from "@/lib/motion";
 
 /**
  * تجميد الموجّه أثناء الخروج.
@@ -74,16 +74,24 @@ function FrozenRouter({
  * كصفحة تقفز. عند تفعيل `prefers-reduced-motion` يُلغي `MotionRoot`
  * الإزاحة ويُبقي التلاشي.
  */
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function PageTransition({
+  children,
+  stationary = false,
+}: {
+  children: React.ReactNode;
+  /** تلاشي في الموضع نفسه للواجهات ذات الرأس والشريط الجانبي الثابتين */
+  stationary?: boolean;
+}) {
   const pathname = usePathname();
+  const profile = stationary ? APP_PAGE : PAGE;
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
-        initial={PAGE.initial}
-        animate={{ ...PAGE.animate, transition: PAGE.enterTransition }}
-        exit={{ ...PAGE.exit, transition: PAGE.exitTransition }}
+        initial={profile.initial}
+        animate={{ ...profile.animate, transition: profile.enterTransition }}
+        exit={{ ...profile.exit, transition: profile.exitTransition }}
       >
         <FrozenRouter mountedPath={pathname}>{children}</FrozenRouter>
       </motion.div>

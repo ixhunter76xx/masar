@@ -51,6 +51,22 @@ export const PAGE = {
   exitTransition: { duration: 0.1, ease: EASE.in },
 } as const;
 
+/**
+ * انتقال المنطقة المحمية: تلاشي في المكان بلا أي إزاحة هندسية.
+ *
+ * رأس الصفحة والشريط الجانبي مرساة اتجاه للمستخدم. تحريك غلاف الصفحة
+ * كاملًا كان يحرّك الرأس معه ٦px ويجعل تبديل الشاشات يُقرأ كاهتزاز،
+ * خصوصًا حين تظهر شاشة التحميل بينهما. يبقى انتقال الصفحات العامة
+ * على `PAGE` كما هو؛ هذا الملف الشخصي خاص بمنطقة الدراسة والإدارة.
+ */
+export const APP_PAGE = {
+  initial: { opacity: 0.72 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  enterTransition: PAGE.enterTransition,
+  exitTransition: PAGE.exitTransition,
+} as const;
+
 /** ظهور تسلسلي: الحاوية توزّع التأخير، والعنصر يحمل الحركة */
 export const STAGGER = {
   container: {
