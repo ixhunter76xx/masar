@@ -72,6 +72,40 @@ export default async function PublicLayout({
                 دخول
               </Link>
             )}
+
+            {/**
+             * ── حالة المستخدم المسجَّل — الانحراف رقم ٢، مُغلَقًا ────────
+             *
+             * كانت هذه الرأسية **فارغة تمامًا** للمسجَّل: لا اسم، ولا باب
+             * إلى حسابه، ولا خروج. والمعاينة لا تُمثّل الحالة أصلًا لأنها
+             * لقطةُ زائر.
+             *
+             * وأثرُها العمليّ ظهر في بلاغ المالك: فتح الكتالوج وهو مسجَّل،
+             * فرأى رأسيةً بلا شيء واستنتج أن زرّ الدخول «غير موجود». وهو
+             * محقّ في وصف ما رأى — الرأسية لم تكن تقول له إنه داخلٌ أصلًا.
+             *
+             * فتقول الآن مَن هو، وتفتح بابه. نبرةٌ محايدة عمدًا: `bg-action`
+             * محجوزة لـ«دخول» وحده، فلا يتنافس بابٌ مفتوح مع دعوةٍ للفتح.
+             */}
+            {session?.user && (
+              <Link
+                href="/dashboard"
+                className="press inline-flex min-h-[34px] items-center gap-2 rounded-full
+                  border border-line bg-[var(--sunk)] px-[0.85rem] text-[0.78rem] text-paper
+                  hover:border-accent-deep hover:bg-panel-lift"
+              >
+                <span
+                  aria-hidden="true"
+                  className="grid size-[22px] shrink-0 place-items-center rounded-full
+                    bg-panel-high text-[11px] font-semibold text-accent"
+                >
+                  {session.user.name?.trim().charAt(0) ?? "ح"}
+                </span>
+                <span className="max-w-[10ch] truncate">
+                  {session.user.name?.trim().split(" ")[0] ?? "حسابي"}
+                </span>
+              </Link>
+            )}
           </nav>
         </div>
       </header>
