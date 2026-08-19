@@ -295,22 +295,24 @@ export const requireCourseAccess = cache(async function requireCourseAccess(
   const session = await auth();
   if (!session?.user) notFound();
 
-  const allowed = await hasCourseAccess(courseId);
-  if (!allowed) notFound();
-
-  const course = await db.course.findUnique({
-    where: { id: courseId },
-    select: {
-      id: true,
-      code: true,
-      slug: true,
-      title: true,
-      summary: true,
-      description: true,
-      presenter: { select: { name: true } },
-    },
-  });
-  if (!course) notFound();
+  /* التحقّق وقراءة العرض مستقلان: لا نُرجع المقرر قبل نجاح البوّابة،
+     لكن لا داعي لدفع جولة شبكة ثانية بعد انتهائها. */
+  const [allowed, course] = await Promise.all([
+    hasCourseAccess(courseId),
+    db.course.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        code: true,
+        slug: true,
+        title: true,
+        summary: true,
+        description: true,
+        presenter: { select: { name: true } },
+      },
+    }),
+  ]);
+  if (!allowed || !course) notFound();
 
   return { course, user: session.user };
 });
@@ -365,14 +367,16 @@ export const getCourseResume = cache(async function getCourseResume(
   };
   if (!session?.user) return empty;
 
-  const { isStaff, owned } = await accessibleLessonIds(courseId);
-
-  /* الدروس الجاهزة والمنشورة فقط: الدرس المخطَّط بلا ملف لا يُستأنف */
-  const ready = await db.courseMaterial.findMany({
-    where: { courseId, status: "READY", publishedAt: { not: null } },
-    orderBy: { position: "asc" },
-    select: { id: true, title: true, position: true },
-  });
+  /* الملكية وقائمة الدروس سؤالان مستقلان؛ تصفيتهما تقع بعد وصولهما. */
+  const [{ isStaff, owned }, ready] = await Promise.all([
+    accessibleLessonIds(courseId),
+    /* الدروس الجاهزة والمنشورة فقط: الدرس المخطَّط بلا ملف لا يُستأنف */
+    db.courseMaterial.findMany({
+      where: { courseId, status: "READY", publishedAt: { not: null } },
+      orderBy: { position: "asc" },
+      select: { id: true, title: true, position: true },
+    }),
+  ]);
 
   const mine = isStaff ? ready : ready.filter((m) => owned.has(m.id));
   if (mine.length === 0) {

@@ -728,9 +728,10 @@ Abort incomplete multipart uploads.
 | الغرض | الموقع |
 |---|---|
 | أوامر CLI (`migrate`, `db seed`, `studio`) | `prisma.config.ts` ← `datasource.url` |
-| وقت التشغيل (التطبيق نفسه) | `new PrismaClient({ adapter: new PrismaPg({ connectionString }) })` في `src/server/db.ts` |
+| وقت التشغيل (التطبيق نفسه) | `new PrismaClient({ adapter: new PrismaNeon({ connectionString }) })` في `src/server/db.ts` |
 
-كلاهما يقرأ `DATABASE_URL` من `.env`، لكن عبر مسارين مختلفين.
+وقت التشغيل يقرأ `DATABASE_URL` المجمّع (pooler)، بينما أوامر Prisma تقرأ
+`DIRECT_URL` المباشر من `prisma.config.ts`.
 
 `prisma.config.ts` يستخدم `process.env.DATABASE_URL ?? ""` بدل المساعد
 `env()` عمدًا: `env()` يرمي خطأً إذا كان المتغيّر مفقودًا، وكل أوامر Prisma

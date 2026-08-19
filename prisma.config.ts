@@ -5,8 +5,9 @@ import { defineConfig } from "prisma/config";
  * إعداد Prisma CLI (الإصدار 7 فما فوق).
  *
  * منذ Prisma 7 لم يعد `url` مسموحًا داخل كتلة `datasource` في
- * schema.prisma، وانتقل إلى هنا. أما وقت التشغيل فيمرَّر الاتصال عبر
- * محوّل @prisma/adapter-pg في src/server/db.ts.
+ * schema.prisma، وانتقل إلى هنا. أما وقت تشغيل التطبيق فيمرَّر الاتصال
+ * عبر محوّل @prisma/adapter-neon في src/server/db.ts؛ وتبقى سكربتات
+ * الإدارة على @prisma/adapter-pg مع الرابط المباشر.
  *
  * **الرابط هنا يجب أن يكون المباشر لا المجمَّع**: أدوات الهجرة تحتاج
  * جلسة مباشرة (advisory locks وDDL)، وقد تفشل أو تتصرّف بغرابة عبر

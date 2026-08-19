@@ -29,36 +29,37 @@ export async function getCourseAssignments(
   const canSeeDrafts = role === Role.INSTRUCTOR || role === Role.ADMIN;
 
   // `owned` لا `viewable`: المعاينة المجانية لا تفتح تقييمًا
-  const { isStaff, owned } = await accessibleLessonIds(courseId);
-
-  const rows = await db.assignment.findMany({
-    where: {
-      courseId,
-      ...(canSeeDrafts
-        ? {}
-        : {
-            status: {
-              in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED],
-            },
-          }),
-    },
-    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      status: true,
-      totalPoints: true,
-      dueAt: true,
-      lessonId: true,
-      _count: { select: { submissions: true } },
-      // تسليم هذا المستخدم فقط — لا تسليمات غيره
-      submissions: {
-        where: { studentId: userId },
-        select: { submittedAt: true, isLate: true, earnedPoints: true },
+  const [{ isStaff, owned }, rows] = await Promise.all([
+    accessibleLessonIds(courseId),
+    db.assignment.findMany({
+      where: {
+        courseId,
+        ...(canSeeDrafts
+          ? {}
+          : {
+              status: {
+                in: [AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED],
+              },
+            }),
       },
-    },
-  });
+      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        totalPoints: true,
+        dueAt: true,
+        lessonId: true,
+        _count: { select: { submissions: true } },
+        // تسليم هذا المستخدم فقط — لا تسليمات غيره
+        submissions: {
+          where: { studentId: userId },
+          select: { submittedAt: true, isLate: true, earnedPoints: true },
+        },
+      },
+    }),
+  ]);
 
   // النطاق يتبع الدرس — نفس قاعدة canViewAssignment
   const visible = isStaff

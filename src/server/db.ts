@@ -1,4 +1,4 @@
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
@@ -6,8 +6,10 @@ import { PrismaClient } from "@/generated/prisma/client";
  *
  * ── رابطان لا رابط واحد ─────────────────────────────────────────────
  * `DATABASE_URL` يجب أن يكون رابط **الـ pooler** (يحوي `-pooler` مع Neon).
- * كل نسخة من الدالة الخادمية تفتح اتصالًا، وبلا مجمّع تُستنفد حصة
- * الاتصالات بسرعة تحت الحمل.
+ * `PrismaNeon` يستعمل ناقل Neon المهيّأ للبيئات الخادمية القصيرة، مع
+ * مجمّع WebSocket يدعم المعاملات التفاعلية التي تعتمد عليها الطلبات
+ * والرسائل. ناقل HTTP أسرع في أول قراءة لكنه لا يدعم تلك المعاملات،
+ * لذلك لا يصلح عميلًا عامًا للمنصة.
  *
  * أما الهجرات فتحتاج اتصالًا **مباشرًا** (`DIRECT_URL`)، وتقرأه أدوات
  * Prisma من prisma.config.ts لا من هنا.
@@ -23,18 +25,23 @@ function createClient() {
   }
 
   /**
-   * حجم المجمّع لكل نسخة.
-   * في البيئات الخادمية (Vercel) تُشغَّل نسخ كثيرة متوازية، فيبقى
-   * نصيب كل نسخة صغيرًا ويتولّى pooler الخدمة تجميعها.
+   * حجم المجمّع وعمر الاتصال الخامل لكل نسخة.
+   * Netlify قد يشغّل نسخًا كثيرة متوازية، فنبقي المهلة قصيرة هناك كي
+   * لا تتراكم الاتصالات. أمّا الخادم المحلي الطويل العمر فيحتفظ بها
+   * خمس دقائق: قياس البحرين→us-east-2 أظهر أن فتح الاتصال يكلف قرابة
+   * 1.5ث، بينما إعادة استعماله تحوّل الجولة التالية إلى قرابة 0.2ث.
    */
   const max = Number(process.env.DB_POOL_MAX ?? 5);
+  const idleTimeoutMillis = Number(
+    process.env.DB_POOL_IDLE_TIMEOUT_MS ??
+      (process.env.NETLIFY ? 10_000 : 300_000),
+  );
 
   return new PrismaClient({
-    adapter: new PrismaPg({
+    adapter: new PrismaNeon({
       connectionString,
       max,
-      // إغلاق الاتصالات الخاملة بسرعة — النسخة الخادمية قصيرة العمر
-      idleTimeoutMillis: 10_000,
+      idleTimeoutMillis,
       connectionTimeoutMillis: 10_000,
     }),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],

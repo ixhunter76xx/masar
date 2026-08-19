@@ -277,28 +277,32 @@ export const accessibleLessonIds = cache(async function accessibleLessonIds(
     return { isStaff: true, owned: new Set<string>(), viewable: new Set<string>() };
   }
 
-  const owned = new Set<string>();
-  if (user) {
-    const rows = await db.productItem.findMany({
-      where: {
-        lessonId: { not: null },
-        product: {
-          courseId,
-          enrollments: { some: { userId: user.id, ...notExpired() } },
-        },
-      },
-      select: { lessonId: true },
-    });
-    for (const item of rows) {
-      if (item.lessonId) owned.add(item.lessonId);
-    }
-  }
+  /* الملكية والمعاينة المجانية مستقلتان. كانتا جولتين متسلسلتين إلى
+     Neon رغم أن إحداهما لا تعتمد على الأخرى. */
+  const [rows, free] = await Promise.all([
+    user
+      ? db.productItem.findMany({
+          where: {
+            lessonId: { not: null },
+            product: {
+              courseId,
+              enrollments: { some: { userId: user.id, ...notExpired() } },
+            },
+          },
+          select: { lessonId: true },
+        })
+      : Promise.resolve([]),
+    // الدرس المجاني مفتوح قبل الشراء وقبل تسجيل الدخول — للمحاضرات فقط
+    db.courseMaterial.findMany({
+      where: { courseId, isFreePreview: true, course: { isPublished: true } },
+      select: { id: true },
+    }),
+  ]);
 
-  // الدرس المجاني مفتوح قبل الشراء وقبل تسجيل الدخول — للمحاضرات فقط
-  const free = await db.courseMaterial.findMany({
-    where: { courseId, isFreePreview: true, course: { isPublished: true } },
-    select: { id: true },
-  });
+  const owned = new Set<string>();
+  for (const item of rows) {
+    if (item.lessonId) owned.add(item.lessonId);
+  }
 
   const viewable = new Set(owned);
   for (const lesson of free) viewable.add(lesson.id);

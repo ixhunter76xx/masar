@@ -25,7 +25,7 @@ This file gives Claude Code the context that would otherwise need to be re-expla
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui components
 - **Auth**: Auth.js v5 — single unified login form, no on-screen role selector
 - **ORM**: Prisma 7 — **breaking change from earlier versions**: `datasource.url` is NOT in `schema.prisma`, it lives in `prisma.config.ts`
-- **Database**: Neon PostgreSQL (project "HesabCenter"), Direct Connection string with `?sslmode=require`, **no `-pooler` hostname**
+- **Database**: Neon PostgreSQL (project "HesabCenter"). `DATABASE_URL` هو رابط الـ pooler وقت التشغيل، و`DIRECT_URL` رابط مباشر للهجرات؛ عميل التطبيق `PrismaNeon` وعميل سكربتات الإدارة `PrismaPg`
 - **Storage**: Cloudflare R2 bucket (for uploaded content files)
 - **Fonts**: IBM Plex Sans Arabic (body), IBM Plex Mono (numbers/grades), via `next/font/google`
 - **Layout**: RTL-first throughout — always verify RTL rendering when touching layout/CSS
