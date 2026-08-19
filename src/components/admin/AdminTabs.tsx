@@ -11,7 +11,10 @@ export function AdminTabs() {
 
   return (
     <nav aria-label="أقسام الإدارة" className="mb-6 border-b border-line">
-      <ul className="flex items-center gap-1 overflow-x-auto overflow-y-hidden">
+      {/* `scroll-x-clean` بدل `overflow-x-auto`: يبقي التمرير ويُخفي
+          المِزلاج الرماديّ الذي كان يُرسم تحت الألسنة فيُقرأ عنصر واجهة،
+          ويستبدله بتلاشٍ عند الحافّتين يظهر حين يوجد ما يُمرَّر إليه. */}
+      <ul className="scroll-x-clean flex items-center gap-1">
         {ADMIN_TABS.map(({ segment, label }) => {
           const href = `/settings/${segment}`;
           const isActive = pathname.startsWith(href);

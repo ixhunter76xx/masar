@@ -49,9 +49,19 @@ export type PlannerLesson = {
 export function LessonPlanner({
   courseId,
   lessons,
+  hideHeading = false,
 }: {
   courseId: string;
   lessons: PlannerLesson[];
+  /**
+   * تُخفي ترويسة «سكّة المقرر» الداخلية.
+   *
+   * في مساحة عمل المقرر يعلو المخطّطَ عنوانُ قسمٍ مرقّم («٢ · مسار
+   * الدروس»)، فترويسته الداخلية تكرّره وتزاحمه — وعنوانٌ فرعيّ يعيد
+   * عنوان أبيه هو ما يجعل الصفحة تُقرأ قائمتين لا قائمة.
+   * أمّا شاشة المدرّس فلا عنوان فوقه فيها، فتبقى ظاهرة افتراضيًّا.
+   */
+  hideHeading?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = React.useState<string | null>(null);
@@ -108,10 +118,12 @@ export function LessonPlanner({
 
   return (
     <section className="mb-8">
-      <h3 className="mb-3 text-sm font-medium text-paper">
-        سكّة المقرر{" "}
-        <span className="numeric text-[11px] text-subtle">{ar(lessons.length)}</span>
-      </h3>
+      {!hideHeading && (
+        <h3 className="mb-3 text-sm font-medium text-paper">
+          سكّة المقرر{" "}
+          <span className="numeric text-[11px] text-subtle">{ar(lessons.length)}</span>
+        </h3>
+      )}
 
       <Card className="mb-3 px-4 py-3.5">
         <form onSubmit={onAdd} className="flex flex-wrap items-center gap-2">

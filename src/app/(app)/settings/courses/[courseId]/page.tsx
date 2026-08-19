@@ -10,6 +10,7 @@ import { CourseEditForm } from "@/components/admin/CourseEditForm";
 import { CoursePresenterSelect } from "@/components/admin/CoursePresenterSelect";
 import { CoursePublishToggle } from "@/components/admin/CoursePublishToggle";
 import { CourseSteps } from "@/components/admin/CourseSteps";
+import { SectionHeading } from "@/components/admin/SectionHeading";
 import { ProductCurriculumEditor } from "@/components/admin/ProductCurriculumEditor";
 import { ProductManager } from "@/components/admin/ProductManager";
 import { LessonPlanner } from "@/components/materials/LessonPlanner";
@@ -148,9 +149,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
       />
 
       {/* ── ١ · البيانات ──────────────────────────────────────────── */}
-      <h3 id="details" className="mb-3 scroll-mt-24 text-sm font-medium text-paper">
-        ١ · بيانات المقرر
-      </h3>
+      <SectionHeading id="details" step={1} title="بيانات المقرر" />
       <Card className="mb-8 px-5 py-4">
         <CourseEditForm
           courseId={course.id}
@@ -166,17 +165,14 @@ export default async function CourseWorkspacePage({ params }: Params) {
       </Card>
 
       {/* ── ٢ · مسار الدروس ───────────────────────────────────────── */}
-      <h3 id="lessons" className="mb-1 scroll-mt-24 text-sm font-medium text-paper">
-        ٢ · مسار الدروس
-      </h3>
-      <p className="mb-3 text-[12px] leading-[1.8] text-subtle">
-        اكتب عناوين الدروس ورتّبها الآن — <span className="text-paper">لا حاجة
-        لرفع أي فيديو</span>. الدرس المخطَّط يحجز مكانه في المسار، وتضعه في
-        الباقات، وترفع فيديوه متى شئت. وعلامة «مجاني» يمكن وضعها على أكثر من
-        درس.
-      </p>
+      <SectionHeading
+        id="lessons"
+        step={2}
+        title="مسار الدروس"
+        description="اكتب عناوين الدروس ورتّبها الآن — بلا رفع أي فيديو. الدرس المخطَّط يحجز مكانه في المسار، وتضعه في الباقات، وترفع فيديوه متى شئت. وعلامة «مجاني» تُوضع على أكثر من درس."
+      />
       <Card className="mb-4 px-5 py-4">
-        <LessonPlanner courseId={course.id} lessons={plan} />
+        <LessonPlanner courseId={course.id} lessons={plan} hideHeading />
       </Card>
 
       <details className="mb-8">
@@ -189,13 +185,13 @@ export default async function CourseWorkspacePage({ params }: Params) {
       </details>
 
       {/* ── ٣ · الباقات ───────────────────────────────────────────── */}
-      <h3 id="products" className="mb-1 scroll-mt-24 text-sm font-medium text-paper">
-        ٣ · الباقات وأسعارها
-      </h3>
-      <p className="mb-3 text-[12px] leading-[1.8] text-subtle">
-        الباقة مجموعة دروس بسعر — «نصف أول» أو «الدورة الكاملة» أو ما تشاء.
-        والدرس الواحد يدخل في أكثر من باقة بلا تكرار رفعه.
-      </p>
+      <SectionHeading
+        id="products"
+        step={3}
+        title="الباقات وأسعارها"
+        count={course.products.length}
+        description="الباقة مجموعة دروس بسعر — «نصف أول» أو «الدورة الكاملة» أو ما تشاء. والدرس الواحد يدخل في أكثر من باقة بلا تكرار رفعه."
+      />
 
       {course.products.length > 0 && (
         <ul className="mb-4 space-y-3">
@@ -249,9 +245,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
       )}
 
       {/* ── ٤ · النشر ─────────────────────────────────────────────── */}
-      <h3 id="publish" className="mb-1 scroll-mt-24 text-sm font-medium text-paper">
-        ٤ · النشر
-      </h3>
+      <SectionHeading id="publish" step={4} title="النشر" />
       <Card className="px-5 py-4">
         <p className="mb-3 text-[12px] leading-[1.9] text-subtle">
           النشر يُظهر المقرر في الكتالوج العام. ويحتاج{" "}

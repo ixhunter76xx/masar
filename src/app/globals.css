@@ -417,6 +417,42 @@
      الهاتف — سلوك معروف لأجهزة اللمس.
      ========================================================================== */
 
+  /**
+   * شريطٌ يمرَّر أفقيًّا بلا مِزلاج مرئيّ.
+   *
+   * شريط التمرير الأصليّ على ويندوز يرسم قضيبًا رماديًّا سميكًا تحت
+   * ألسنة التبويب فيُقرأ عنصرًا في الواجهة لا أداةَ تمرير. وإخفاؤه
+   * وحده يُخفي الدليل على أن هناك المزيد — فيُستبدل بتلاشٍ عند
+   * الحافّتين: يظهر فقط حين يوجد ما يُمرَّر إليه، ويقول ذلك بلا ضجيج.
+   *
+   * ⚠ التمرير نفسه يبقى قائمًا — باللمس وبعجلة الفأرة وبلوحة المفاتيح.
+   * المخفيّ هو المِزلاج لا القدرة.
+   */
+  .scroll-x-clean {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(
+      to left,
+      transparent 0,
+      #000 1.25rem,
+      #000 calc(100% - 1.25rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to left,
+      transparent 0,
+      #000 1.25rem,
+      #000 calc(100% - 1.25rem),
+      transparent 100%
+    );
+  }
+
+  .scroll-x-clean::-webkit-scrollbar {
+    display: none;
+  }
+
+
   .press {
     transition:
       transform var(--dur-fast) var(--ease-out),
