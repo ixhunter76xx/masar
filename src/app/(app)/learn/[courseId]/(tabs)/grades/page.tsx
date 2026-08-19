@@ -1,4 +1,5 @@
 import { ClipboardList } from "lucide-react";
+import { ar } from "@/lib/numerals";
 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ScoreRing } from "@/components/grades/ScoreRing";
@@ -83,7 +84,7 @@ export default async function CourseGradesPage({ params }: Params) {
       >
         {pct !== null && (
           <ScoreRing percent={pct}>
-            <span className="numeric">{pct}%</span>
+            <span className="numeric">{ar(pct)}٪</span>
           </ScoreRing>
         )}
 
@@ -92,9 +93,9 @@ export default async function CourseGradesPage({ params }: Params) {
             درجاتي في هذا المقرر
           </h3>
           <p className="mt-1 text-[13px]">
-            <span className="numeric text-paper">{mine.earned}</span>
+            <span className="numeric text-paper">{ar(mine.earned)}</span>
             <span className="text-subtle"> / </span>
-            <span className="numeric text-muted">{mine.total}</span>
+            <span className="numeric text-muted">{ar(mine.total)}</span>
             <span className="text-subtle"> درجة على المصحَّح</span>
           </p>
         </div>
