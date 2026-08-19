@@ -48,3 +48,70 @@ export async function setFacultyVisible(
   revalidatePublicCourses();
   return { ok: true };
 }
+
+/**
+ * إنشاء كلية جديدة.
+ *
+ * السَّلَك (`slug`) يُشتقّ من الاسم إن لم يُكتب، ويبقى قابلًا للكتابة
+ * لأنه يظهر في الرابط ‏`/courses?faculty=arts`‏ وقد يريده المالك
+ * لاتينيًّا مختصرًا لا منقولًا عن العربية.
+ *
+ * ⚠ الكلية الجديدة تظهر في مسار الكتالوج **آخرًا** — قائمة المحطات
+ * الأربع في `lib/faculties.ts` تحريرية ومرتّبة، وما خرج عنها يُلحق بعدها
+ * كي لا يختفي مقرر منشور تحت كلية غير مُدرجة.
+ */
+export async function createFaculty(input: {
+  name: string;
+  slug?: string;
+}): Promise<ActionResult> {
+  await requireAdmin();
+
+  const name = input.name.trim();
+  if (name.length < 2) return { ok: false, message: "اسم الكلية قصير جدًا." };
+
+  const slug =
+    (input.slug?.trim() || name)
+      .toLowerCase()
+      .replace(/[^a-z0-9؀-ۿ]+/g, "-")
+      .replace(/^-|-$/g, "") || `faculty-${Date.now()}`;
+
+  const clash = await db.faculty.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  if (clash) return { ok: false, message: "سَلَك الكلية مستخدَم بالفعل." };
+
+  const last = await db.faculty.findFirst({
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+
+  await db.faculty.create({
+    data: { name, slug, sortOrder: (last?.sortOrder ?? 0) + 1 },
+  });
+
+  revalidatePath("/settings/faculties");
+  revalidatePath("/settings/courses");
+  revalidatePublicCourses();
+  return { ok: true };
+}
+
+/** تغيير اسم كلية — السَّلَك يبقى، فهو ما تشير إليه الروابط. */
+export async function renameFaculty(
+  facultyId: string,
+  name: string,
+): Promise<ActionResult> {
+  await requireAdmin();
+
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return { ok: false, message: "اسم الكلية قصير جدًا." };
+
+  await db.faculty.update({
+    where: { id: facultyId },
+    data: { name: trimmed },
+  });
+
+  revalidatePath("/settings/faculties");
+  revalidatePublicCourses();
+  return { ok: true };
+}

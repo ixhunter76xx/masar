@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 
 import { AppPage } from "@/components/shell/AppPage";
 import { AdminTabs } from "@/components/admin/AdminTabs";
-import { FacultyVisibilityToggle } from "@/components/admin/FacultyVisibilityToggle";
+import { CreateFacultyForm } from "@/components/admin/CreateFacultyForm";
+import { FacultyRow } from "@/components/admin/FacultyRow";
 import { Card } from "@/components/ui/Card";
-import { Num } from "@/components/ui/Num";
 import { listFacultiesForAdmin, requireAdmin } from "@/lib/data/admin";
 import { UOB_FACULTIES, NOT_OFFERED_LABEL } from "@/lib/faculties";
 
@@ -14,75 +14,82 @@ export default async function FacultiesPage() {
   await requireAdmin();
   const faculties = await listFacultiesForAdmin();
 
-  /* المحطات المعروضة في الكتالوج قائمةٌ تحريرية في `lib/faculties.ts`،
-     والكليات صفوفٌ في القاعدة. نعرض الاثنين معًا كي يرى المالك أيّ
-     محطة تقابل كلية فعلية وأيّها ما زالت وعدًا. */
-  const bySlug = new Map(faculties.map((f) => [f.slug, f]));
+  const editorial = new Set<string>(UOB_FACULTIES.map((f) => f.slug));
 
   return (
     <AppPage title="الإدارة" hidePageHeader>
       <AdminTabs />
 
       <p className="mb-5 rounded-field border border-line-soft bg-[var(--sunk)] px-4 py-3 text-[12px] leading-[1.85] text-subtle">
-        محطات الكتالوج قائمةٌ تحريرية — المحطة بلا مقررات تُعرض
-        «{NOT_OFFERED_LABEL}» ولا تُخفى، لأن إخفاءها يجعل المسار يبدو أقصر مما
-        تنوي. والإخفاء هنا للحالات الاستثنائية وحدها.
+        الكلية تجمع المقررات في الكتالوج. المحطة بلا مقررات تُعرض
+        «{NOT_OFFERED_LABEL}» ولا تُخفى — لأنها وعدٌ بالتوسّع لا نقص. والإخفاء
+        للحالات الاستثنائية، ولا يُسمح به لكلية تحمل مقررًا منشورًا.
       </p>
 
-      <ul className="space-y-2">
-        {UOB_FACULTIES.map((station) => {
-          const row = bySlug.get(station.slug);
-          const courseCount = row?._count.courses ?? 0;
+      <h3 className="mb-3 text-sm font-medium text-paper">الكليات القائمة</h3>
 
-          return (
-            <li key={station.slug}>
-              <Card className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                <div className="min-w-0">
-                  <p className="text-[13px] text-paper">
-                    {station.name}
-                    {!row && (
-                      <span className="ms-2 rounded-full border border-line px-2 py-0.5 text-[10px] text-subtle">
-                        محطة تحريرية — لا صفّ في القاعدة
-                      </span>
-                    )}
-                    {row && !row.isVisible && (
-                      <span className="ms-2 rounded-full border border-warning/50 px-2 py-0.5 text-[10px] text-warning">
-                        مخفيّة
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-subtle">
-                    <span className="code">{station.slug}</span>
-                    {" · "}
-                    {courseCount > 0 ? (
-                      <>
-                        <Num>{courseCount}</Num>{" "}
-                        {courseCount >= 3 && courseCount <= 10
-                          ? "مقررات"
-                          : "مقررًا"}
-                      </>
-                    ) : (
-                      NOT_OFFERED_LABEL
-                    )}
-                  </p>
-                </div>
-
-                {row ? (
-                  <FacultyVisibilityToggle
-                    facultyId={row.id}
-                    isVisible={row.isVisible}
-                    name={station.name}
-                  />
-                ) : (
-                  <span className="text-[11px] text-subtle">
-                    تُنشأ تلقائيًا عند إسناد أول مقرر إليها
-                  </span>
-                )}
+      {faculties.length === 0 ? (
+        <Card className="mb-6 px-5 py-6 text-center text-[13px] text-subtle">
+          لا كليات بعد — أضِف واحدة أدناه.
+        </Card>
+      ) : (
+        <ul className="mb-6 space-y-2">
+          {faculties.map((f) => (
+            <li key={f.id}>
+              <Card className="px-5 py-4">
+                <FacultyRow
+                  id={f.id}
+                  name={f.name}
+                  slug={f.slug}
+                  isVisible={f.isVisible}
+                  courseCount={f._count.courses}
+                  notOfferedLabel={NOT_OFFERED_LABEL}
+                />
               </Card>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
+
+      {/* محطات تحريرية لم تُنشأ بعد كصفوف — تُعرض في الكتالوج بوصفها
+          وعدًا، وتصير صفًّا حقيقيًّا فور إسناد أول مقرر إليها. */}
+      {UOB_FACULTIES.some((s) => !faculties.some((f) => f.slug === s.slug)) && (
+        <>
+          <h3 className="mb-2 text-sm font-medium text-paper">
+            محطات معروضة في الكتالوج، بلا صفّ بعد
+          </h3>
+          <Card className="mb-6 px-5 py-4">
+            <ul className="flex flex-wrap gap-2">
+              {UOB_FACULTIES.filter(
+                (s) => !faculties.some((f) => f.slug === s.slug),
+              ).map((s) => (
+                <li
+                  key={s.slug}
+                  className="rounded-full border border-line px-3 py-1 text-[11px] text-subtle"
+                >
+                  {s.name} · <span className="code">{s.slug}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11px] leading-[1.8] text-subtle">
+              تظهر في المسار بـ«{NOT_OFFERED_LABEL}». لتصير قابلة للإدارة، أضِفها
+              أدناه بالسَّلَك نفسه.
+            </p>
+          </Card>
+        </>
+      )}
+
+      <h3 className="mb-3 text-sm font-medium text-paper">إضافة كلية</h3>
+      <Card className="px-5 py-4">
+        <CreateFacultyForm />
+      </Card>
+
+      {faculties.some((f) => !editorial.has(f.slug)) && (
+        <p className="mt-4 text-[11px] leading-[1.8] text-subtle">
+          الكليات خارج القائمة التحريرية الأربع تظهر في نهاية مسار الكتالوج —
+          فلا يختفي مقرر منشور تحت كلية غير مُدرجة.
+        </p>
+      )}
     </AppPage>
   );
 }
