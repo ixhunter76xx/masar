@@ -6,7 +6,7 @@ import { AppPage } from "@/components/shell/AppPage";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Num } from "@/components/ui/Num";
+import { countedPhrase, STUDENT_FORMS, ORDER_FORMS, PRODUCT_FORMS } from "@/lib/numerals";
 import { listStudentsForAdmin, requireAdmin } from "@/lib/data/admin";
 import { formatDate } from "@/lib/format";
 
@@ -53,8 +53,7 @@ export default async function StudentsPage({ searchParams }: Params) {
       </form>
 
       <p className="mb-3 text-[12px] text-subtle">
-        <Num>{students.length}</Num>{" "}
-        {students.length >= 3 && students.length <= 10 ? "طلاب" : "طالبًا"}
+        {countedPhrase(students.length, STUDENT_FORMS)}
         {q && <> — نتائج البحث عن «{q}»</>}
       </p>
 
@@ -90,12 +89,8 @@ export default async function StudentsPage({ searchParams }: Params) {
                   </div>
 
                   <div className="flex shrink-0 items-center gap-4 text-[11px] text-subtle">
-                    <span>
-                      <Num>{s.enrollments.length}</Num> باقة سارية
-                    </span>
-                    <span>
-                      <Num>{s._count.orders}</Num> طلب
-                    </span>
+                    <span>{countedPhrase(s.enrollments.length, PRODUCT_FORMS)} سارية</span>
+                    <span>{countedPhrase(s._count.orders, ORDER_FORMS)}</span>
                   </div>
                 </Card>
               </Link>

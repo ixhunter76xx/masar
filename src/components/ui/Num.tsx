@@ -35,13 +35,29 @@ export function Counted({
   n,
   few,
   many,
+  one,
+  two,
   className,
 }: {
   n: number;
   few: string;
   many: string;
+  /**
+   * صيغة الواحد كاملةً بلا رقم — «درس واحد».
+   *
+   * اختيارية كي لا تنكسر مواضع النداء القائمة، لكن غيابها يُنتج
+   * «١ درسًا» وهو لحن. مرّرها حيثما قد يبلغ العدد واحدًا.
+   */
+  one?: string;
+  /** صيغة المثنّى كاملةً بلا رقم — «درسان» */
+  two?: string;
   className?: string;
 }) {
+  /* الواحد والمثنّى لا يُسبقان بالرقم في العربية: «درسان» لا
+     «٢ درسان». فتُرجع العبارة وحدها متى توفّرت صيغتها. */
+  if (n === 1 && one) return <>{one}</>;
+  if (n === 2 && two) return <>{two}</>;
+
   return (
     <>
       <Num className={className}>{n}</Num> {n >= 3 && n <= 10 ? few : many}

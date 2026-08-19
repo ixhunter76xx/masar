@@ -100,7 +100,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
 
       <Link
         href="/settings/courses"
-        className="press mb-4 inline-flex items-center gap-1.5 text-[12px] text-muted hover:text-paper"
+        className="press tap-44 mb-4 inline-flex items-center gap-1.5 text-[12px] text-muted hover:text-paper"
       >
         <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
         كل المقررات
@@ -176,7 +176,10 @@ export default async function CourseWorkspacePage({ params }: Params) {
       </Card>
 
       <details className="mb-8">
-        <summary className="press cursor-pointer text-[12px] text-muted hover:text-paper">
+        <summary /* `summary` عنصر `list-item`، فلا يحمل الزائف المطلق الذي
+              يوسّع الإصابة. الحشوة هنا هي الطريق — وهي مقبولة بصريًّا
+              في صفّ كاشفٍ أصلًا. */
+          className="press cursor-pointer py-3 text-[12px] text-muted hover:text-paper">
           رفع فيديو لدرس
         </summary>
         <Card className="mt-3 px-5 py-4">

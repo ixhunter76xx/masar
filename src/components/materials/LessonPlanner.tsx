@@ -397,7 +397,7 @@ function RenameForm({
         className="field-motion h-8 rounded-[8px] border border-line bg-ink px-2.5
           text-[12px] text-paper focus:border-accent focus:outline-none"
       />
-      <button type="submit" className="press text-[11px] text-accent">
+      <button type="submit" className="press tap-44 text-[11px] text-accent">
         حفظ
       </button>
       <button

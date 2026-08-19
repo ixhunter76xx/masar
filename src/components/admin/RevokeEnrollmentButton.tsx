@@ -29,7 +29,7 @@ export function RevokeEnrollmentButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="press text-[11px] text-danger hover:underline"
+        className="press tap-44 text-[11px] text-danger hover:underline"
       >
         اسحب الوصول
       </button>
@@ -76,7 +76,7 @@ export function RevokeEnrollmentButton({
         <button
           type="button"
           onClick={() => { setOpen(false); setError(null); }}
-          className="press text-[12px] text-muted hover:text-paper"
+          className="press tap-44 text-[12px] text-muted hover:text-paper"
         >
           تراجع
         </button>

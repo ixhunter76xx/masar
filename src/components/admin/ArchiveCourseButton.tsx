@@ -75,7 +75,7 @@ export function ArchiveCourseButton({
       <button
         type="button"
         onClick={() => setConfirming(false)}
-        className="press text-[12px] text-muted hover:text-paper"
+        className="press tap-44 text-[12px] text-muted hover:text-paper"
       >
         تراجع
       </button>

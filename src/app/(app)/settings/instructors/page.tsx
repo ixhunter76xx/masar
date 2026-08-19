@@ -6,7 +6,7 @@ import { AppPage } from "@/components/shell/AppPage";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Num } from "@/components/ui/Num";
+import { countedPhrase, COURSE_FORMS } from "@/lib/numerals";
 import { listInstructorsForAdmin, requireAdmin } from "@/lib/data/admin";
 
 export const metadata: Metadata = { title: "المدرّسون" };
@@ -56,11 +56,7 @@ export default async function InstructorsPage() {
                     </p>
                   </div>
                   <p className="shrink-0 text-[11px] text-subtle">
-                    <Num>{t.coursesPresented.length}</Num>{" "}
-                    {t.coursesPresented.length >= 3 &&
-                    t.coursesPresented.length <= 10
-                      ? "مقررات"
-                      : "مقررًا"}
+                    {countedPhrase(t.coursesPresented.length, COURSE_FORMS)}
                   </p>
                 </div>
 

@@ -7,7 +7,7 @@ import {
   renameFaculty,
   setFacultyVisible,
 } from "@/app/(app)/settings/faculties/actions";
-import { Num } from "@/components/ui/Num";
+import { countedPhrase, COURSE_FORMS } from "@/lib/numerals";
 
 /**
  * صفّ كلية — إعادة تسمية وإظهار/إخفاء في مكان واحد.
@@ -67,14 +67,14 @@ export function FacultyRow({
               type="button"
               disabled={busy}
               onClick={() => run(() => renameFaculty(id, value))}
-              className="press text-[12px] text-accent hover:underline disabled:opacity-50"
+              className="press tap-44 text-[12px] text-accent hover:underline disabled:opacity-50"
             >
               حفظ
             </button>
             <button
               type="button"
               onClick={() => { setEditing(false); setValue(name); setError(null); }}
-              className="press text-[12px] text-muted hover:text-paper"
+              className="press tap-44 text-[12px] text-muted hover:text-paper"
             >
               تراجع
             </button>
@@ -92,14 +92,7 @@ export function FacultyRow({
             <p className="mt-0.5 text-[11px] text-subtle">
               <span className="code">{slug}</span>
               {" · "}
-              {courseCount > 0 ? (
-                <>
-                  <Num>{courseCount}</Num>{" "}
-                  {courseCount >= 3 && courseCount <= 10 ? "مقررات" : "مقررًا"}
-                </>
-              ) : (
-                notOfferedLabel
-              )}
+              {courseCount > 0 ? countedPhrase(courseCount, COURSE_FORMS) : notOfferedLabel}
             </p>
           </>
         )}
