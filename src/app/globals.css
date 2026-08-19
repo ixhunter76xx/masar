@@ -372,14 +372,35 @@
     }
   }
 
-  /* احترام تفضيل تقليل الحركة — إلزامي لا تحسين */
+  /**
+   * احترام تفضيل تقليل الحركة — إلزامي لا تحسين.
+   *
+   * ⚠ «تقليل الحركة» ليس «إلغاء كل انتقال».
+   *
+   * كانت القاعدة تفرض `transition-duration: 0.01ms` على `*`، فتقتل
+   * معها تغيّر اللون عند الإشارة والتركيز وظهور الحدّ وتلاشي الطبقات —
+   * أي كل تغذيةٍ راجعة في الواجهة. والنتيجة أن من طلب راحةً من الحركة
+   * حصل على واجهةٍ تُصفَع فيها الحالات صفعًا، وهي أخشن لا ألطف.
+   *
+   * فالمطلوب حذف **الانتقال المكانيّ** وحده: الإزاحة والتحجيم والدوران.
+   * `transition-property` هنا قائمةٌ بيضاء لا تحوي `transform` ولا
+   * `width/height`، فيبقى اللون والشفافية والظلّ ينتقلون بلطف.
+   *
+   * و`animation` تُقصَّر لأن الرسوم المتكرّرة (النبض، الانجراف، اللمعة)
+   * حركةٌ صريحة لا تغذية راجعة.
+   *
+   * ملاحظة: `MotionRoot` يمرّر `reducedMotion="user"` إلى motion، وهي
+   * تُسقط التحويلات وتُبقي الشفافية — فالطبقتان تقولان الشيء نفسه.
+   */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      transition-property: opacity, color, background-color, border-color,
+        box-shadow, fill, stroke !important;
+      transition-duration: var(--dur-fast) !important;
       scroll-behavior: auto !important;
     }
   }

@@ -3,37 +3,36 @@ import { Skeleton, CardSkeleton } from "@/components/ui/Skeleton";
 /**
  * يظهر فورًا عند التنقّل بين صفحات المنطقة المحمية.
  *
- * الشريط الجانبي يبقى ظاهرًا لأنه في التخطيط لا في الصفحة — يتغيّر
- * المحتوى وحده. بدون هذا الملف كانت الواجهة تتجمّد حتى تنتهي كل
- * استعلامات الخادم.
+ * ⚠ **لا يرسم رأسية.** كان هنا `<header>` هيكليّ يقلّد الرأسية الحقيقية
+ * بارتفاعها نفسه — وكان ذلك يعالج عرضًا لعلّةٍ في البنية: الرأسية كانت
+ * في `AppPage` أي داخل الصفحة، فيستبدلها هذا الملفّ عند كل تنقّلة.
+ * فكان المستخدم يرى الشريط العلوي وزرّ الخروج يختفيان ثم يعودان، ويرى
+ * بينهما شريطًا يشبههما ولا يعمل.
+ *
+ * الرأسية الآن في `(app)/layout.tsx` فوق `PageTransition`، ولا يمسّها
+ * هذا الملفّ ولا يستبدلها. فما يبقى هنا هو هيكل **المحتوى** وحده،
+ * وهذا هو حدّ مسؤوليته الصحيح.
+ *
+ * الشريط الجانبي كذلك في التخطيط — يتغيّر المحتوى وحده.
  */
 export default function AppLoading() {
   return (
-    <>
-      {/* هيكل الرأسية بنفس ارتفاعها الحقيقي (64px) */}
-      <header className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
-        <div className="flex h-16 items-center gap-3 px-4">
-          <Skeleton className="h-5 w-40" />
-        </div>
-      </header>
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className="mx-auto max-w-[1180px] px-4 py-[2.2rem] sm:px-8"
+    >
+      <span className="sr-only">جارٍ التحميل…</span>
 
-      <div
-        role="status"
-        aria-busy="true"
-        aria-live="polite"
-        className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6"
-      >
-        <span className="sr-only">جارٍ التحميل…</span>
+      <Skeleton className="mb-2 h-6 w-48" />
+      <Skeleton className="mb-6 h-4 w-72" />
 
-        <Skeleton className="mb-2 h-6 w-48" />
-        <Skeleton className="mb-6 h-4 w-72" />
-
-        <div className="space-y-3">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton lines={1} />
-        </div>
+      <div className="space-y-3">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton lines={1} />
       </div>
-    </>
+    </div>
   );
 }

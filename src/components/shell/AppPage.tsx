@@ -1,11 +1,16 @@
 import { redirect } from "next/navigation";
 
-import { Topbar } from "@/components/shell/Topbar";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { SetTopbarTitle } from "@/components/shell/TopbarTitle";
 import { getShellData } from "@/lib/data/shell";
 
 /**
- * إطار موحّد لكل صفحات المنطقة المحمية: رأسية + عنوان + محتوى.
+ * إطار موحّد لكل صفحات المنطقة المحمية: عنوان + محتوى.
+ *
+ * ⚠ **لم تعد تُصيّر `Topbar`.** الرأسية صارت في `(app)/layout.tsx` كي
+ * لا يفكّكها `loading.tsx` عند كل تنقّلة — وكان تفكيكها يُغيّب زرّ
+ * الخروج ويُومض الشريط كلّه. تُعلن الصفحة عنوانها هنا فحسب، ويصعد إلى
+ * الرأسية الثابتة عبر السياق.
  *
  * يستدعي `getShellData()` نفسها التي يستدعيها التخطيط — وهي مخزّنة
  * لكل طلب، فلا يتكرر الاستعلام.
@@ -30,7 +35,7 @@ export async function AppPage({
 
   return (
     <>
-      <Topbar title={title} user={shell.user} counts={shell.counts} />
+      <SetTopbarTitle title={title} />
       <main id="main" className="mx-auto max-w-[1180px] px-4 py-[2.2rem] sm:px-8">
         {!hidePageHeader && (
           <PageHeader title={title} description={description} />

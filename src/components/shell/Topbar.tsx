@@ -1,14 +1,23 @@
 import { MobileNav } from "@/components/shell/MobileNav";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { TopbarTitleText } from "@/components/shell/TopbarTitle";
 import type { NavCounts } from "@/lib/navigation";
 import type { Role } from "@/generated/prisma/enums";
 
+/**
+ * ⚠ تُصيَّر في **التخطيط** لا في الصفحة.
+ *
+ * كانت في `AppPage`، فكانت تختفي مع كل `loading.tsx` ويغيب معها زرّ
+ * الخروج ثم يعودان. رفعُها إلى التخطيط يجعلها لا تُفكَّك أصلًا،
+ * ويُخرجها من `PageTransition` فلا تتلاشى مع المحتوى.
+ *
+ * وتبقى **مكوّن خادم**: `SignOutButton` يستورد `signOut` من `@/auth`.
+ * العنوان وحده عميل — انظر `TopbarTitle.tsx`.
+ */
 export function Topbar({
-  title,
   user,
   counts,
 }: {
-  title: string;
   user: { name: string; role: Role };
   counts?: NavCounts;
 }) {
@@ -22,9 +31,7 @@ export function Topbar({
             المبدّل ثابتٌ في منتصف النافذة، فالمساحة المتاحة للعنوان
             محدودة بحافّته لا بحافّة الشاشة. والصفحة تحمل عنوانها في
             متنها (`PageHeader`)، أما الباب فلا بديل عنه. */}
-        <h1 className="hidden flex-1 truncate text-base font-medium text-paper min-[560px]:block">
-          {title}
-        </h1>
+        <TopbarTitleText className="hidden flex-1 truncate text-base font-medium text-paper min-[560px]:block" />
         {/* حاجزٌ يدفع الخروج إلى الحافّة حين يختفي العنوان — نظير
             `.apptop > .btn{margin-inline-start:auto}` في المعاينة. */}
         <span className="flex-1 min-[560px]:hidden" aria-hidden="true" />

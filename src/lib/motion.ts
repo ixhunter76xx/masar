@@ -42,13 +42,18 @@ export const SPRING = {
   soft: { type: "spring", stiffness: 300, damping: 26 },
 } as const;
 
-/** انتقال الصفحة: دخول وخروج */
+/**
+ * انتقال الصفحة: دخول وخروج.
+ *
+ * الخروج بـ`EASE.out` لا `EASE.in`: المنحنى الداخل يبدأ بطيئًا، فيؤخّر
+ * اللحظة التي ينظر إليها المستخدم بالضبط. لا `ease-in` على عنصر واجهة.
+ */
 export const PAGE = {
   initial: { opacity: 0.72, y: 6 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -3 },
   enterTransition: { duration: DUR.base, ease: EASE.out },
-  exitTransition: { duration: 0.1, ease: EASE.in },
+  exitTransition: { duration: 0.1, ease: EASE.out },
 } as const;
 
 /**
@@ -63,8 +68,23 @@ export const APP_PAGE = {
   initial: { opacity: 0.72 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-  enterTransition: PAGE.enterTransition,
-  exitTransition: PAGE.exitTransition,
+  /* دخول خاطف: هذا تلاشي محتوىً جديد فوق رأسية وشريط جانبي ثابتين،
+     لا انتقال صفحة كاملة. `fast` يجعل الاستجابة تُقرأ فورية. */
+  enterTransition: { duration: DUR.fast, ease: EASE.out },
+  /**
+   * ⚠ خروجٌ بلا زمن — وهذا إصلاح عطلٍ لا اختيار ذوق.
+   *
+   * كان الخروج يستغرق 100ms، و`AnimatePresence` بوضع `popLayout` يُبقي
+   * النسخة الخارجة **مركّبة** طوال ذلك الزمن. وفي أثنائه يكون Next قد
+   * صيّر `loading.tsx` للمسار الجديد — فيجتمع على الشاشة محتوى الصفحة
+   * القديمة (يتلاشى من ١) مع هيكل التحميل (يدخل من ٠٫٧٢). النتيجة
+   * ازدواج تعرّضٍ يُقرأ تجمّدًا للمحتوى القديم خلف الهيكل.
+   *
+   * بصفرٍ تُفكَّك النسخة القديمة في الإطار نفسه الذي يبدأ فيه التنقّل،
+   * فيظهر الهيكل نظيفًا وحده. ولا يخسر المستخدم إحساس الانتقال: الدخول
+   * أعلاه هو ما يحمله.
+   */
+  exitTransition: { duration: 0 },
 } as const;
 
 /**

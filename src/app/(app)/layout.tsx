@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AreaSwitch } from "@/components/shell/AreaSwitch";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { Sidebar } from "@/components/shell/Sidebar";
+import { Topbar } from "@/components/shell/Topbar";
+import { TopbarTitleProvider } from "@/components/shell/TopbarTitle";
 import { getShellData } from "@/lib/data/shell";
 
 /**
@@ -38,7 +40,18 @@ export default async function AppLayout({
 
       {/* الهامش يقابل عرض الشريط الجانبي — ms أي يمين في RTL ويسار في LTR */}
       <div className="min-[1060px]:ms-[260px]">
-        <PageTransition stationary>{children}</PageTransition>
+        {/*
+          الرأسية **فوق** `PageTransition` عمدًا، لا داخله:
+
+          داخله كانت تُفكَّك وتُعاد تركيبها مع كل تنقّلة (لأنها كانت في
+          `AppPage` أي في الصفحة)، فيغيب زرّ الخروج ويحلّ محلّه هيكل،
+          وكانت تتلاشى مع المحتوى لأنها ضمن الشجرة المتحرّكة. هنا لا
+          يحدث أيٌّ من الاثنين: مرساةٌ ثابتة يتبدّل تحتها المحتوى وحده.
+        */}
+        <TopbarTitleProvider>
+          <Topbar user={shell.user} counts={shell.counts} />
+          <PageTransition stationary>{children}</PageTransition>
+        </TopbarTitleProvider>
       </div>
     </div>
   );
