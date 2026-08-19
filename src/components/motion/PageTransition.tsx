@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-import { APP_PAGE, PAGE } from "@/lib/motion";
+import { APP_PAGE, PAGE, appPageTransitionKey } from "@/lib/motion";
 
 /**
  * تجميد الموجّه أثناء الخروج.
@@ -26,14 +26,16 @@ import { APP_PAGE, PAGE } from "@/lib/motion";
  */
 function FrozenRouter({
   children,
-  mountedPath,
+  mountedKey,
+  stationary,
 }: {
   children: React.ReactNode;
-  /** المسار الذي رُكِّبت به هذه النسخة — لا يتغيّر لأن `key` هو المسار */
-  mountedPath: string;
+  /** مفتاح النسخة؛ قد يجمع مسارات تبويبات تشترك في التخطيط نفسه */
+  mountedKey: string;
+  stationary: boolean;
 }) {
   const context = React.useContext(LayoutRouterContext);
-  const frozen = React.useRef(context).current;
+  const frozen = React.useRef(context);
   const pathname = usePathname();
 
   /**
@@ -54,11 +56,20 @@ function FrozenRouter({
    * السياق مباشرة؛ والنسخة التي بقي مسارها مخالفًا هي الخارجة فتُجمَّد
    * حتى تنتهي حركة خروجها.
    */
-  const isExiting = pathname !== mountedPath;
+  const currentKey = stationary ? appPageTransitionKey(pathname) : pathname;
+  const isExiting = currentKey !== mountedKey;
 
-  if (!frozen || !isExiting) return <>{children}</>;
+  /* حين يبقى المفتاح حيًّا — بما فيه تبديل تبويب أو router.refresh —
+     نحدّث آخر سياق سليم. وعند الخروج نجمّد هذه النسخة الأخيرة تحديدًا،
+     لا سياق أول تبويب فُتح في المقرر. */
+  if (!isExiting) {
+    frozen.current = context;
+    return <>{children}</>;
+  }
+
+  if (!frozen.current) return <>{children}</>;
   return (
-    <LayoutRouterContext.Provider value={frozen}>
+    <LayoutRouterContext.Provider value={frozen.current}>
       {children}
     </LayoutRouterContext.Provider>
   );
@@ -84,16 +95,21 @@ export function PageTransition({
 }) {
   const pathname = usePathname();
   const profile = stationary ? APP_PAGE : PAGE;
+  const transitionKey = stationary
+    ? appPageTransitionKey(pathname)
+    : pathname;
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
-        key={pathname}
+        key={transitionKey}
         initial={profile.initial}
         animate={{ ...profile.animate, transition: profile.enterTransition }}
         exit={{ ...profile.exit, transition: profile.exitTransition }}
       >
-        <FrozenRouter mountedPath={pathname}>{children}</FrozenRouter>
+        <FrozenRouter mountedKey={transitionKey} stationary={stationary}>
+          {children}
+        </FrozenRouter>
       </motion.div>
     </AnimatePresence>
   );

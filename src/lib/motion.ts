@@ -67,6 +67,22 @@ export const APP_PAGE = {
   exitTransition: PAGE.exitTransition,
 } as const;
 
+/**
+ * مفتاح الغلاف الخارجي في المنطقة المحمية.
+ *
+ * تبويبات المقرر الأربعة تشترك في CourseLayout واحد؛ لذلك يجب أن تشترك
+ * في المفتاح نفسه أيضًا. إبقاء pathname كاملًا كان يعيد تركيب الرأس
+ * والتبويبات ويخلق مؤشري `layoutId` في موضعين رأسيين مختلفين.
+ * المسارات الأخرى، ومنها الاختبارات والواجبات، تبقى صفحات مستقلة.
+ */
+export function appPageTransitionKey(pathname: string): string {
+  const courseTabs = pathname.match(
+    /^\/learn\/([^/]+)(?:\/(?:announcements|grades|messages)(?:\/.*)?)?\/?$/,
+  );
+
+  return courseTabs ? `/learn/${courseTabs[1]}/(tabs)` : pathname;
+}
+
 /** ظهور تسلسلي: الحاوية توزّع التأخير، والعنصر يحمل الحركة */
 export const STAGGER = {
   container: {

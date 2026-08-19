@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 
+import { PageTransition } from "@/components/motion/PageTransition";
 import { COURSE_TABS, tabHref } from "@/lib/course-tabs";
 import { useLogicalAxis } from "@/lib/use-direction";
 import {
@@ -97,7 +98,11 @@ export function CourseSwipeArea({
     [prevEdge]: canGoPrev ? ELASTIC_OPEN : ELASTIC_BLOCKED,
   } as { left: number; right: number };
 
-  if (!isTouch || currentIndex < 0) return <>{children}</>;
+  /* الغلاف الخارجي يثبّت رأس المقرر، وهذا الانتقال يحرّك جسم التبويب
+     وحده. لذلك لا يدخل CourseTabs في AnimatePresence ولا يتكرر مؤشّره. */
+  const content = <PageTransition>{children}</PageTransition>;
+
+  if (!isTouch || currentIndex < 0) return content;
 
   return (
     <motion.div
@@ -132,7 +137,7 @@ export function CourseSwipeArea({
         }
       }}
     >
-      {children}
+      {content}
     </motion.div>
   );
 }
