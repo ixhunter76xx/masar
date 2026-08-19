@@ -44,10 +44,30 @@ export default async function PublicLayout({
               فبابه الثابت إلى منطقة الدراسة هو `AreaSwitch`. */}
           <nav className="ms-auto flex items-center">
             {!session?.user && (
+              /**
+               * ⚠ انحرافٌ مقصود عن المعاينة، وسببه بلاغُ المالك.
+               *
+               * المصدر يعطيه `.btn .btn-sm` — زرًّا محايدًا بحدٍّ خافت،
+               * وكان المنقول مطابقًا له حرفًا بحرف. لكن المعاينة لقطةٌ
+               * بعرضٍ ضيّق، والمنتج يُفتح على ١٩٠٠px: هناك يصير الزرّ
+               * ٥٧×٣٤px وحيدًا عند `x=385` بينما الشعار عند `x=1403`
+               * والمبدّل عند `x=873` — أي في آخر ركنٍ تصل إليه العين
+               * العربية، على بُعد ألف بكسل من أول ما تراه.
+               *
+               * وبلاغ المالك كان حرفيًّا «وأين زرّ تسجيل الدخول أصلًا».
+               * فالحيادُ هنا لا يخدم: الدخول هو الباب الوحيد إلى نصف
+               * المنتج، ويقصده كل من ضغط «الدراسة» فرُدّ إليه.
+               *
+               * فأخذ نبرة الفعل من النظام نفسه — `--color-action`
+               * المستعملة في نداءات الشراء — بلا لونٍ جديد ولا مقاسٍ
+               * جديد: المقاس ‹34px · .78rem› كما في المصدر تمامًا.
+               */
               <Link
                 href="/login"
-                className="press inline-flex min-h-[34px] items-center rounded-full border border-line
-                  bg-[var(--sunk)] px-[0.85rem] text-[0.78rem] text-paper hover:border-accent-deep hover:bg-panel-lift"
+                className="press inline-flex min-h-[34px] items-center rounded-full
+                  bg-action px-[0.95rem] text-[0.78rem] font-semibold text-ink
+                  shadow-[0_1px_0_var(--hair),0_6px_18px_-10px_var(--shadow)]
+                  hover:bg-accent-bright"
               >
                 دخول
               </Link>
