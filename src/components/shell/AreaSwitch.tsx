@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AreaSwitchLabel } from "@/components/shell/AreaSwitchPending";
 import { cn } from "@/lib/utils";
 
 /**
@@ -64,18 +65,25 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
             prefetch={area.key === "study" ? false : undefined}
             aria-current={isHere ? "page" : undefined}
             className={cn(
-              "press inline-flex items-center rounded-full whitespace-nowrap",
+              "press relative inline-flex items-center rounded-full whitespace-nowrap",
               /* المقاسات من المعاينة حرفيًّا: ‎.78rem/‎.4rem ‎.85rem،
                  وتصغيرٌ تحت ٦٢٠px إلى ‎.73rem/‎.4rem ‎.6rem — وهو علاج
                  المعاينة للضيق: يتقلّص المبدّل، لا يُختصر ما حوله. */
               "py-1.5 text-[0.73rem] px-2.5 sm:px-3.5 sm:text-[0.78rem]",
               "font-medium transition-colors",
+              /* ── مساحة لمسٍ ٤٤px دون تكبير الحبّة ──────────────────
+                 الحبّة ٥٣×٣٤px مقيسة على الجهاز، وهو دون الحدّ الأدنى
+                 للمس (٤٤×٤٤). و`::after` يوسّع منطقة الإصابة رأسيًّا
+                 وحدها بلا أي أثر بصريّ ولا إزاحة تخطيط — الشكل كما هو
+                 في المعاينة، واليد تصيبه.
+                 `-inset-y-[6px]` يرفع الارتفاع الفعّال من ٣٤ إلى ٤٦px. */
+              "after:absolute after:-inset-y-[6px] after:inset-x-0 after:content-['']",
               isHere
                 ? "bg-panel-high font-semibold text-paper"
                 : "text-subtle hover:text-paper",
             )}
           >
-            {area.label}
+            <AreaSwitchLabel label={area.label} />
           </Link>
         );
       })}
