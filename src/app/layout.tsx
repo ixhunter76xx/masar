@@ -8,11 +8,44 @@ import { SITE } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  /**
+   * الأصل الذي تُبنى عليه كل الروابط النسبية في الوصف.
+   *
+   * بدونه يترك Next روابط Open Graph نسبيةً، و**قارئ الروابط لا يقبل
+   * النسبيّ**: واتساب وتويتر ولوحات المعاينة تطلب رابطًا مطلقًا أو
+   * تتجاهل الصورة. وهذا يخصّ هذا المنتج بعينه أكثر من غيره — رابط
+   * المقرر يُشارَك عبر واتساب، وهي قناة البيع الأولى فيه.
+   */
+  metadataBase: new URL(SITE.url),
   title: {
     default: SITE.tagline,
     template: `%s — ${SITE.name}`,
   },
   description: SITE.shortDescription,
+
+  /**
+   * بطاقة المشاركة الافتراضية.
+   *
+   * كانت الروابط تُشارَك عاريةً: عنوانٌ نصّيّ بلا اسمٍ ولا وصفٍ ولا
+   * صورة. والصورة هنا شعارُ المنصّة ٥١٢×٥١٢ — ليست بطاقةً مصمَّمة
+   * (١٢٠٠×٦٣٠) لكنها تُظهر الهوية بدل الفراغ. وتصميم بطاقةٍ لائقة
+   * عملٌ قائمٌ بذاته، يُضاف حين يُطلب.
+   */
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "ar_BH",
+    url: SITE.url,
+    title: SITE.tagline,
+    description: SITE.shortDescription,
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: SITE.name }],
+  },
+  twitter: {
+    card: "summary",
+    title: SITE.tagline,
+    description: SITE.shortDescription,
+    images: ["/icon-512.png"],
+  },
 
   /**
    * أيقونة الشاشة الرئيسية على iOS.

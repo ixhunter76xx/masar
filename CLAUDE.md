@@ -493,8 +493,12 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 > 
 > The same masking is a trap when auditing: `netlify env:list` run locally reports the **`dev`-context** value, not production's. Do not use it to prove what production points at — query `getEnvVars` and read the per-context entries instead, and remember you will only see the last 4 characters of each.
 > 
-> ### `AUTH_URL` is pinned to the production origin
-> `AUTH_URL=https://hisab-lms.netlify.app` while `src/auth.config.ts` also sets `trustHost: true`. On a preview deploy, any redirect to `/login` lands on the **production** domain instead of the preview host — observed 2026-08-05, which meant a preview test silently ended up on the old production build. Harmless in production (the origins match) but it will break the first time a custom domain is added, and it limits what can be tested on previews.
+> ### ~~`AUTH_URL` is pinned to the production origin~~ — the predicted break arrived 2026-08-20
+> The old note said pinning it "will break the first time a custom domain is added." That is exactly what happened: **`masar-bh.com` was bought and made the primary domain.** Pinned to either host, the other breaks — the netlify.app one during DNS propagation, or the new one after.
+>
+> **The fix is to not define it at all.** `src/auth.config.ts` sets `trustHost: true`, so Auth.js derives the origin from the request. Measured locally with a forged `Host` header, on both domains at once: `/dashboard` → a **relative** `307 /login?next=…`, `/api/auth/csrf` issues a token with no `UntrustedHost`, `/login` is 200. Nothing in the source reads `process.env.AUTH_URL` — the only consumer is Auth.js itself.
+>
+> This also retires the preview bug in the same stroke: a deploy preview now keeps its own host instead of bouncing to production.
 > 
 > ## Paid Bundles — Fixed 2026-08-06. Read Before Adding Any Content Type
 > 

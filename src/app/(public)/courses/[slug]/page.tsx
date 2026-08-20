@@ -11,6 +11,7 @@ import { ownedLessonIdsForViewer } from "@/lib/data/access";
 import { bundleSaving, formatFils } from "@/lib/price";
 import { arPrice } from "@/lib/numerals";
 import { getCachedPublicCourse } from "@/lib/public-course-cache";
+import { SITE } from "@/lib/site";
 import { Num, Counted } from "@/components/ui/Num";
 import { cn } from "@/lib/utils";
 
@@ -31,9 +32,31 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const course = await getCachedPublicCourse(slug);
+  const title = `${course.code} — ${course.title}`;
+  const description = course.summary ?? SITE.shortDescription;
+
+  /**
+   * صفحة المقرر هي الرابط الذي يُشارَك فعلًا — عبر واتساب أساسًا،
+   * وهي قناة البيع الأولى في هذا المنتج. فبطاقتها تحمل اسم المقرر
+   * ورمزه ووصفه، لا عنوان المنصّة العامّ.
+   *
+   * و`canonical` مطلوبٌ هنا تحديدًا: النطاق يستجيب بـ`www` وبدونه،
+   * والنسختان تعرضان الصفحة نفسها. وبلا رابطٍ معياريّ يعدّهما جوجل
+   * صفحتين متكرّرتين ويقسم وزنهما.
+   */
   return {
-    title: `${course.code} — ${course.title}`,
-    description: course.summary ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `/courses/${course.slug}` },
+    openGraph: {
+      type: "article",
+      url: `/courses/${course.slug}`,
+      title,
+      description,
+      siteName: SITE.name,
+      locale: "ar_BH",
+    },
+    twitter: { card: "summary", title, description },
   };
 }
 

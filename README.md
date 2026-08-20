@@ -464,8 +464,11 @@ src/
 [
   {
     "AllowedOrigins": [
+      "https://masar-bh.com",
+      "https://www.masar-bh.com",
+      "https://hisab-lms.netlify.app",
       "http://localhost:3000",
-      "https://lms.hisab.edu"
+      "http://localhost:3100"
     ],
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["content-type"],
@@ -474,6 +477,15 @@ src/
   }
 ]
 ```
+
+> ⚠ **حُدِّثت 2026-08-20 مع شراء `masar-bh.com`.** النطاق الجديد **يجب**
+> أن يكون في القائمة، وإلا فشل رفع الفيديو منه — والفشل يظهر
+> `xhr.onerror` عاريًا لا يميّزه شيء عن رفض CSP. وقد كلّف ذلك جلستين
+> من قبل (انظر CLAUDE.md: «الرفع مُنع بسياستنا نحن»). فالتشخيص من
+> طرفية المتصفّح لا من الاستثناء.
+>
+> ويبقى نطاق netlify.app في القائمة: هو ما يعمل أثناء انتشار DNS،
+> وهو ما تستعمله معاينات النشر.
 
 ### ٣. متغيّرات البيئة في منصة الاستضافة
 
@@ -675,7 +687,13 @@ Term ──< Course >── User (مدرب)
 ```json
 [
   {
-    "AllowedOrigins": ["http://localhost:3000", "https://lms.hisab.edu"],
+    "AllowedOrigins": [
+      "https://masar-bh.com",
+      "https://www.masar-bh.com",
+      "https://hisab-lms.netlify.app",
+      "http://localhost:3000",
+      "http://localhost:3100"
+    ],
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["content-type"],
     "ExposeHeaders": ["ETag"],
