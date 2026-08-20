@@ -20,6 +20,10 @@ import path from "node:path";
 const root = process.cwd();
 const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
 
+/** هذا الملفّ يشرح الأعطال بذكر ما أُزيل، فالبحث في نصٍّ خام يمسك
+ *  الشرح لا الشيفرة. تُنزع التعليقات قبل أي بحثٍ عن نمطٍ ممنوع. */
+const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, "");
+
 /* ── ١ · الغلاف يحمل المُعلِن ───────────────────────────────────────
    `NavLink` هو ما يستورده نحو خمسةٍ وثلاثين ملفًّا باسم `Link`. فإن
    سقط `LinkPending` من داخله صمتت المنصّة كلّها دفعةً واحدة. */
@@ -140,6 +144,41 @@ for (const [id, files] of byId) {
     new Set(files).size,
     1,
     `معرّف الانزلاق «${id}» مستعملٌ في أكثر من ملفّ: ${[...new Set(files)].join(", ")}`,
+  );
+}
+
+/* ── ٧ · لا `mode="wait"` في المنطقة المحمية ───────────────────────
+   كان يجمّد الشاشة على محتوًى قديم عند التنقّل السريع: المسار يتبدّل
+   والصفحة القديمة تبقى معروضة، بلا خطأ في أي سجلّ. مقيسٌ ٤ من ٤.
+   والسبب أن `wait` ينتظر إعلانَ انتهاء الخروج، وحدُّ Suspense تحته
+   قد لا يُعلنه أبدًا. ولا حاجة إليه أصلًا: خروج المنطقة المحمية
+   بزمن صفر. أعادَته يعيد العطل صامتًا. */
+/* التعليقات تُنزع أولًا: هذا الملفّ يشرح العطل بذكر الوضع
+   الذي أزيل، فالبحث في نصٍّ خام يمسك الشرح لا الشيفرة. */
+const transition = stripComments(read("src/components/motion/PageTransition.tsx"));
+assert.doesNotMatch(
+  transition,
+  /mode=\{?["']wait["']/,
+  'PageTransition عاد إلى mode="wait" — وهو يجمّد المنطقة المحمية على محتوًى قديم',
+);
+assert.match(
+  transition,
+  /if \(stationary\)/,
+  "المنطقة المحمية يجب أن تُصيَّر بلا AnimatePresence — الفرع المبكّر غاب",
+);
+
+/* ── ٨ · شريط تبويبات الإدارة في التخطيط لا في الصفحات ─────────────
+   إعادتُه إلى الصفحات تُعيد اختفاءه مع كل تنقّلة (مقيسٌ ٢٨٦٨ms). */
+const settingsLayout = "src/app/(app)/settings/(tabs)/layout.tsx";
+assert.ok(fs.existsSync(path.join(root, settingsLayout)), `${settingsLayout} غاب`);
+assert.match(read(settingsLayout), /AdminTabs/, "تخطيط أقسام الإدارة لم يعد يحمل الشريط");
+for (const seg of ["orders", "courses", "users", "faculties", "students", "instructors"]) {
+  const p = `src/app/(app)/settings/(tabs)/${seg}/page.tsx`;
+  assert.ok(fs.existsSync(path.join(root, p)), `${p} خرج من مجموعة (tabs)`);
+  assert.doesNotMatch(
+    read(p).replace(/\/\*[\s\S]*?\*\//g, ""),
+    /<AdminTabs|<AppPage/,
+    `${p} يصيّر غلافًا ثانيًا — التخطيط يحمله`,
   );
 }
 
