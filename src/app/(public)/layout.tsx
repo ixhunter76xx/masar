@@ -64,7 +64,11 @@ export default async function PublicLayout({
                */
               <Link
                 href="/login"
-                className="press inline-flex min-h-[34px] items-center rounded-full
+                /* `tap-44`: مساحة الإصابة ٤٤px بلا تغيير الشكل. المقاس
+                   ‹34px› منقولٌ من المصدر ويبقى كما هو؛ والمقيس على
+                   هاتف ٣٩٠px كان **٣٤px إصابةً أيضًا** — أي دون الحدّ
+                   الأدنى. وهذا الزرّ هو الباب الوحيد إلى نصف المنتج. */
+                className="press tap-44 inline-flex min-h-[34px] items-center rounded-full
                   bg-action px-[0.95rem] text-[0.78rem] font-semibold text-ink
                   shadow-[0_1px_0_var(--hair),0_6px_18px_-10px_var(--shadow)]
                   hover:bg-accent-bright"
@@ -90,7 +94,8 @@ export default async function PublicLayout({
             {session?.user && (
               <Link
                 href="/dashboard"
-                className="press inline-flex min-h-[34px] items-center gap-2 rounded-full
+                /* المقاس نفسه والعلّة نفسها — انظر زرّ «دخول» أعلاه */
+                className="press tap-44 inline-flex min-h-[34px] items-center gap-2 rounded-full
                   border border-line bg-[var(--sunk)] px-[0.85rem] text-[0.78rem] text-paper
                   hover:border-accent-deep hover:bg-panel-lift"
               >
