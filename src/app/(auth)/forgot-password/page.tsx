@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";

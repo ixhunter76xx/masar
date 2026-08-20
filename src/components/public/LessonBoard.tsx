@@ -179,6 +179,11 @@ export function LessonBoard() {
           >
             <span
               className={cn(
+                /* ⚠ `width` هنا مقصود، وهو الاستثناء الوحيد في المنصّة.
+                   البديل `scaleX` يمطّ نصف القطر فتصير الحبّة بيضويّة
+                   بين ٦px و١٨px — والفرق مرئيّ على هذا المقاس. وثلاث
+                   حبّاتٍ تتغيّر بنقرةٍ نادرة لا تُقارن بشريط رفعٍ يعمل
+                   ستّين مرّة في الثانية. لا «تُصلَح» بلا قياس. */
                 "block h-1.5 rounded-full transition-[width,background-color] duration-200",
                 i === index ? "w-[18px] bg-accent" : "w-1.5 bg-line",
               )}

@@ -209,6 +209,7 @@ export function MobileNav({
               user={user}
               counts={counts}
               onNavigate={() => setOpen(false)}
+              scope="drawer"
             />
           </motion.div>
         </div>

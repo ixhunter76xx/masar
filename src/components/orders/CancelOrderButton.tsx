@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { cancelMyOrder } from "@/app/(app)/orders/actions";
+import { cn } from "@/lib/utils";
 
 /**
  * إلغاء الطلب — بتأكيد داخل الزرّ نفسه لا بنافذة منبثقة.
@@ -42,10 +43,39 @@ export function CancelOrderButton({ number }: { number: string }) {
         onClick={onClick}
         onBlur={() => setArmed(false)}
         disabled={pending}
-        className="press inline-flex min-h-touch items-center rounded-[10px] px-3 text-xs
-          text-subtle transition-colors hover:text-danger disabled:cursor-not-allowed"
+        className="press relative inline-flex min-h-touch items-center justify-center
+          rounded-[10px] px-3 text-xs text-subtle transition-colors
+          hover:text-danger disabled:cursor-not-allowed"
       >
-        {pending ? "جارٍ الإلغاء" : armed ? "متأكد؟ اضغط للإلغاء" : "إلغاء الطلب"}
+        {/*
+          ── العرض محجوزٌ لأطول الحالات ────────────────────────────
+          النصّ يتبدّل بين ثلاث حالات بأطوالٍ مختلفة («إلغاء الطلب»
+          ← «متأكد؟ اضغط للإلغاء»)، فكان الزرّ يقفز عرضًا تحت الإصبع
+          في اللحظة نفسها التي يُطلب فيها تأكيدٌ واعٍ. وزرٌّ يتحرّك
+          وقت التأكيد يدعو إلى نقرةٍ في غير موضعها.
+
+          الحالات الثلاث مرصوفةٌ في خليّة شبكةٍ واحدة، فالعرض عرضُ
+          أطولها دائمًا، والمعروض منها واحدةٌ بالشفافية. لا قفزة،
+          ولا حركةَ تخطيطٍ تُحسب.
+        */}
+        <span className="grid [grid-template-areas:'s']">
+          {[
+            { key: "idle", text: "إلغاء الطلب", on: !pending && !armed },
+            { key: "armed", text: "متأكد؟ اضغط للإلغاء", on: !pending && armed },
+            { key: "busy", text: "جارٍ الإلغاء", on: pending },
+          ].map((state) => (
+            <span
+              key={state.key}
+              aria-hidden={!state.on}
+              className={cn(
+                "[grid-area:s] whitespace-nowrap transition-opacity duration-150",
+                state.on ? "opacity-100" : "invisible opacity-0",
+              )}
+            >
+              {state.text}
+            </span>
+          ))}
+        </span>
       </button>
 
       {error && (

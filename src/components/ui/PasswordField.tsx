@@ -185,7 +185,16 @@ function StrengthMeter({
               className="h-1 flex-1 overflow-hidden rounded-full bg-line"
             >
               <motion.span
-                className={cn("block h-full origin-[inline-start]", BAR_COLOR[level])}
+                /* ⚠ `origin-[inline-start]` كان هنا، و`inline-start`
+                   **قيمةٌ غير صالحة** لـ`transform-origin`: الخاصّية
+                   لا تقبل الكلمات المنطقية أصلًا. فكان المتصفّح
+                   يرفضها صامتًا ويعود إلى المركز — أي أن كل شريحةٍ
+                   كانت تنمو من منتصفها إلى الطرفين بدل أن تمتلئ من
+                   بداية السطر. مقيسٌ في المتصفّح: `50px 5px`.
+
+                   والمنصّة RTL مثبَّتة في وسم `<html>`، فالبداية
+                   يمينًا و`origin-right` هي الصحيحة صراحةً. */
+                className={cn("block h-full origin-right", BAR_COLOR[level])}
                 initial={false}
                 animate={{ scaleX: index <= level ? 1 : 0 }}
                 transition={SPRING.soft}

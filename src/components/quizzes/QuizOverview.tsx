@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { Timer, Repeat, FileQuestion } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";

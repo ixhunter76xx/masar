@@ -1,6 +1,6 @@
 import { Num, Counted } from "@/components/ui/Num";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { ClipboardList, Inbox } from "lucide-react";
 
 import { auth } from "@/auth";

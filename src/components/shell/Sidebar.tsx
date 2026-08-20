@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -13,10 +13,19 @@ export function SidebarContent({
   user,
   counts,
   onNavigate,
+  scope = "sidebar",
 }: {
   user: { name: string; role: Role };
   counts?: NavCounts;
   onNavigate?: () => void;
+  /**
+   * يفصل معرّف الخطّ المنزلق بين نسختَي القائمة.
+   *
+   * هذا المكوّن يُصيَّر مرّتين في الصفحة الواحدة: الشريط المثبّت
+   * واللوحة المنسحبة. والمثبّت مخفيٌّ تحت ١٠٦٠px لكنه باقٍ في الشجرة،
+   * فمعرّفٌ مشترك يجعل عنصرين يتنازعان الخطّ نفسه فيقفز بينهما.
+   */
+  scope?: string;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -38,7 +47,12 @@ export function SidebarContent({
 
       {/* التنقّل */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav counts={counts} role={user.role} onNavigate={onNavigate} />
+        <SidebarNav
+          counts={counts}
+          role={user.role}
+          onNavigate={onNavigate}
+          scope={scope}
+        />
       </div>
 
       {/* ⚠ زال من هنا رابط «تصفّح المقررات».
@@ -74,7 +88,7 @@ export function Sidebar({
         "border-e border-line",
       )}
     >
-      <SidebarContent user={user} counts={counts} />
+      <SidebarContent user={user} counts={counts} scope="sidebar" />
     </aside>
   );
 }

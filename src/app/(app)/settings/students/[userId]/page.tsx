@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 

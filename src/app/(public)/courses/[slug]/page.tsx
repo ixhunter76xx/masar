@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { Check, Lock, Play, ShieldCheck } from "lucide-react";
 
 import { StaggerList, StaggerItem } from "@/components/motion/Stagger";

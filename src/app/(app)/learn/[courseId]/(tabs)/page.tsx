@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { FolderOpen, Plus } from "lucide-react";
 
 import { EmptyState } from "@/components/ui/EmptyState";

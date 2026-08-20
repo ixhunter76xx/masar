@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { MotionRoot } from "@/components/motion/MotionRoot";
+import { NavProgress } from "@/components/motion/NavProgress";
 import { ServiceWorker } from "@/components/pwa/ServiceWorker";
 import { plexArabic, plexMono } from "@/lib/fonts";
 import { SITE } from "@/lib/site";
@@ -76,6 +77,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-ink text-paper antialiased">
+        {/* في الجذر لا في تخطيطَي المنطقتين: التنقّلة قد تعبر بينهما
+            (الكتالوج ← الدراسة) وهي أطول ما في المنصّة. ونسخةٌ واحدة
+            تعني عدّادًا واحدًا لا اثنين يتنازعان الخيط نفسه. والجذر
+            بلا تحويل ولا مرشِّح، فالتثبيت فيه يقيس النافذة فعلًا. */}
+        <NavProgress />
         <MotionRoot>{children}</MotionRoot>
         <ServiceWorker />
       </body>

@@ -36,6 +36,14 @@ export function FormAlert({
       className={cn(
         "flex items-start gap-2.5 rounded-field border px-[0.95rem] py-[0.8rem]",
         "text-[0.8rem] leading-[1.7]",
+        /* ── يدخل ولا يظهر فجأةً ──────────────────────────────────
+           التنبيه يولد بعد فشل إرسالٍ أو نجاحه، أي في اللحظة التي
+           تكون فيها العين على الزرّ لا على أعلى النموذج. وظهورٌ
+           آنيّ فوق الزرّ يزيح ما تحته بلا أن يُلاحَظ مصدرُ الإزاحة.
+           `anim-rise` — الدخول الموحّد في المنصّة: صعودٌ قصير مع
+           تلاشٍ، `transform` و`opacity` وحدهما، ويسقط إلى تلاشٍ
+           صرف عند `prefers-reduced-motion`. */
+        "anim-rise",
         danger
           ? "border-danger/40 bg-danger/10 text-danger"
           : "border-success/40 bg-success/10 text-success",

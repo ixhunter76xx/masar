@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { ar } from "@/lib/numerals";
 
 import type { Gradebook } from "@/lib/data/grades";

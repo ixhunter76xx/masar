@@ -45,9 +45,20 @@ export function MessageThread({
     void markCourseThreadRead(courseId, studentId);
   }, [courseId, studentId, unreadFromPeer]);
 
-  /* آخر رسالة في المجال المرئي — سلوك متوقّع في أي محادثة */
+  /**
+   * آخر رسالة في المجال المرئي — سلوك متوقّع في أي محادثة.
+   *
+   * ⚠ `behavior: "instant"` صريحٌ ولازم. صار `html` يحمل
+   * `scroll-behavior: smooth` لأجل القفز إلى المراسي، وهو يسري على
+   * **كل** تمريرٍ برمجيّ ما لم يُنقض. وبلا هذا السطر كان أوّل عرضٍ
+   * للمحادثة ينزلق من أعلاها إلى آخرها أمام العين في كل مرّة —
+   * حركةٌ لا يطلبها أحد، تتكرّر مع كل رسالةٍ تُرسَل.
+   *
+   * والقفزة هنا **ليست تغيّر حالة يُشرح**؛ هي الوضع الابتدائي
+   * الصحيح للمحادثة. فالصواب أن تقع قبل أن تُرى.
+   */
   React.useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "nearest" });
+    endRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
   }, [messages.length]);
 
   function onSubmit(formData: FormData) {

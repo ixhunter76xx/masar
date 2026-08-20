@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { FacultyStations } from "@/components/public/FacultyStations";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { ArrowLeft } from "lucide-react";
 
 import { Price } from "@/components/public/Price";
@@ -59,7 +59,11 @@ export function CourseCard({ course }: { course: CourseCardData }) {
               <i
                 key={i}
                 className={cn(
-                  "w-2 rounded-[2px] transition-[height,background-color] duration-200",
+                  /* الارتفاع ثابتٌ لكل علامة (`lit` لا يتبدّل بعد
+                     التصيير)، فإدراجه في قائمة الانتقال كان يَعِد
+                     بحركةٍ لا تقع — ويُبقي خاصّية تخطيطٍ في مسار
+                     الانتقال بلا مقابل. اللون وحده هو ما يتحرّك. */
+                  "w-2 rounded-[2px] transition-colors duration-200",
                   lit
                     ? "h-[18px] bg-accent group-hover:bg-accent-bright"
                     : "h-2 bg-line group-hover:bg-accent-deep",

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { Check } from "lucide-react";
 
 import { Num } from "@/components/ui/Num";

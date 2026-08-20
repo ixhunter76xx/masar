@@ -60,7 +60,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-busy={loading || undefined}
         className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-[10px]",
+          "relative inline-flex items-center justify-center gap-2 rounded-[10px]",
           "font-medium whitespace-nowrap select-none",
           "press",
           "disabled:cursor-not-allowed",
@@ -71,8 +71,29 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {loading && <Spinner />}
-        {children}
+        {/*
+          ── العرض ثابت أثناء الانتظار ──────────────────────────────
+          كانت الدوّارة تُدرَج قبل النصّ فيتّسع الزرّ ٢٤px في اللحظة
+          التي يُضغط فيها، فيزيح ما بجانبه وينزلق تحت الإصبع. والزرّ
+          هو آخر ما يجوز أن يتحرّك في تلك اللحظة بالذات.
+
+          الآن: النصّ يبقى مكانه ويخفت، والدوّارة تعلوه مركَّزةً بموضعٍ
+          مطلق. فلا بكسل واحد يتبدّل، والتغيّر شفافيةٌ محضة — وهي ما
+          يُبقيه `prefers-reduced-motion` حين يُسقط الحركة المكانيّة.
+        */}
+        <span
+          className={cn(
+            "inline-flex items-center gap-2 transition-opacity duration-150",
+            loading && "opacity-0",
+          )}
+        >
+          {children}
+        </span>
+        {loading && (
+          <span className="absolute inset-0 grid place-items-center">
+            <Spinner />
+          </span>
+        )}
       </button>
     );
   },

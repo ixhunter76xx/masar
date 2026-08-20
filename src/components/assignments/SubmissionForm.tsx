@@ -208,9 +208,22 @@ export function SubmissionForm({
             aria-valuemax={100}
             className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink"
           >
+            {/*
+              ── `scaleX` لا `width` ────────────────────────────────
+              هذا الشريط يتحرّك عشرات المرّات في الثانية طوال رفعٍ قد
+              يدوم دقائق. و`width` يعيد التخطيط والرسم في كل خطوة،
+              فوق شبكةٍ تعمل أصلًا. و`scaleX` على المركّب وحده.
+
+              والحافّة المستديرة على المسار الخارجي مع `overflow-hidden`
+              لا على الحشوة: تحجيمُ حشوةٍ مستديرة يمطّ نصف قطرها
+              فتصير بيضويّة عند النسب الصغيرة.
+
+              والمنشأ عند بداية السطر — يمينًا في RTL، وقد وُضع صراحةً
+              لأن `transform-origin` لا يقبل الكلمات المنطقية.
+            */}
             <div
-              className="h-full rounded-full bg-action transition-[width] duration-200"
-              style={{ width: `${percent}%` }}
+              className="h-full w-full origin-right bg-action transition-transform duration-200 ease-out"
+              style={{ transform: `scaleX(${percent / 100})` }}
             />
           </div>
         </div>

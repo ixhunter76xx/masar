@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ar } from "@/lib/numerals";
-import Link from "next/link";
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { notFound } from "next/navigation";
 import {
   ArrowRight,
