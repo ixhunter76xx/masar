@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { NavLink as Link } from "@/components/ui/NavLink";
 import { Users } from "lucide-react";
 
-import { AppPage } from "@/components/shell/AppPage";
-import { AdminTabs } from "@/components/admin/AdminTabs";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { countedPhrase, STUDENT_FORMS, ORDER_FORMS, PRODUCT_FORMS } from "@/lib/numerals";
@@ -20,9 +18,7 @@ export default async function StudentsPage({ searchParams }: Params) {
   const students = await listStudentsForAdmin(q);
 
   return (
-    <AppPage title="الإدارة" hidePageHeader>
-      <AdminTabs />
-
+    <>
       {/* بحثٌ بنموذج GET لا حالة عميل: الرابط يصير قابلًا للمشاركة
           والعودة إليه، ولا يحتاج جافاسكربت ليعمل. */}
       <form method="get" className="mb-5 flex flex-wrap items-center gap-2">
@@ -98,6 +94,6 @@ export default async function StudentsPage({ searchParams }: Params) {
           ))}
         </ul>
       )}
-    </AppPage>
+    </>
   );
 }

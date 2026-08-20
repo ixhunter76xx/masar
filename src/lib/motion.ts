@@ -99,8 +99,25 @@ export function appPageTransitionKey(pathname: string): string {
   const courseTabs = pathname.match(
     /^\/learn\/([^/]+)(?:\/(?:announcements|grades|messages)(?:\/.*)?)?\/?$/,
   );
+  if (courseTabs) return `/learn/${courseTabs[1]}/(tabs)`;
 
-  return courseTabs ? `/learn/${courseTabs[1]}/(tabs)` : pathname;
+  /**
+   * أقسام الإدارة الستّة تشترك في `settings/(tabs)/layout.tsx`، فيجب
+   * أن تشترك في المفتاح أيضًا — وإلّا أعاد `AnimatePresence` تركيب
+   * التخطيط نفسه عند كل تبويب، فتُفكَّك التبويبات وينقطع انزلاق
+   * `layoutId` الذي يصل بين موضعين لعنصرٍ **باقٍ**.
+   *
+   * الصفحات التفصيلية (`courses/[id]` و`students/[id]`) خارج هذا
+   * عمدًا: هي خارج مجموعة `(tabs)` أصلًا، ولها رأسها وسياقها، فتبقى
+   * صفحاتٍ مستقلّة لها انتقالها. وهو التمييز نفسه القائم بين تبويبات
+   * المقرر وصفحات الاختبارات والواجبات تحته.
+   */
+  const adminTabs = pathname.match(
+    /^\/settings\/(orders|courses|users|faculties|students|instructors)\/?$/,
+  );
+  if (adminTabs) return "/settings/(tabs)";
+
+  return pathname;
 }
 
 /** ظهور تسلسلي: الحاوية توزّع التأخير، والعنصر يحمل الحركة */

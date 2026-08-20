@@ -1,8 +1,6 @@
 import { Num, Counted } from "@/components/ui/Num";
 import type { Metadata } from "next";
 
-import { AppPage } from "@/components/shell/AppPage";
-import { AdminTabs } from "@/components/admin/AdminTabs";
 import { AdminForm } from "@/components/admin/AdminForm";
 import { SelectField } from "@/components/admin/Select";
 import { FormField } from "@/components/ui/Field";
@@ -25,9 +23,7 @@ export default async function UsersPage() {
   const users = await listUsers();
 
   return (
-    <AppPage title="الإدارة" hidePageHeader>
-      <AdminTabs />
-
+    <>
       <AdminForm
         title="إنشاء حساب"
         submitLabel="إنشاء الحساب"
@@ -107,6 +103,6 @@ export default async function UsersPage() {
           </li>
         ))}
       </ul>
-    </AppPage>
+    </>
   );
 }

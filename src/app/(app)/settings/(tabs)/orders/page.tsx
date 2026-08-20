@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Receipt } from "lucide-react";
 
-import { AppPage } from "@/components/shell/AppPage";
-import { AdminTabs } from "@/components/admin/AdminTabs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   OrderReviewCard,
@@ -63,9 +61,7 @@ export default async function AdminOrdersPage() {
   const settled = views.filter((v) => v.status !== OrderStatus.PENDING);
 
   return (
-    <AppPage title="الإدارة" hidePageHeader>
-      <AdminTabs />
-
+    <>
       {views.length === 0 ? (
         <EmptyState
           icon={Receipt}
@@ -118,6 +114,6 @@ export default async function AdminOrdersPage() {
           )}
         </div>
       )}
-    </AppPage>
+    </>
   );
 }

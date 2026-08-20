@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import { AppPage } from "@/components/shell/AppPage";
-import { AdminTabs } from "@/components/admin/AdminTabs";
 import { CreateFacultyForm } from "@/components/admin/CreateFacultyForm";
 import { FacultyRow } from "@/components/admin/FacultyRow";
 import { Card } from "@/components/ui/Card";
@@ -17,9 +15,7 @@ export default async function FacultiesPage() {
   const editorial = new Set<string>(UOB_FACULTIES.map((f) => f.slug));
 
   return (
-    <AppPage title="الإدارة" hidePageHeader>
-      <AdminTabs />
-
+    <>
       <p className="mb-5 rounded-field border border-line-soft bg-[var(--sunk)] px-4 py-3 text-[12px] leading-[1.85] text-subtle">
         الكلية تجمع المقررات في الكتالوج. المحطة بلا مقررات تُعرض
         «{NOT_OFFERED_LABEL}» ولا تُخفى — لأنها وعدٌ بالتوسّع لا نقص. والإخفاء
@@ -90,6 +86,6 @@ export default async function FacultiesPage() {
           فلا يختفي مقرر منشور تحت كلية غير مُدرجة.
         </p>
       )}
-    </AppPage>
+    </>
   );
 }

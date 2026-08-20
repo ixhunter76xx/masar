@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { NavLink as Link } from "@/components/ui/NavLink";
 import { GraduationCap } from "lucide-react";
 
-import { AppPage } from "@/components/shell/AppPage";
-import { AdminTabs } from "@/components/admin/AdminTabs";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { countedPhrase, COURSE_FORMS } from "@/lib/numerals";
@@ -16,9 +14,7 @@ export default async function InstructorsPage() {
   const instructors = await listInstructorsForAdmin();
 
   return (
-    <AppPage title="الإدارة" hidePageHeader>
-      <AdminTabs />
-
+    <>
       {/* ⚠ القاعدة التي تحكم هذه الشاشة، وتُقال هنا لأنها تُنسى:
           القيد أحاديّ **من جهة المقرر** — كل مقرر يحمل مقدّمًا واحدًا.
           أمّا المدرّس فيُسنَد إلى أي عدد من المقررات. ولذلك لا يوجد هنا
@@ -82,6 +78,6 @@ export default async function InstructorsPage() {
           ))}
         </ul>
       )}
-    </AppPage>
+    </>
   );
 }
