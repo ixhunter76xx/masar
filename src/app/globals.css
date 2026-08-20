@@ -664,6 +664,13 @@
     animation: faculty-breathe 14s ease-in-out infinite;
   }
 
+  /* انثناء الجمالون تحت الحمل: انضغاطٌ رأسيّ ضئيل حول سطح الجسر
+     نفسه، فالسطح والمساند ثابتة وينزل الوتر العلويّ وحده — وهو ما
+     يحدث فعلًا. `scaleY` محضة، فلا تخطيط ولا إعادة رسم. */
+  .faculty-scene .faculty-flex {
+    animation: faculty-flex 13s ease-in-out infinite;
+  }
+
   .faculty-glyphs {
     position: absolute;
     inset: 0;
@@ -696,6 +703,7 @@
   @keyframes faculty-spin { to { transform: rotate(360deg); } }
   @keyframes faculty-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
   @keyframes faculty-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+  @keyframes faculty-flex { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.978); } }
   @keyframes faculty-glyph-drift {
     0%, 100% { opacity: 0.76; transform: translateY(6px); }
     50% { opacity: 1; transform: translateY(-10px); }

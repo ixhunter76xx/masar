@@ -49,7 +49,259 @@ const ARTS_GLYPHS = [
   { glyph: "ه", top: 64, start: 92, size: 2.8, rotate: 7 },
 ] as const;
 
-/** رسمٌ دلالي خفيف يميّز كل كلية، من نفس SVG المعتمد في المعاينة. */
+/**
+ * ══ هندسة مشهدَي التقنية والهندسة ═══════════════════════════════════
+ *
+ * «دوائر منطقية على مستويات متعددة» — والعبارة تُقرأ قراءتين، والرسم
+ * يفي بهما معًا: دائرةٌ منطقية حقيقية (AND ← OR ← NOT) موزَّعةٌ على
+ * أربعة مستويات منطقية، مرسومةٌ ثلاث مرّات على ثلاثة مستويات عمق.
+ * وكل عقدةٍ فيها دائرة: المداخل، والفقاعة، والتفرّعان، والمخارج.
+ *
+ * ── ⚠ الشريط الظاهر من المشهد ضحلٌ جدًّا — وهذا هو السبب الأول ──────
+ * `.faculty-scene` بارتفاع ٣٦٠px خلف عمود المحتوى، لكن **بطاقات
+ * المقررات معتمة وتغطّي أكثره**. المقيس في المتصفّح عند ١٤٤٠px:
+ * الشبكة تبدأ عند ١٢٢px من أعلى المشهد، والمقياس ٠٫٨٣٣.
+ *
+ *   • بـ`xMidYMid` ‹المعتمد سابقًا›: الرسم مُوسَّط، فيبدأ عند ٦٢px،
+ *     ولا يظهر منه إلا `y = 0..71` من أصل ٣٠٠.
+ *   • بـ`xMidYMin`: الرسم يعلو، فيظهر `y = 0..146` — **ضعف المساحة**.
+ *
+ * ولذلك كان مشهد التقنية المعتمد يبدو خاويًا: بوّاباته الثلاث عند
+ * `y = 96..164`، أي **خلف البطاقات كلّها**، ولا يظهر منه إلا خطّان
+ * أفقيّان شاردان. لم يكن الرسم رديئًا — كان مقصوصًا.
+ *
+ * فالتكوين هنا محصورٌ في `y = 0..145`: شريطٌ عريض ضحل، لا مربّع.
+ * **من يضيف عنصرًا: قِس أين تبدأ الشبكة أولًا، لا تفترض ٣٠٠ وحدة.**
+ * والمشهدان الآخران (الآداب والعلوم) ما زالا على `xMidYMid` ولهما
+ * القصّ نفسه — لم يُمسّا لأن الطلب لم يشملهما.
+ *
+ * ── لماذا الشكل مُولَّد لا مكتوب باليد ───────────────────────────────
+ * المستوى الواحد يُرسم ثلاث مرّات بثلاثة مقاسات. كتابته ثلاثًا تعني
+ * ثلاث فرص لانحرافٍ لا يمسكه المترجم ولا تكشفه لقطة شاشة.
+ *
+ * ── قيود سرت على الرسم كلّه ─────────────────────────────────────────
+ * • `transform`/`opacity` وحدهما. لا `stroke-dashoffset` متحرّك ولا
+ *   `height` ولا `top` — جولة الأداء أزالت هذا الصنف كلّه عمدًا.
+ * • العمق يتباعد بالمقاس والعتامة، لا بلونٍ جديد. و`non-scaling-stroke`
+ *   يُبقي سُمك الخطّ ثابتًا مهما صغُر المستوى، فالعتامة وحدها تُبعِد.
+ * • الانزياح داخل المجموعة المُصغَّرة لا خارجها، فيصغُر معها: المستوى
+ *   البعيد يتحرّك أقلّ من القريب — وذلك هو المنظور الحركي بعينه.
+ * • `--color-spark` بقي حيث كان: نقاط `.faculty-pulse` وحدها، بحكم
+ *   صنفها القائم. ولم يُضَف إلى خيوط الإشارة — تلك `accent-bright`،
+ *   فاللون الجريء محجوزٌ للتقدّم والإنجاز بقاعدة المشروع.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+/** بوّابة AND: ضلعٌ مستقيم عند المدخل، وقوسٌ نصف دائري عند المخرج. */
+function andGate(x: number, cy: number, hh: number) {
+  const flat = x + hh * 0.88;
+  return `M${x},${cy - hh} L${flat},${cy - hh} A${hh},${hh} 0 0 1 ${flat},${cy + hh} L${x},${cy + hh} Z`;
+}
+
+/** بوّابة OR: ظهرٌ مقعّر عند المدخل، وطرفٌ مدبّب عند المخرج. */
+function orGate(x: number, cy: number, hh: number, w: number) {
+  return (
+    `M${x},${cy - hh} Q${x + w * 0.42},${cy} ${x},${cy + hh}` +
+    ` Q${x + w * 0.72},${cy + hh * 0.92} ${x + w},${cy}` +
+    ` Q${x + w * 0.72},${cy - hh * 0.92} ${x},${cy - hh} Z`
+  );
+}
+
+/* الفراغ المحلي للدائرة: ٤٠..٨٣٠ عرضًا، و١٦..١٢٠ ارتفاعًا.
+   وهو شريطٌ عريض ضحل عمدًا — لأن ما يظهر من المشهد فعلًا شريطٌ
+   بهذا الشكل، لا مربّعٌ (انظر تعليق `preserveAspectRatio` أدناه). */
+const IN_X = 44;
+const AND_X = 150;
+const AND_HH = 18;
+const AND_OUT = AND_X + AND_HH * 0.88 + AND_HH;
+const OR_X = 330;
+const OR_W = 62;
+const OR_OUT = OR_X + OR_W;
+/* ملتقى السلك بالظهر المقعّر عند ±١٣ من المحور، محسوبٌ على منحنى
+   بيزييه نفسه لا مقدَّرًا بالعين — وإلا بقيت فجوةٌ ظاهرة بين السلك
+   والبوّابة تُقرأ خطأً في الرسم لا أسلوبًا فيه. */
+const OR_IN = OR_X + 2 * 0.75 * 0.25 * 0.42 * OR_W;
+const NOT_OUT = 498;
+const OUT_X = 826;
+
+const LOGIC_INPUTS = [23, 45, 91, 113] as const;
+const LOGIC_LEVEL_MARKS = [112, 250, 420, 578] as const;
+const LOGIC_LIT = [
+  { x: AND_OUT, y: 34 },
+  { x: OR_OUT, y: 68 },
+  { x: OUT_X, y: 68 },
+] as const;
+
+/** مستوًى واحد من الدائرة المنطقية، كاملًا في فراغه المحلي. */
+function LogicNet({ live }: { live: boolean }) {
+  return (
+    <>
+      {/* فواصل المستويات — دليل رسمٍ خافت يقول أين ينتهي مستوى ويبدأ آخر */}
+      <g strokeWidth=".9" opacity=".22" strokeDasharray="2 8">
+        {LOGIC_LEVEL_MARKS.map((x) => (
+          <line key={x} x1={x} y1="6" x2={x} y2="128" />
+        ))}
+      </g>
+
+      {/* المستوى ١ — أربعة مداخل */}
+      <g strokeWidth="1.1" opacity=".6">
+        {LOGIC_INPUTS.map((y) => (
+          <React.Fragment key={y}>
+            <circle cx={IN_X} cy={y} r="3.4" />
+            <line x1={IN_X + 4} y1={y} x2={AND_X} y2={y} />
+          </React.Fragment>
+        ))}
+      </g>
+
+      {/* المستوى ٢ — بوّابتا AND، ثم عمود توجيهٍ واحد إلى ما بعدهما */}
+      <g strokeWidth="1.35" opacity=".85">
+        <path d={andGate(AND_X, 34, AND_HH)} />
+        <path d={andGate(AND_X, 102, AND_HH)} />
+      </g>
+      <g strokeWidth="1.1" opacity=".6">
+        <path d={`M${AND_OUT},34 H260 V56 H${OR_IN}`} />
+        <path d={`M${AND_OUT},102 H260 V80 H${OR_IN}`} />
+      </g>
+
+      {/* المستوى ٣ — بوّابة OR تجمع مخرجَي المستوى قبله */}
+      <g strokeWidth="1.35" opacity=".85">
+        <path d={orGate(OR_X, 68, 24, OR_W)} />
+      </g>
+
+      {/* المستوى ٤ — عاكس NOT بفقاعته، ثم تفرّعٌ إلى ثلاثة مخارج */}
+      <g strokeWidth="1.35" opacity=".85">
+        <line x1={OR_OUT} y1="68" x2="452" y2="68" />
+        <path d="M452,49 L452,87 L486,68 Z" />
+        <circle cx="492" cy="68" r="6" />
+      </g>
+      <g strokeWidth="1.1" opacity=".6">
+        <path d={`M${NOT_OUT},68 H${OUT_X - 6}`} />
+        <path d={`M660,68 V22 H${OUT_X - 6}`} />
+        <path d={`M700,68 V112 H${OUT_X - 6}`} />
+        <circle cx={OUT_X} cy="22" r="4" />
+        <circle cx={OUT_X} cy="68" r="4" />
+        <circle cx={OUT_X} cy="112" r="4" />
+        {/* نقطتا التفرّع مصمتتان — اصطلاح المخطّطات لوصل سلكين لا لتقاطعهما.
+            بأسلوبٍ سطريّ لأن `fill` سمةُ عرضٍ تغلبها قاعدة `.faculty-scene`. */}
+        {[660, 700].map((x) => (
+          <circle
+            key={x}
+            cx={x}
+            cy="68"
+            r="2.8"
+            style={{ fill: "var(--color-accent)", stroke: "none" }}
+          />
+        ))}
+      </g>
+
+      {/* الإشارة على المستوى الأقرب وحده، فلا يزدحم العمق */}
+      {live && (
+        <>
+          <path
+            className="faculty-flow"
+            d={`M${IN_X + 4},23 H${AND_X} M${IN_X + 4},91 H${AND_X} M${OR_OUT},68 H452 M${NOT_OUT},68 H660 M700,112 H${OUT_X - 6}`}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            style={{ stroke: "var(--color-accent-bright)" }}
+          />
+          {LOGIC_LIT.map((dot, i) => (
+            <circle
+              key={dot.x}
+              className="faculty-pulse"
+              cx={dot.x}
+              cy={dot.y}
+              r="3.6"
+              style={{ animationDelay: `${i * 1.7}s` }}
+            />
+          ))}
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * جمالون ورِن: وترٌ علويّ وآخر سفليّ يربطهما قطريٌّ متعرّج **واحد
+ * متّصل**. المسار الواحد يصف البنية كما تُنشأ فعلًا — لا مثلثاتٍ
+ * منفصلة تتصادف عند نقطة، وذلك الفرق بين رسمٍ يقرأه مهندس ورسمٍ
+ * يشبهه من بعيد.
+ */
+function Truss({
+  x0,
+  x1,
+  top,
+  bottom,
+  bays,
+  joints = false,
+  live = false,
+}: {
+  x0: number;
+  x1: number;
+  top: number;
+  bottom: number;
+  bays: number;
+  joints?: boolean;
+  live?: boolean;
+}) {
+  const panel = (x1 - x0) / bays;
+  const lower = Array.from({ length: bays + 1 }, (_, i) => x0 + i * panel);
+  const upper = Array.from({ length: bays }, (_, i) => x0 + (i + 0.5) * panel);
+  const web = [
+    `M${x0},${bottom}`,
+    ...upper.map((x, i) => `L${x},${top} L${x0 + (i + 1) * panel},${bottom}`),
+  ].join(" ");
+
+  return (
+    <>
+      <path d={web} strokeWidth="1" opacity=".62" />
+      <line x1={x0 + panel / 2} y1={top} x2={x1 - panel / 2} y2={top} strokeWidth="1.4" />
+      <line x1={x0} y1={bottom} x2={x1} y2={bottom} strokeWidth="1.4" />
+      {joints && (
+        <g strokeWidth="1" opacity=".7">
+          {lower.map((x) => (
+            <circle key={`b${x}`} cx={x} cy={bottom} r="2.6" />
+          ))}
+          {upper.map((x) => (
+            <circle key={`t${x}`} cx={x} cy={top} r="2.6" />
+          ))}
+        </g>
+      )}
+      {/* الحمل يسري في السطح — قِطعٌ قصيرة لأن `.faculty-flow` تُظهر
+          أوّل شَرطةٍ من كل مسارٍ فرعيّ، فالتقسيم هو ما يوزّع الوميض */}
+      {live && (
+        <path
+          className="faculty-flow"
+          d={lower
+            .slice(0, -1)
+            .map((x) => `M${x},${bottom} H${x + panel}`)
+            .join(" ")}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: "var(--color-accent-bright)" }}
+        />
+      )}
+    </>
+  );
+}
+
+/* الجسر القريب: هندسته في مكانٍ واحد، فالمساند والأحمال والمفاصل
+   كلها تُشتقّ منها ولا يُكتب أيٌّ منها بيده. الأصلُ الواحد هو ما
+   يمنع السهمَ من الانزلاق عن مفصله إذا تغيّر عدد العيون. */
+const TRUSS_SPAN = { x0: 70, x1: 830, top: 34, bottom: 108, bays: 9 } as const;
+/* ثلاثة أحمال متناظرة حول المنتصف، والوسطى في وسط البحر تمامًا —
+   وهو موضع أقصى انثناء، وهو نفسه مركزُ `faculty-flex` أدناه. وعددُ
+   العيون فرديّ لأجل ذلك: الزوجيّ يجعل المنتصف عقدةً سفلية لا علوية. */
+const TRUSS_LOADS = [1, 4, 7].map(
+  (i) => TRUSS_SPAN.x0 + (i + 0.5) * ((TRUSS_SPAN.x1 - TRUSS_SPAN.x0) / TRUSS_SPAN.bays),
+);
+
+/**
+ * رسمٌ دلالي خفيف يميّز كل كلية.
+ *
+ * «الآداب» و«العلوم» كما في المعاينة المعتمدة حرفًا بحرف. أمّا
+ * «تقنية المعلومات» و«الهندسة» فأُعيد رسمهما (انظر التعليق أعلاه):
+ * المعتمد فيهما كان يقع خلف بطاقات المقررات فلا يكاد يُرى.
+ */
 function FacultyScene({ icon, running }: { icon: FacultyIconKey; running: boolean }) {
   return (
     <div
@@ -87,24 +339,30 @@ function FacultyScene({ icon, running }: { icon: FacultyIconKey; running: boolea
       )}
 
       {icon === "it" && (
-        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
-          <g strokeWidth="1" opacity=".22">
-            {[50, 102, 154, 206, 258].map((y) => <line key={y} x1="30" y1={y} x2="870" y2={y} />)}
+        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMin meet">
+          {/* المستوى ٠ — سكك اللوحة، أبعد ما في المشهد وأخفته */}
+          <g strokeWidth="1" opacity=".13">
+            {[16, 58, 100, 142, 184].map((y) => <line key={y} x1="24" y1={y} x2="876" y2={y} />)}
           </g>
-          <g strokeWidth="1.3" opacity=".7">
-            <path className="faculty-draw" d="M150,96 L150,164 L184,164 A34,34 0 0 0 184,96 Z" />
-            <line className="faculty-draw" x1="104" y1="112" x2="150" y2="112" /><line className="faculty-draw" x1="104" y1="148" x2="150" y2="148" />
-            <line className="faculty-draw" x1="218" y1="130" x2="300" y2="130" />
-            <path className="faculty-draw" d="M340,96 Q372,130 340,164 Q392,164 414,130 Q392,96 340,164" />
-            <path className="faculty-draw" d="M340,96 Q372,130 340,164" />
-            <line className="faculty-draw" x1="300" y1="112" x2="344" y2="112" /><line className="faculty-draw" x1="300" y1="148" x2="344" y2="148" />
-            <line className="faculty-draw" x1="414" y1="130" x2="520" y2="130" />
-            <path className="faculty-draw" d="M560,100 L560,160 L610,130 Z" />
-            <circle className="faculty-draw" cx="617" cy="130" r="7" />
-            <line className="faculty-draw" x1="520" y1="130" x2="560" y2="130" /><line className="faculty-draw" x1="624" y1="130" x2="760" y2="130" />
+
+          {/* المستوى ٣ — الأصغر والأخفت، ويتحرّك أبطأ ما في المشهد */}
+          <g transform="translate(58,0) scale(.26)" opacity=".28">
+            <g className="faculty-drift" style={{ animationDuration: "34s", animationDelay: "-13s" }}>
+              <LogicNet live={false} />
+            </g>
           </g>
-          <path className="faculty-flow" d="M104,112 L150,112 M218,130 L300,130 M414,130 L520,130 M624,130 L760,130" stroke="var(--color-spark)" strokeWidth="2.4" strokeLinecap="round" style={{ animationDuration: "14s" }} />
-          {[300, 520, 760].map((x, i) => <circle key={x} className="faculty-pulse" cx={x} cy="130" r="4" fill="var(--color-spark)" stroke="none" style={{ animationDelay: `${i * 1.6}s` }} />)}
+
+          {/* المستوى ٢ — يتراكب على الأقرب من أعلاه، والتراكب هو ما يُقرأ عمقًا */}
+          <g transform="translate(404,-2) scale(.36)" opacity=".4">
+            <g className="faculty-drift" style={{ animationDuration: "27s", animationDelay: "-6s" }}>
+              <LogicNet live={false} />
+            </g>
+          </g>
+
+          {/* المستوى ١ — الأقرب، وهو وحده الذي تسري فيه الإشارة */}
+          <g className="faculty-drift" style={{ animationDuration: "21s" }}>
+            <LogicNet live />
+          </g>
         </svg>
       )}
 
@@ -120,17 +378,74 @@ function FacultyScene({ icon, running }: { icon: FacultyIconKey; running: boolea
       )}
 
       {(icon === "engineering" || icon === "other") && (
-        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
-          {[{ x: 0, opacity: .55 }, { x: 400, opacity: .38 }].map((part, i) => (
-            <g key={part.x} className="faculty-breathe" style={{ transformOrigin: `${250 + part.x}px 260px`, animationDelay: i ? "-7s" : undefined }}>
-              <g strokeWidth="1.1" opacity={part.opacity}>
-                <path className="faculty-draw" d={`M${80 + part.x},260 L${250 + part.x},60 L${420 + part.x},260 Z`} />
-                <path className="faculty-draw" d={`M${250 + part.x},60 L${250 + part.x},260`} />
-                <path className="faculty-draw" d={`M${165 + part.x},160 L${335 + part.x},160`} />
-              </g>
-              <path className="faculty-flow" d={`M${80 + part.x},260 L${250 + part.x},60 L${420 + part.x},260 Z`} stroke={i ? "var(--color-accent-bright)" : "var(--color-spark)"} strokeWidth={i ? 1.8 : 2.2} strokeLinecap="round" opacity={i ? .6 : 1} style={{ animationDuration: i ? "26s" : "20s", animationDelay: i ? "-11s" : undefined }} />
+        <svg viewBox="0 0 900 300" preserveAspectRatio="xMidYMin meet">
+          {/* المستوى ٠ — خطوط المنسوب على ورقة الرسم */}
+          <g strokeWidth=".9" opacity=".13">
+            {[20, 66, 112, 158].map((y) => <line key={y} x1="20" y1={y} x2="880" y2={y} />)}
+          </g>
+
+          {/* المستوى ٣ — جسرٌ بعيد، ستّ عيون فقط لأن التفصيل لا يُقرأ على هذا المقاس */}
+          <g transform="translate(66,-4) scale(.2)" opacity=".26">
+            <g className="faculty-drift" style={{ animationDuration: "33s", animationDelay: "-15s" }}>
+              <Truss {...TRUSS_SPAN} bays={5} />
             </g>
+          </g>
+
+          {/* المستوى ٢ */}
+          <g transform="translate(566,-8) scale(.28)" opacity=".34">
+            <g className="faculty-drift" style={{ animationDuration: "25s", animationDelay: "-7s" }}>
+              <Truss {...TRUSS_SPAN} bays={6} />
+            </g>
+          </g>
+
+          {/* الأحمال عند ثلاث عُقد علوية بعينها — لا موزّعة بالتقريب */}
+          <g strokeWidth="1.1" opacity=".5">
+            {TRUSS_LOADS.map((x) => (
+              <React.Fragment key={x}>
+                <line x1={x} y1="4" x2={x} y2="24" />
+                <path d={`M${x - 5},19 L${x},29 L${x + 5},19`} />
+              </React.Fragment>
+            ))}
+          </g>
+
+          {/* المستوى ١ — الجسر القريب: مفاصله ومسانده كاملة. الانثناء
+              وحده يتحرّك، والسطح والمساند ثابتة خارجه — لأن ما ينزل
+              تحت الحمل هو الوتر العلويّ لا الركيزة. */}
+          <g className="faculty-flex" style={{ transformOrigin: `450px ${TRUSS_SPAN.bottom}px` }}>
+            <Truss {...TRUSS_SPAN} joints live />
+          </g>
+          {TRUSS_LOADS.map((x, i) => (
+            <circle
+              key={x}
+              className="faculty-pulse"
+              cx={x}
+              cy={TRUSS_SPAN.top}
+              r="3.6"
+              style={{ animationDelay: `${i * 1.9}s` }}
+            />
           ))}
+
+          {/* السطح يمتدّ خارج الجمالون — الجسر جزءٌ من طريق لا شيءٌ قائم بذاته */}
+          <line x1="26" y1="114" x2="874" y2="114" strokeWidth="1" opacity=".38" />
+
+          {/* المساند: مفصلٌ ثابت طرفًا وحاملٌ متدحرج طرفًا — والفرق
+              بينهما هو ما يجعل الجسر يتمدّد بالحرارة بدل أن يتشقّق */}
+          <g strokeWidth="1.1" opacity=".55">
+            <path d="M70,114 L59,132 L81,132 Z" />
+            <line x1="44" y1="132" x2="96" y2="132" />
+            <path d="M830,114 L819,128 L841,128 Z" />
+            <circle cx="823" cy="132" r="4" />
+            <circle cx="837" cy="132" r="4" />
+            <line x1="804" y1="138" x2="856" y2="138" />
+          </g>
+          <g strokeWidth=".9" opacity=".26">
+            {[48, 60, 72, 84].map((x) => (
+              <line key={x} x1={x} y1="132" x2={x - 7} y2="141" />
+            ))}
+            {[808, 820, 832, 844].map((x) => (
+              <line key={x} x1={x} y1="138" x2={x - 7} y2="147" />
+            ))}
+          </g>
         </svg>
       )}
     </div>
