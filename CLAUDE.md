@@ -207,6 +207,38 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 
 **The rule going forward:** a new page under `/learn/[courseId]/` must render `AppPage` **only** if it lives outside `(tabs)/`. Inside `(tabs)/`, return a bare fragment — the layout supplies the shell. If you add a route and see the nav twice, this is why.
 
+## ⇢ START HERE — State as of 2026-08-20
+
+**Production is `masar-bh.com`.** The owner bought the domain and made it primary in Netlify. `hisab-lms.netlify.app` still answers and is what deploy previews use. `master` auto-deploys on every push — **a push is a production release**, one database behind everything, no staging step.
+
+### The three things that will bite you first
+
+1. **Never put `AUTH_URL` back.** `trustHost: true` is set, so Auth.js derives the origin from the request and both domains work at once. Pinning it to either host breaks the other — that is exactly what the 2026-08-05 note predicted and 2026-08-20 delivered. Nothing in the source reads it.
+2. **R2 bucket CORS must list `https://masar-bh.com`** or admin video upload fails from the live site, with a bare `xhr.onerror` that is indistinguishable from a CSP refusal. Full list in README §2. It cannot be scripted — the app token has object permissions, not bucket configuration.
+3. **`PageTransition` no longer uses `AnimatePresence` in the protected area.** See "Rapid navigation froze the screen" below before you touch it.
+
+### The logic fingerprint moved — deliberately
+
+```
+789b6e08e364bf8769c9e7550de7d386dc7defef67c6e0c357d5a343d96a2c0f
+```
+
+The only change inside the frozen set since `26084c8f…` is two strings in `middleware.ts`'s `PUBLIC_EXACT`: `/robots.txt` and `/sitemap.xml`. They were being redirected to `/login` — measured — so **`robots.txt` had never reached a crawler since the day it was written.** It went unnoticed because its content was "disallow everything" and every page was behind login anyway: right and wrong produced the same result. Both changed at once when the catalogue went public.
+
+### What the catalogue now tells search engines
+
+`robots.ts` allows `/courses` and `/legal`, disallows everything that needs a session plus `/login` and `/signup`. `sitemap.ts` reads the same cached public catalogue the storefront reads, so it follows what is published with no second list to forget. **This is an owner decision, reversible in one line** — the owner delegated it on 2026-08-20 after being asked.
+
+Course pages carry Open Graph and a canonical URL. That matters more here than in most products: the course link is shared over WhatsApp, which is this product's primary sales channel, and it used to be shared bare.
+
+### Everything before this line is history
+
+The sections below are kept for their reasoning and their traps. Re-date anything you rely on, and trust the source over the prose — that rule has already caught several wrong claims in this file.
+
+
+<details>
+<summary>⇢ الحالة كما سُجّلت في 2026-08-09 (تاريخيّة)</summary>
+
 ## ⇢ START HERE — State as of 2026-08-09
 
 **`master` is live.** It carries the whole Masar application layer, deploys itself on every push (Netlify is git-connected), and production serves it. `masar-design-pass` is merged and historical.
@@ -819,3 +851,101 @@ Moving payment collection off-platform to a personal Benefit account resolves Ta
 > ```
 > 
 > Look for an existing `webapp-testing`-style E2E pass before considering a change to orders/auth/routing complete — this project has caught real bugs (see above) only through actual browser testing against a seeded local Postgres DB, not from code review alone.
+
+</details>
+
+---
+
+## Rapid navigation froze the screen — fixed 2026-08-20, read before touching `PageTransition`
+
+**Symptom:** click quickly between two areas — الإعدادات and مقرراتي — and you land on `/learn` with the sidebar marking مقرراتي, while **the screen still shows the settings tab bar and its content**. No error anywhere. Reported by the owner, reproduced 4 times out of 4.
+
+**Mechanism.** `AnimatePresence mode="wait"` keeps the exiting child mounted until it declares its exit finished. When the key changes again before that — or when a Suspense boundary underneath it defers that declaration — the new child is never mounted. The old one stays, and `FrozenRouter` then does its job faithfully: it sees its mounted key differs from the path, concludes it is exiting, and serves it the frozen context. A whole stale page under a fresh URL.
+
+**What triggered it was my own fix.** Adding `settings/(tabs)/loading.tsx` introduced a new Suspense boundary *inside* the animated subtree. The fix was correct; it woke a fragility that was already there.
+
+**The cure is deletion, not substitution.** `APP_PAGE.exitTransition` is duration **zero** by design, so there is no exit to wait for — `AnimatePresence` in stationary mode buys nothing and pays for a whole waiting machine. Removing it lets React unmount the old copy in the same frame; entry still animates because a new `key` means a new instance starting from `initial`.
+
+Do **not** swap it for `popLayout`: that silently kills hydration under a Suspense boundary (documented above, and it cost the whole protected area once).
+
+**Side benefit worth knowing:** in stationary mode `mountedKey` now always equals the path key, so `isExiting` is never true and `FrozenRouter` always passes the **live** context. That is stronger for `router.refresh()` than before — verified behaviourally after the change, not assumed.
+
+**How it was diagnosed, and the two mistakes on the way.** Both are worth copying:
+
+- **The first detector lied.** It counted every frame without `main#main` as "blank" — and `loading.tsx` renders no `main#main` at all. It reported 327 of 589 frames blank when that was the skeleton doing its job. A corrected detector that distinguishes skeleton from void reports **zero** void frames on both sides. *Separate "loading" from "nothing" before you count.*
+- **The first diagnosis was wrong.** The new `layoutId` was blamed. Comparing two worktrees (`be17fb4` vs current) under identical load disproved it — 102 vs 103 blank frames. *Compare against the baseline before accusing the last thing you wrote.*
+
+## The admin tabs live in a layout now — 2026-08-20
+
+`/settings` had **no layout at all**. Every one of the six pages rendered `<AdminTabs />` itself inside its own `AppPage`. So navigating between tabs tore down the page *and the tab bar with it*, and `(app)/loading.tsx` draws content skeleton with no tabs. Measured: the tab bar was gone for **2868ms**. And the sliding indicator could not slide, because `layoutId` interpolates between two positions of an element that **persists** — this one was rebuilt each time.
+
+The cure is the course-tabs shape: `settings/(tabs)/layout.tsx` holds `AppPage` + `AdminTabs`, the six pages are bare fragments, `(tabs)/loading.tsx` covers the tab body only, and `appPageTransitionKey` gives all six a shared key. Detail pages (`courses/[id]`, `students/[id]`) stay **outside** the group deliberately — same distinction as course tabs vs quizzes/assignments.
+
+| measured, CPU throttled 12× | before | after |
+|---|---:|---:|
+| skeleton frames showing the tab bar | 0 of 343 | **142 of 142** |
+| longest tab-bar disappearance | **2868ms** | **0ms** |
+| React #418 during rapid navigation | present | **gone** |
+
+**Rule:** a page under `settings/(tabs)/` renders a bare fragment. Rendering `AppPage` there gives you the double shell this repo already documents for `/learn`.
+
+## Every link answers the click — 2026-08-20
+
+Protected pages are built on the server from a database in `us-east-2` while the user is in Bahrain; `/profile` measured 1001ms and `/messages` 1450ms. `useLinkStatus` existed but was wired to the `AreaSwitch` pill **alone** — roughly forty other links changed nothing when clicked, which reads as "the button is broken".
+
+Three layers, all `transform`/`opacity`:
+
+| layer | file | idea |
+|---|---|---|
+| announcer | `components/motion/LinkPending.tsx` | mounts inside `Link`, sets `data-pending` on the anchor, feeds the counter |
+| wrapper | `components/ui/NavLink.tsx` | drop-in for `next/link`, imported **as `Link`** — one line per file |
+| counter | `lib/nav-progress.ts` | external store; a counter not a flag, because two navigations can overlap |
+| bar | `components/motion/NavProgress.tsx` | 2px thread at the root, `scaleX` not `width` |
+| skin | `globals.css` `a[data-pending]` | one rule dresses every link the same |
+
+Plus an **optimistic** active state in the sidebar and both tab bars: the indicator moves with the click instead of after the page arrives, while `aria-current` stays on the real path — announcing "current page" before it opens would lie to a screen reader.
+
+**Traps this layer carries:**
+
+- `NavProgress` belongs to the **root layout only**. Two instances mean two counters fighting over one thread.
+- `SidebarContent` renders **twice** — the fixed sidebar and the drawer — and the fixed one stays in the tree below 1060px even while hidden. Each needs its own `scope`, or the sliding bar jumps between copies.
+- Do **not** add `loading.tsx` to `(public)`: a Suspense boundary under `popLayout` silently kills hydration. The top bar already covers the public wait, which closed that gap without opening this one.
+
+`scripts/nav-feedback-regression.mts` guards eight invariants of all this, and **every one of them has been proven to fail** — each was broken deliberately and restored. A guard that cannot fail is worse than none.
+
+## Two measurement rules learned the hard way
+
+- **`getBoundingClientRect` does not measure a touch target.** An `::after` extends the hit area without appearing in the box. Probe it by hit-testing (`elementFromPoint` walking up and down from the edges) or you will report false positives — the AreaSwitch pill and the breadcrumb both measure 34px and both are actually 45px.
+- **`transform-origin` rejects logical keywords.** `inline-start` is invalid; the browser drops it silently and falls back to centre — measured `50px 5px`. It had shipped in the password-strength bar, which was growing from its middle.
+
+## Verifying on a real machine
+
+The Chrome extension resets its JavaScript context on every soft navigation, so a persistent frame recorder cannot survive there. Drive short steps and inspect between them, or use headless Chrome over CDP where the context is yours.
+
+And **reload before each measurement run**: a tab pushed through dozens of successive navigations accumulates segments in Next's client router and will show `main#main` twice, one of them zero-height. Not a defect — but it will corrupt your reading.
+
+
+---
+
+## Build & Verify — the current command set
+```powershell
+npm install
+npx prisma generate
+npx prisma migrate dev   # or: npx prisma migrate reset --force  (if resetting Neon)
+npm run build
+npm run dev
+```
+
+### The guards, and what each is for
+
+```powershell
+npm run typecheck
+npm run build:local
+npx tsx --tsconfig tsconfig.script.json scripts/probe.mts                        # must match the baseline
+npx tsx --tsconfig tsconfig.script.json scripts/features.mts                     # ALL FEATURES PASS
+npx tsx --tsconfig tsconfig.script.json scripts/nav-feedback-regression.mts      # link feedback + route shape
+npx tsx --tsconfig tsconfig.script.json scripts/motion-shell-regression.mts      # protected transition has no y
+npx tsx --tsconfig tsconfig.script.json scripts/course-transition-regression.mts # one tab indicator
+```
+
+`probe` and `features` need the app running on `:3100` and read the live database. The three regression guards are static and need nothing.
