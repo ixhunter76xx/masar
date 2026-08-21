@@ -35,7 +35,7 @@ export default async function AssignmentPage({ params }: Params) {
   const { courseId, assignmentId } = await params;
   const { user } = await requireCourseAccess(courseId);
 
-  const canManage = await canManageCourse(courseId, user.id, user.role);
+  const canManage = await canManageCourse(courseId);
 
   const back = (
     <Link

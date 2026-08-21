@@ -16,7 +16,7 @@ export default async function AnnouncementsPage({ params }: Params) {
   const { user } = await requireCourseAccess(courseId);
 
   const [canManage, announcements] = await Promise.all([
-    canManageCourse(courseId, user.id, user.role),
+    canManageCourse(courseId),
     getCourseAnnouncements(courseId, user.id, user.role),
   ]);
 

@@ -16,7 +16,7 @@ export default async function NewQuizPage({ params }: Params) {
   const { courseId } = await params;
   const { user } = await requireCourseAccess(courseId);
 
-  const canManage = await canManageCourse(courseId, user.id, user.role);
+  const canManage = await canManageCourse(courseId);
   if (!canManage) notFound();
 
   return (

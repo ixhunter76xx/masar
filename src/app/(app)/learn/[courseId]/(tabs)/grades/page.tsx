@@ -16,7 +16,7 @@ export default async function CourseGradesPage({ params }: Params) {
   // تحقّق مستقل عن التخطيط — Next.js ينفّذهما على التوازي
   const { user } = await requireCourseAccess(courseId);
 
-  const canManage = await canManageCourse(courseId, user.id, user.role);
+  const canManage = await canManageCourse(courseId);
 
   /* ---------------------------------------------------------------- */
   /*  المدرب: مصفوفة كل الطلاب                                         */

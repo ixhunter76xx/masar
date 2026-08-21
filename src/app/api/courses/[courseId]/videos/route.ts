@@ -101,11 +101,7 @@ export async function POST(
   if (!session?.user) return bad("غير مصرّح.", 401);
 
   // الطالب لا يرفع إطلاقًا؛ المدرب لمقرراته فقط
-  const allowed = await canManageCourse(
-    courseId,
-    session.user.id,
-    session.user.role,
-  );
+  const allowed = await canManageCourse(courseId);
   if (!allowed) return bad("ليس لديك صلاحية الرفع في هذا المقرر.", 403);
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));

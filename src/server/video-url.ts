@@ -6,6 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { db } from "@/server/db";
 import { r2, r2Bucket } from "@/server/r2";
 import { canViewLesson } from "@/lib/data/access";
+import { getLiveUser } from "@/lib/data/session";
 import { Role, MaterialStatus } from "@/generated/prisma/enums";
 
 /** مدة صلاحية رابط المشاهدة */
@@ -22,8 +23,6 @@ const PLAYBACK_TTL = 2 * 60 * 60; // ساعتان
  */
 export async function getPlaybackUrl(
   materialId: string,
-  userId: string,
-  role: Role,
 ): Promise<string | null> {
   const material = await db.courseMaterial.findFirst({
     /* `objectKey: { not: null }` مع `READY` ليسا تكرارًا: الحالة تصف
@@ -60,7 +59,12 @@ export async function getPlaybackUrl(
    * تجيب عن الملكية لا عن الجاهزية — فيبقى هذا الشرط هنا، ويُستثنى منه
    * الطاقم لأنه يعاين قبل النشر.
    */
-  const isStaff = role === Role.ADMIN || role === Role.INSTRUCTOR;
+  /* الطاقم يُقرأ من القاعدة لا من ادّعاء الرمز: الدور المُمرَّر كان
+     يأتي من `auth()`، فيبقى «مدرّبًا» بعد تنحيته وبعد تعطيل حسابه.
+     والأثر هنا محدود (مسودّة غير منشورة) لأن `canViewLesson` أعلاه
+     هي بوّابة الملكية وتقرأ الحيّ — لكنه النمط نفسه، فأُغلق معه. */
+  const live = await getLiveUser();
+  const isStaff = live?.role === Role.ADMIN || live?.role === Role.INSTRUCTOR;
   if (!isStaff && material.publishedAt === null) return null;
 
   return getSignedUrl(

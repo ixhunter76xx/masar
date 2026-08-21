@@ -9,6 +9,7 @@ import { db } from "@/server/db";
 import { Role } from "@/generated/prisma/enums";
 import { signupSchema, type SignupValues } from "@/lib/validation";
 import { AFTER_LOGIN } from "@/lib/routes";
+import { safeNextPath } from "@/lib/safe-next";
 
 export type SignupResult = { ok: false; message: string };
 
@@ -71,7 +72,9 @@ export async function signup(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: callbackUrl || AFTER_LOGIN,
+      /* الوجهة تُطهَّر هنا لا في النموذج: `?next=` مدخلٌ يتحكّم فيه
+         من صنع الرابط، و`//evil.com` كان يمرّ لأنه يبدأ بشرطة. */
+      redirectTo: safeNextPath(callbackUrl) ?? AFTER_LOGIN,
     });
   } catch (error) {
     // خطأ التحويل بعد النجاح — أعِد رميه ليكمل Next.js عمله

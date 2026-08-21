@@ -38,7 +38,7 @@ type Params = { params: Promise<{ courseId: string; quizId: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { courseId } = await params;
   const { user } = await requireCourseAccess(courseId);
-  const canManage = await canManageCourse(courseId, user.id, user.role);
+  const canManage = await canManageCourse(courseId);
 
   return { title: canManage ? "تحرير الاختبار" : "الاختبار" };
 }
@@ -47,7 +47,7 @@ export default async function QuizEditorPage({ params }: Params) {
   const { courseId, quizId } = await params;
   const { user } = await requireCourseAccess(courseId);
 
-  const canManage = await canManageCourse(courseId, user.id, user.role);
+  const canManage = await canManageCourse(courseId);
 
   // الطالب يرى نظرة عامة تُبنى من استعلام لا يُحمّل الإجابات الصحيحة
   if (!canManage) {

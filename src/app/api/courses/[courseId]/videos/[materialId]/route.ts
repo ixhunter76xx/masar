@@ -29,11 +29,7 @@ export async function DELETE(
   }
 
   // الطالب لا يحذف إطلاقًا؛ المدرب في مقرراته فقط
-  const allowed = await canManageCourse(
-    courseId,
-    session.user.id,
-    session.user.role,
-  );
+  const allowed = await canManageCourse(courseId);
   if (!allowed) {
     return NextResponse.json(
       { error: "ليس لديك صلاحية الحذف في هذا المقرر." },

@@ -23,11 +23,7 @@ export async function GET(
     return NextResponse.json({ error: "غير مصرّح." }, { status: 401 });
   }
 
-  const url = await getPlaybackUrl(
-    materialId,
-    session.user.id,
-    session.user.role,
-  );
+  const url = await getPlaybackUrl(materialId);
 
   if (!url) {
     return NextResponse.json({ error: "غير موجود." }, { status: 404 });

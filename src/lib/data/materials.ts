@@ -4,24 +4,51 @@ import { cache } from "react";
 
 import { db } from "@/server/db";
 import { accessibleLessonIds } from "@/lib/data/access";
+import { getLiveUser } from "@/lib/data/session";
 import { Role, MaterialStatus } from "@/generated/prisma/enums";
 
 /**
- * يتحقق أن المستخدم يملك حق **الرفع** في هذا المقرر:
- * مدرب المقرر نفسه، أو الإدارة. الطالب لا يرفع إطلاقًا.
+ * يتحقق أن المستخدم يملك حق **الإدارة** في هذا المقرر:
+ * مدرب المقرر نفسه، أو الإدارة. الطالب لا يدير شيئًا.
+ *
+ * ── ⚠ لماذا لا تأخذ الدور معطًى — وهذا إصلاحُ ثغرة ──────────────────
+ * كانت تأخذ `userId` و`role` من المستدعي، والمستدعي يأخذهما من
+ * `auth()` — أي من **ادّعاءات الرمز** لا من القاعدة. و`jwt()` في
+ * `auth.config.ts` لا يكتب إلا عند تسجيل الدخول، فالرمز يبقى صادقًا
+ * على حاله حتى ثلاثين يومًا مهما تغيّر الحساب بعده.
+ *
+ * والأثر مقيسٌ لا مُستنتَج. برمزٍ صدر لحسابٍ مديرٍ فعّال، ثم غُيّرت
+ * القاعدة تحته:
+ *
+ *   | الحالة في القاعدة        | مسار API | الصفحة |
+ *   |--------------------------|----------|--------|
+ *   | مدير فعّال (ضابط)        | مرّ      | مرّت   |
+ *   | عُطِّل الحساب             | **مرّ**  | رُفضت  |
+ *   | رُفعت نسخة الجلسة        | **مرّ**  | رُفضت  |
+ *
+ * أي أن تعطيل حساب وتصفير كلمة مرور كانا يُنهيان الجلسة على الصفحات
+ * وحدها، بينما تبقى مسارات API وإجراءات إدارة المقرر مفتوحة. وهو
+ * بالضبط ما تعد `getLiveUser` بمنعه — لكنها لم تكن في هذا الطريق.
+ *
+ * فصارت الدالّة تقرأ المستخدم الحيّ بنفسها. و`getLiveUser` تُرجع
+ * `null` للحساب المعطَّل ولنسخة الجلسة القديمة، فتسقط الصلاحية معها.
+ * ولا تُعاد إليها معطياتٌ من المستدعي: ما لا يُمرَّر لا يُزوَّر.
+ *
+ * و`cache()` يمنع تكرار الاستعلام: الطلب الواحد يقرأ مرّة.
  */
 export const canManageCourse = cache(async function canManageCourse(
   courseId: string,
-  userId: string,
-  role: Role,
 ): Promise<boolean> {
-  if (role === Role.ADMIN) {
+  const user = await getLiveUser();
+  if (!user) return false;
+
+  if (user.role === Role.ADMIN) {
     return (await db.course.count({ where: { id: courseId } })) > 0;
   }
-  if (role === Role.INSTRUCTOR) {
+  if (user.role === Role.INSTRUCTOR) {
     return (
       (await db.course.count({
-        where: { id: courseId, presenterId: userId },
+        where: { id: courseId, presenterId: user.id },
       })) > 0
     );
   }

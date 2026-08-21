@@ -6,6 +6,7 @@ import { unstable_rethrow } from "next/navigation";
 import { signIn } from "@/auth";
 import { loginSchema, type LoginValues } from "@/lib/validation";
 import { AFTER_LOGIN } from "@/lib/routes";
+import { safeNextPath } from "@/lib/safe-next";
 
 export type AuthResult = { ok: false; message: string };
 
@@ -41,7 +42,9 @@ export async function authenticate(
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: callbackUrl || AFTER_LOGIN,
+      /* الوجهة تُطهَّر هنا لا في النموذج: `?next=` مدخلٌ يتحكّم فيه
+         من صنع الرابط، و`//evil.com` كان يمرّ لأنه يبدأ بشرطة. */
+      redirectTo: safeNextPath(callbackUrl) ?? AFTER_LOGIN,
     });
   } catch (error) {
     // خطأ التحويل بعد النجاح — أعِد رميه ليكمل Next.js عمله

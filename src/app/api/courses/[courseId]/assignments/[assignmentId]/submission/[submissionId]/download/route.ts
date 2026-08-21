@@ -36,7 +36,7 @@ export async function GET(
   }
 
   const { id: userId, role } = session.user;
-  const canManage = await canManageCourse(courseId, userId, role);
+  const canManage = await canManageCourse(courseId);
 
   const submission = await db.submission.findFirst({
     where: {

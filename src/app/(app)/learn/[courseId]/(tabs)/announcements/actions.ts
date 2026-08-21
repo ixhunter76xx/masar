@@ -18,11 +18,7 @@ async function requireManager(courseId: string) {
   const session = await auth();
   if (!session?.user) return null;
 
-  const allowed = await canManageCourse(
-    courseId,
-    session.user.id,
-    session.user.role,
-  );
+  const allowed = await canManageCourse(courseId);
   return allowed ? session.user : null;
 }
 
