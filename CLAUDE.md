@@ -949,3 +949,53 @@ npx tsx --tsconfig tsconfig.script.json scripts/course-transition-regression.mts
 ```
 
 `probe` and `features` need the app running on `:3100` and read the live database. The three regression guards are static and need nothing.
+## The security audit — 2026-08-20
+
+Two confirmed, exploitable findings. Both were **silent**: green build, green `tsc`, working screens, passing feature tests. Neither shows up in a reading pass; both needed the database changed underneath a live token and the result measured.
+
+### 1 · Authorization read the token, not the database
+
+`canManageCourse(courseId, userId, role)` took the role **as an argument**, and every caller sourced it from `auth()` — i.e. token claims. `jwt()` in `auth.config.ts` only writes at sign-in, so a token stays truthful to its issue moment for up to 30 days.
+
+Measured on a test account, restored in a `finally`:
+
+| database state | API route | page |
+|---|---|---|
+| active admin (control) | passed | passed |
+| **account disabled** | **passed ⚠** | rejected ✓ |
+| **sessionVersion bumped (password reset)** | **passed ⚠** | rejected ✓ |
+
+So disabling an account and forcing a password reset ended the session **on pages only**, while four API routes and ~20 course-management server actions stayed open. That is precisely what `getLiveUser` promises to prevent — it simply was not on this path. `getShellData`, `staffAccess` and `requireAdmin` all go through it; the course-management actions go through none of them.
+
+**The fix is the shape, not the check.** `canManageCourse(courseId)` now reads the live user itself and accepts nothing from the caller — *what is never passed cannot be forged*. Fifteen call sites updated. The same pattern was closed in `getPlaybackUrl`, where the blast radius was narrower (unpublished drafts only) because `canViewLesson` is the ownership gate and already reads live.
+
+**Rule going forward: an authorization helper derives identity itself. A `role` parameter on such a helper is the bug.**
+
+### 2 · Open redirect after login
+
+`?next=` is read from the URL and passed to `signIn({ redirectTo })`. Auth.js rejects a cross-origin *absolute* URL but not a **protocol-relative** one: `//evil.com` starts with a slash, so it is treated as a path, and the browser then reads it as a full origin.
+
+Measured with a real login on the same build:
+
+```text
+next=https://example.com/evil  →  stayed on site           ✓
+next=//example.com/evil        →  https://example.com/evil ⚠
+```
+
+The phishing value is that the victim sees the genuine domain, really authenticates, and is thrown to the attacker only *after* success — so whatever follows reads as part of the session they just started.
+
+`safeNextPath` accepts exactly one internal path (single leading slash, no second slash, no backslash, no control characters) and is applied **server-side** in both `login` and `signup`. The form is not a trust boundary; a crafted request reaches the action directly.
+
+### Checked and clean
+
+SQL injection (both raw sites are parameterized tagged templates) · HTML injection (`dangerouslySetInnerHTML` is fed a source constant — but it becomes stored XSS the day board examples move to the database) · price tampering (amount is computed server-side from `product.priceFils`) · order IDOR (`getMyOrder` is scoped by owner) · R2 keys (extension allowlisted; downloads forced to `attachment` with an encoded filename) · cookie flags (`HttpOnly`, `SameSite=Lax`, `__Secure-` on HTTPS) · headers (nonce CSP with `strict-dynamic`, HSTS with `includeSubDomains`, `X-Frame-Options: DENY`, `nosniff`) · no `NEXT_PUBLIC_` variable reaches the browser.
+
+### Known and accepted, not fixed
+
+- **`npm audit`: 7 high**, all `sharp`/`postcss` reached through `next`. `sharp` only processes trusted local images — `next.config.ts` declares no `remotePatterns`, and uploaded files are served from R2 by signed URL, never through `next/image`. The fix is a breaking Next major; the exposure needs attacker-controlled image bytes, which do not exist here.
+- **No rate limit on signup** — already recorded above as a deliberate gap.
+- **Signup reveals whether an email exists**, which with no rate limit allows enumeration. A usability trade-off, left as the owner's call.
+- **Presigned uploads do not enforce content length.** `sizeBytes` is checked as *declared*, so an authenticated student could declare small and send large. Bounded by needing a real account.
+- **`style-src 'unsafe-inline'`** — standard for this styling approach, and scripts are nonce-gated.
+
+`scripts/security-regression.mts` guards four invariants, and every one was broken deliberately and restored to prove it fails. One of them bans control characters in source: a single one makes ripgrep treat the file as binary and skip it in **every** search — I walked into that while writing this very fix.
