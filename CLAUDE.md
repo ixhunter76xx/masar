@@ -999,3 +999,35 @@ SQL injection (both raw sites are parameterized tagged templates) · HTML inject
 - **`style-src 'unsafe-inline'`** — standard for this styling approach, and scripts are nonce-gated.
 
 `scripts/security-regression.mts` guards four invariants, and every one was broken deliberately and restored to prove it fails. One of them bans control characters in source: a single one makes ripgrep treat the file as binary and skip it in **every** search — I walked into that while writing this very fix.
+
+## Active penetration test — 2026-08-20
+
+Not a reading pass: real sessions minted for all four roles, real HTTP fired at the running build, cross-account IDs pulled live from the database. Every "denied" below was confirmed against a control that should pass, and every "not found" was distinguished from real content by comparing byte length against a fabricated-ID request — because the protected area returns **200 on not-found** (documented above), so status code proves nothing on its own.
+
+### Attacked and held
+
+| attack | result |
+|---|---|
+| **Horizontal IDOR — read another user's order** (`/orders/<their number>`) | victim order ≡ fabricated order, byte-identical "not found" (35877 = 35877). The number in the page is the URL echoed back, not data. ✓ |
+| **Download another student's submission** | 404 ✓ |
+| **Read a third party's teacher↔student conversation** | not-found page ✓ |
+| **Instructor writes to a course they don't present** (upload video) | 403; control (own course) 400. ✓ |
+| **Instructor reads a course they don't present** (`/learn/<id>`) | byte-identical to a non-existent course (35313 ≈ 35310); admin sees it (54336, shows title). ✓ |
+| **Bundle boundary — stream a READY lesson not owned** | 404; control (owned) would 302. ✓ |
+| **Quiz answers leak to the client** | student path uses `getQuizForStudent`, which never loads `isCorrect`; the overview passes only counts. Editing query (with `isCorrect`) is reached only after `canManageCourse`. Page shows title, not questions. ✓ |
+| **Re-submit a graded attempt / grade another student's attempt** | attempt scoped `studentId: userId`; `submittedAt` blocks re-submit; grading server-side. ✓ |
+| **Assignment upload: oversize / bad extension / path traversal / no-auth** | 400 / 400 / signed but key derived from row id not filename / 401. ✓ |
+| **Login brute force** | account locked at attempt 9 (8 failures + a 15-min `lockedUntil`), measured through the real form. ✓ |
+| **Injection in slug** (`' OR '1'='1`, `%00`, `../`, `<script>`) | all 404. ✓ |
+| **Wrong HTTP methods** (PUT/DELETE/PATCH) | 405. ✓ |
+| **Student sees admin data despite 200** | admin pages ~30KB larger; student sees none of the private markers (`بانتظار التأكيد`, `role-`); no management tools in an owned course. ✓ |
+| **CSRF on write APIs** | session cookie is `SameSite=Lax` (`__Host-`/`__Secure-` prefixed on HTTPS), so a cross-site POST carries no cookie; server actions get Next's automatic Origin check. ✓ |
+| **Header disclosure** | no `x-powered-by`, no `server`. ✓ |
+
+### The method that made it trustworthy
+
+Two traps this codebase documents, both avoided here:
+- **200-on-not-found**: never asserted on status alone. Every read test compared the target against a fabricated ID of the same shape; equal length ⇒ both are "not found" ⇒ no leak.
+- **State restoration**: every account mutation (role, `isActive`, `sessionVersion`, lockout counter) was reverted in a `finally`, and a final sweep confirmed both test accounts back to `STUDENT / active / 0 fails / not locked`.
+
+No new vulnerability surfaced. The two found in the earlier audit (token-role authorization, open redirect) were re-confirmed fixed. The scaffolding was deleted; nothing was left mutated.
