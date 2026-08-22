@@ -1,0 +1,13 @@
+{
+  "source": "2c9c5418b50e96237939870c7264535d11f4558c109721ae65910026dbf0e5b5",
+  "generatedAt": "2026-08-22T00:20:58.377Z",
+  "files": {
+    "public/logo-masar.png": "ad69e9f56ee4940e1727290463b1b92f05ef231b448d7321bf209ade9ffc9ff2",
+    "public/icon-192.png": "55d5fe00277dbaa92028aa438026cfee059d9b6ff142020fc80335813266587a",
+    "public/icon-512.png": "eb842089544046079406d3d4cd6fb267658731a841c8c87f21aed68b1c119f54",
+    "public/icon-maskable-192.png": "c5271981e89039cefb8e47ecb5db78241e2aecba164a8f00f387547176f98660",
+    "public/icon-maskable-512.png": "509b7a89923a7ac26c4d1f52c9ea68eae692772a16a542e1b0415c08ea118aba",
+    "public/apple-touch-icon.png": "5d8b8506f7cd4f00e8f0cb949de57073e3590abe460a13e02815c56ca17273f6",
+    "src/app/icon.png": "eb842089544046079406d3d4cd6fb267658731a841c8c87f21aed68b1c119f54"
+  }
+}

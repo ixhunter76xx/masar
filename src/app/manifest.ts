@@ -31,17 +31,20 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ar",
     dir: "rtl",
     categories: ["education"],
+    /* النسخة ملحقةٌ بكل أيقونة: النظام يحمل أيقونات التطبيق المثبَّت
+       بعناوينها ولا يعيد جلبها ما لم تتغيّر، فيبقى شعارٌ متقاعدٌ على
+       شاشة الهاتف بعد تحديث الموقع كلّه. */
     icons: [
-      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: `/icon-192.png?v=${SITE.brandVersion}`, sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: `/icon-512.png?v=${SITE.brandVersion}`, sizes: "512x512", type: "image/png", purpose: "any" },
       {
-        src: "/icon-maskable-192.png",
+        src: `/icon-maskable-192.png?v=${SITE.brandVersion}`,
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/icon-maskable-512.png",
+        src: `/icon-maskable-512.png?v=${SITE.brandVersion}`,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

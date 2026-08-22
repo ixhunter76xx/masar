@@ -969,3 +969,127 @@
     color: var(--color-paper);
   }
 }
+
+/* ==========================================================================
+   شاشة إقلاع التطبيق المثبَّت
+
+   تُقرأ مع `src/components/brand/PwaLaunch.tsx`. لا تظهر إلا في وضع
+   التطبيق: خارجه `display: none`، فلا يدفع زائر المتصفّح ثمن شيء.
+
+   الحركة على `transform` و`opacity` وحدهما — لا `width` ولا `top` —
+   فتبقى على المركّب ولا تُعيد تخطيطًا في لحظةٍ يكون فيها الخيط الرئيسيّ
+   مشغولًا أصلًا بترطيب التطبيق. وهذا ليس تجميلًا: شاشة الإقلاع تتنافس
+   مع أثقل لحظةٍ في عمر الصفحة.
+   ========================================================================== */
+
+.pwa-launch {
+  display: none;
+}
+
+@media (display-mode: standalone) {
+  .pwa-launch {
+    position: fixed;
+    inset: 0;
+    z-index: 100; /* فوق شريط التنقّل (60) وكل ما دونه */
+    display: grid;
+    place-items: center;
+    background-color: var(--color-ink);
+    pointer-events: none;
+    animation: pwa-launch-out 1500ms var(--ease-in-out) forwards;
+  }
+
+  .pwa-launch__stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .pwa-launch__mark {
+    opacity: 0;
+    animation: pwa-launch-mark 560ms var(--ease-out) 60ms forwards;
+  }
+
+  /* خيط الطريق — يُمدّ من بداية السطر */
+  .pwa-launch__road {
+    display: block;
+    width: clamp(132px, 42vw, 208px);
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to left,
+      var(--color-accent-deep),
+      var(--color-accent-bright)
+    );
+    box-shadow: 0 0 10px -1px var(--glow);
+    transform: scaleX(0);
+    transform-origin: left; /* الافتراضي؛ يُقلب لـ RTL أدناه */
+    animation: pwa-launch-road 760ms var(--ease-out) 260ms forwards;
+  }
+
+  html[dir="rtl"] .pwa-launch__road {
+    transform-origin: right;
+  }
+
+  .pwa-launch__word {
+    font-size: 12px;
+    letter-spacing: 0; /* العربية خطٌّ موصول — لا تباعد أبدًا */
+    color: var(--color-muted);
+    opacity: 0;
+    animation: pwa-launch-word 520ms var(--ease-out) 420ms forwards;
+  }
+}
+
+@keyframes pwa-launch-out {
+  0%,
+  72% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes pwa-launch-mark {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pwa-launch-road {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pwa-launch-word {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── تخفيض الحركة: تُسقَط الشاشة كاملةً ────────────────────────────
+   شاشة الإقلاع زخرفةٌ حركيّة خالصة — لا تحمل معلومةً ولا وظيفة، وكلّ
+   قيمتها في الحركة نفسها. فمن طلب حركةً أقلّ لا يُعطى نسخةً ساكنة
+   منها تؤخّره ثانيةً ونصفًا بلا مقابل؛ يُعطى تطبيقه فورًا.
+
+   وهذا أيضًا ما تفرضه إعادة الضبط العامّة أعلاه (`animation-duration:
+   0.01ms !important`): بدون هذه القاعدة كانت الشاشة ستومض ظاهرةً ثم
+   تختفي في جزءٍ من الألف من الثانية — وميضٌ لا معنى له. */
+@media (prefers-reduced-motion: reduce) {
+  .pwa-launch {
+    display: none !important;
+  }
+}

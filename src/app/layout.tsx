@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
+import { PwaLaunch } from "@/components/brand/PwaLaunch";
 import { MotionRoot } from "@/components/motion/MotionRoot";
 import { NavProgress } from "@/components/motion/NavProgress";
 import { ServiceWorker } from "@/components/pwa/ServiceWorker";
@@ -38,13 +39,22 @@ export const metadata: Metadata = {
     url: SITE.url,
     title: SITE.tagline,
     description: SITE.shortDescription,
-    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: SITE.name }],
+    images: [
+      {
+        /* النسخة تُجبر واتساب على إعادة جلب بطاقة المشاركة — وهو
+           يخزّنها لكل رابطٍ شورك ولا يعيد الجلب إلا بتغيّر العنوان. */
+        url: `/icon-512.png?v=${SITE.brandVersion}`,
+        width: 512,
+        height: 512,
+        alt: SITE.name,
+      },
+    ],
   },
   twitter: {
     card: "summary",
     title: SITE.tagline,
     description: SITE.shortDescription,
-    images: ["/icon-512.png"],
+    images: [`/icon-512.png?v=${SITE.brandVersion}`],
   },
 
   /**
@@ -60,7 +70,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   icons: {
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [{ url: `/apple-touch-icon.png?v=${SITE.brandVersion}`, sizes: "180x180" }],
   },
 
   /**
@@ -116,6 +126,11 @@ export default function RootLayout({
             بلا تحويل ولا مرشِّح، فالتثبيت فيه يقيس النافذة فعلًا. */}
         <NavProgress />
         <MotionRoot>{children}</MotionRoot>
+        {/* شاشة إقلاع التطبيق المثبَّت. آخر عنصرٍ في الجسم عمدًا: هي
+            طبقةٌ فوق كل شيء، وترتيب المصدر يجعلها كذلك حتى لو تساوت
+            طبقات z. ولا تُصيَّر إلا في وضع التطبيق — شرطُها في CSS
+            فتُقيَّم مع أوّل رسم، بلا وميضٍ ينتظر ترطيب جافاسكربت. */}
+        <PwaLaunch />
         <ServiceWorker />
       </body>
     </html>

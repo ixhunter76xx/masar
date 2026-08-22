@@ -43,6 +43,17 @@ jobs:
 
       - run: npx tsc --noEmit
 
+      # الحرّاس الساكنة — لا تحتاج خادمًا ولا قاعدة، وكلٌّ منها يحرس
+      # عطلًا **صامتًا**: يمرّ البناء و`tsc` والشاشات تعمل، ولا يظهر
+      # الخلل إلا لمستخدم. وأغلاها هنا `brand-regression`: ثلاثةٌ من
+      # أصول الهوية لا تُرى إلا على هاتفٍ مثبَّتٍ عليه التطبيق، فبقي
+      # الشعار القديم فيها بعد تبديله في الموقع — واكتشفه المالك لا CI.
+      - run: npx tsx --tsconfig tsconfig.script.json scripts/brand-regression.mts
+      - run: npx tsx --tsconfig tsconfig.script.json scripts/security-regression.mts
+      - run: npx tsx --tsconfig tsconfig.script.json scripts/nav-feedback-regression.mts
+      - run: npx tsx --tsconfig tsconfig.script.json scripts/motion-shell-regression.mts
+      - run: npx tsx --tsconfig tsconfig.script.json scripts/course-transition-regression.mts
+
       - run: npm run build:local
         env:
           # البناء يستورد وحدات تقرأ هذه المتغيّرات عند التحميل. قيم

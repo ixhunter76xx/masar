@@ -946,6 +946,7 @@ npx tsx --tsconfig tsconfig.script.json scripts/features.mts                    
 npx tsx --tsconfig tsconfig.script.json scripts/nav-feedback-regression.mts      # link feedback + route shape
 npx tsx --tsconfig tsconfig.script.json scripts/motion-shell-regression.mts      # protected transition has no y
 npx tsx --tsconfig tsconfig.script.json scripts/course-transition-regression.mts # one tab indicator
+npx tsx --tsconfig tsconfig.script.json scripts/brand-regression.mts      # الهوية: ٧ أصول من مصدرٍ واحد
 ```
 
 `probe` and `features` need the app running on `:3100` and read the live database. The three regression guards are static and need nothing.
@@ -1031,3 +1032,84 @@ Two traps this codebase documents, both avoided here:
 - **State restoration**: every account mutation (role, `isActive`, `sessionVersion`, lockout counter) was reverted in a `finally`, and a final sweep confirmed both test accounts back to `STUDENT / active / 0 fails / not locked`.
 
 No new vulnerability surfaced. The two found in the earlier audit (token-role authorization, open redirect) were re-confirmed fixed. The scaffolding was deleted; nothing was left mutated.
+
+## الهوية الجديدة، ولماذا صار لها حارس — 2026-08-22
+
+الشعار الجديد (خطٌّ عربيّ يمشي على طريق، ويحمل خرّيجًا) حلّ محلّ الرمز
+الهندسيّ القديم. لكنّ الدرس الأهمّ ليس في الشعار: **بقي الشعار القديم
+حيًّا في التطبيق المثبَّت بعد أن بُدِّل في الموقع**، ولم يمسكه بناءٌ ولا
+`tsc` ولا فحصٌ في المتصفّح. اكتشفه المالك، لا الأدوات.
+
+**السبب أن الهوية سبعةُ ملفّات لا ملفّ واحد**، وثلاثةٌ منها
+(`icon-maskable-*`, `apple-touch-icon`) لا تُرى إلا على شاشة هاتفٍ
+مثبَّتٍ عليه التطبيق. فكلٌّ منها سليمٌ في ذاته، وإنما هو **قديم** —
+والقِدَم لا يُرى بالنظر إلى ملفٍّ واحد، بل بمقارنة الملفّات بعضها ببعض.
+
+### المصدر واحد، والاشتقاق آليّ
+
+```bash
+npx tsx --tsconfig tsconfig.script.json scripts/generate-icons.mts assets/logo-source.png
+```
+
+يُخرج السبعة كلّها ويكتب `assets/brand-lock.json` ببصمة المصدر وبصمة كل
+مُخرَج. **لا يُحرَّر أصلٌ بيد**: `brand-regression` يعيد حساب البصمات،
+فيسقط إن بُدِّل ملفٌّ وحده أو تُرك وحده.
+
+- **الخلفية تُنزع بمنحدر شفافية لا بعتبة.** الخلفية `rgb(52,51,51)`
+  مسطّحة، وأغمق نقطةٍ في الطريق تبعد عنها ٣٢ فقط — فعتبةٌ واسعة تبتلع
+  الطريق، وعتبةٌ صمّاء تعطي حوافَّ مسنّنة. المنحدر (٨→٢٤) يحلّ الأمرين.
+- **الأيقونات تأخذ الرسم بحدوده الضيّقة، وشعارُ الواجهة يأخذ مربّعًا
+  مبطَّنًا.** مكوّن `Logo` يعرض المصدر بعرض `size×2.45` داخل صندوقٍ
+  ارتفاعه `size`، أي لا يُظهر إلا ‏٤٠٫٨٪ من ارتفاع المربّع — فالبطانة
+  محسوبة (`ART_HEIGHT_RATIO = 0.38`) لئلّا يُقصّ رأس الرسم وقدمه. ولو
+  أُعطيت الأيقوناتُ المربّعَ نفسه لخرج الشعار فيها ضئيلًا.
+
+### `SITE.brandVersion` — كاسر التخزين المؤقّت، وهو ليس تجميلًا
+
+النشر وحده **لا يُظهر الشعار الجديد لأحد**. ثلاث ذاكرات تُبقي القديم:
+
+| الذاكرة | ماذا تُبقي |
+|---|---|
+| المتصفّح | `logo-masar.png` بعنوانه |
+| **واتساب** | `og:image` لكل رابطٍ شورك — وهي قناة البيع الأولى هنا |
+| نظام الهاتف | أيقونة التطبيق المثبَّت، من البيان |
+
+فالنسخة تُلحق بكل رابط أصلٍ بصريّ، من ثابتٍ واحد في `site.ts`. يحرسها
+`brand-regression`: أي رابطٍ عارٍ بلا `?v=` يُسقط الحارس.
+
+### شاشة إقلاع التطبيق المثبَّت
+
+`src/components/brand/PwaLaunch.tsx` — تظهر حين يُفتح «مسار» من أيقونته
+لا حين يُزار في المتصفّح.
+
+- **شرطها في CSS لا في جافاسكربت.** `matchMedia` لا يقع إلا بعد الترطيب،
+  فيومض محتوى التطبيق قبل أن تُركَّب الشاشة فوقه — أي أن العلاج يُحدث
+  العيب. و`@media (display-mode: standalone)` يُقيَّم مع أوّل رسم.
+  ولذلك هي **مكوّن خادم**: صفر كيلوبايت JS.
+- **`pointer-events: none` طوال عمرها.** زخرفةٌ فوق تطبيقٍ جاهز؛ لو
+  تأخّر إخفاؤها بقي التطبيق مستعملًا تحتها.
+- **الطريق يُمدّ من بداية السطر** — يمينًا في العربية. و`transform-origin`
+  لا يقبل الكلمات المنطقية، فالقاعدة مشروطة بـ`[dir="rtl"]`. المقيس:
+  `208px 1px` أي الحافّة اليمنى.
+- **عند تخفيض الحركة تُسقَط كاملةً.** كلّ قيمتها في الحركة، فمن طلب
+  حركةً أقلّ لا يُعطى نسخةً ساكنة تؤخّره ثانيةً ونصفًا؛ يُعطى تطبيقه فورًا.
+
+المقيس في المتصفّح: ‏٤٢٠ms الشعار مكتملٌ والطريق ممدود · ‏١٠٠٠ms السطر
+ظاهر · ‏١٥٠٠ms `opacity: 0` و`visibility: hidden`، و`pointer-events:
+none` في كل لحظة.
+
+### الحارس، وستّة أعطالٍ أُثبت سقوطه بها
+
+`scripts/brand-regression.mts` — كُسر كلٌّ منها عمدًا ثمّ أُعيد:
+
+| العطل | النتيجة |
+|---|---|
+| أصلٌ بُدِّل/تُرك خارج السكربت | سقط |
+| أصلٌ يتيمٌ في `public` | سقط |
+| رابطٌ بلا `?v=` | سقط |
+| `PwaLaunch` غير مركَّب | سقط |
+| لون البيان يخالف `--color-ink` | سقط |
+| شرط `display-mode` غاب | سقط |
+
+**وحُذف `public/logo-masar-mark.png`** — ١٣٤ كيلوبايت من هويةٍ متقاعدة لا
+يقرؤها سطرٌ واحد. الملفّ الذي لا يشير إليه أحد لا يظهر خطؤه أبدًا.
