@@ -14,6 +14,7 @@
         "npm:@aws-sdk/client-s3@^3.1101.0",
         "npm:@aws-sdk/s3-request-presigner@^3.1101.0",
         "npm:@hookform/resolvers@^5.2.2",
+        "npm:@prisma/adapter-neon@^7.9.1",
         "npm:@prisma/adapter-pg@^7.9.1",
         "npm:@prisma/client@^7.9.1",
         "npm:@tailwindcss/postcss@^4.3.3",
