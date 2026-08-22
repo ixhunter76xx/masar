@@ -2,6 +2,8 @@
   "name": "masar",
   "version": "0.1.0",
   "private": true,
+  "description": "مسار — سوقٌ ومنصّة دراسةٍ لشرح المقررات الجامعية في البحرين",
+  "homepage": "https://masar-bh.com",
   "scripts": {
     "build": "prisma generate && prisma migrate deploy && next build",
     "build:local": "next build",
