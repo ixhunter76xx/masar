@@ -771,6 +771,50 @@
   @keyframes faculty-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
   @keyframes faculty-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
   @keyframes faculty-flex { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.978); } }
+  /* ══ حركات المشهدين الجديدين ═════════════════════════════════════
+     النبضة على مسار الأسلاك: `stroke-dashoffset` وحدها تتحرّك،
+     والطول ثابت. `pathLength` غير مستعمل عمدًا — الطول الحقيقيّ
+     للمسار هو ما يجعل سرعة النبضة واحدة في كل مقطع منه.
+
+     ⚠ الشرطة الطويلة (٢٤ ظاهرة، ٢٢٠٠ فراغ) مقصودة: المسار مركّب من
+     تسع قطعٍ منفصلة (`M` متكرّرة)، والفراغ الواسع يمنع ظهور نبضةٍ
+     في كل قطعةٍ دفعةً واحدة. */
+  .faculty-scene .it-signal {
+    stroke-dasharray: 24 2200;
+    stroke-dashoffset: 2224;
+    opacity: 0.9;
+    animation: it-signal 7s linear infinite;
+  }
+
+  /* المسنّنان: اتجاهان متضادّان، والصغير أسرع بنسبة أسنانه — وهي
+     النسبة الحقيقية في التعاشق لا رقمٌ اختير للشكل. */
+  .faculty-scene .gear-cw {
+    animation: faculty-spin 44s linear infinite;
+  }
+
+  .faculty-scene .gear-ccw {
+    animation: faculty-spin 30s linear infinite reverse;
+  }
+
+  .faculty-scene .hex-breathe {
+    animation: faculty-breathe 9s ease-in-out infinite;
+  }
+
+  /* خطوط القياس تُرسم مرّةً ثمّ تثبت: اللوحة «قيد الإنشاء» لحظةَ
+     دخولها، لا وميضٌ دائم يسحب العين عن المحتوى. */
+  .faculty-scene .dim-draw {
+    animation: dim-draw 1400ms var(--ease-out) 220ms both;
+  }
+
+  @keyframes it-signal {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes dim-draw {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   @keyframes faculty-glyph-drift {
     0%, 100% { opacity: 0.76; transform: translateY(6px); }
     50% { opacity: 1; transform: translateY(-10px); }
@@ -794,6 +838,24 @@
      بلا إعادة تخطيط، والثانية تُجبر المتصفّح على إعادة حساب كل عنصر
      تحتها في كل إطار.
      ═══════════════════════════════════════════════════════════════════ */
+  /* ══ السكّة الأفقية ══════════════════════════════════════════════
+     نظير `.track-draw` الرأسيّ. و`transform-origin` لا يقبل الكلمات
+     المنطقية (`inline-start` تسقط إلى المركز صامتةً — وقعت في هذا
+     المستودع من قبل)، فالجهة مشروطة بـ`[dir]` صراحةً. */
+  .track-draw-x {
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: track-draw-x 900ms var(--ease-out) 120ms forwards;
+  }
+
+  html[dir="rtl"] .track-draw-x {
+    transform-origin: right;
+  }
+
+  @keyframes track-draw-x {
+    to { transform: scaleX(1); }
+  }
+
   .track-draw {
     transform: scaleY(0);
     animation: track-draw 900ms var(--ease-out) 120ms forwards;

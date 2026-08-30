@@ -11,6 +11,7 @@ import { requireCourseAccess } from "@/lib/data/courses";
 import {
   canManageCourse,
   getCourseMaterials,
+  listChapters,
   listLessonsForPlanner,
 } from "@/lib/data/materials";
 import { getCourseQuizzes } from "@/lib/data/quizzes";
@@ -34,7 +35,9 @@ export default async function CourseContentPage({ params }: Params) {
   /* السكّة للمدير وحده: تشمل المخطَّط وغير المنشور، وهو ما لا يراه
      الطالب أصلًا. `getCourseMaterials` تصفّي بالحزمة والنشر، فلا تصلح
      للتخطيط — التخطيط يحتاج كل دروس المقرر بترتيبها. */
-  const plan = canManage ? await listLessonsForPlanner(courseId) : [];
+  const [plan, chapters] = canManage
+    ? await Promise.all([listLessonsForPlanner(courseId), listChapters(courseId)])
+    : [[], []];
 
   const isEmpty =
     materials.length === 0 && quizzes.length === 0 && assignments.length === 0;
@@ -43,7 +46,7 @@ export default async function CourseContentPage({ params }: Params) {
     <>
       {/* التخطيط أولًا ثم الرفع العام: السكّة هي مكان العمل اليومي،
           والرفع العام للمواد غير المرتبطة بدرس بعينه. */}
-      {canManage && <LessonPlanner courseId={courseId} lessons={plan} />}
+      {canManage && <LessonPlanner courseId={courseId} lessons={plan} chapters={chapters} />}
 
       {canManage && <VideoUploader courseId={courseId} />}
 

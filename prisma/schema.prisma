@@ -202,6 +202,7 @@ model Course {
 
   products      Product[]
   materials     CourseMaterial[]
+  chapters      Chapter[]
   announcements Announcement[]
   quizzes       Quiz[]
   assignments   Assignment[]
@@ -222,6 +223,7 @@ model Course {
 /// نوع المادة التعليمية — يبدأ بالفيديو ويتوسّع لاحقًا
 enum MaterialKind {
   VIDEO /// محاضرة مسجّلة
+  FILE /// ملفّ مرفق: ملخّص، تمارين، نموذج امتحان سابق
 }
 
 /// حالة المادة في دورة حياة الرفع
@@ -240,6 +242,18 @@ model CourseMaterial {
 
   kind   MaterialKind   @default(VIDEO)
   status MaterialStatus @default(PENDING)
+
+  /// الفصل الذي ينتمي إليه هذا العنصر داخل مسار المقرر.
+  ///
+  /// `NULL` يعني «خارج الفصول» — وهي الحالة التي عليها كل مادة
+  /// أُنشئت قبل وجود الفصول. فالمسار يعرضها في مجموعةٍ واحدة بلا
+  /// عنوان، أي أنّ سلوك ما قبل الهجرة محفوظٌ حرفيًّا.
+  ///
+  /// `onDelete: SetNull` لا `Cascade`: حذف فصلٍ يجب أن يفكّ تجميع
+  /// موادّه لا أن يُهلكها. والمادة تحمل معرّفًا تُبنى عليه `ProductItem`
+  /// و`Quiz` و`Assignment` — فإهلاكها يقصّ حزمًا اشتراها طلاب.
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
 
   title       String
   description String?
@@ -288,10 +302,38 @@ model CourseMaterial {
 
   @@index([courseId, position])
   @@index([courseId, status])
+  @@index([chapterId, position])
   @@map("course_materials")
 }
 
 /// إعلان على مستوى المقرر
+/// فصلٌ داخل مسار المقرر — يجمع محاضراته وملفّاته معًا.
+///
+/// ── لماذا جدولٌ لا نصٌّ على المادة ──────────────────────────────────
+/// عنوان الفصل مكتوبًا على كل مادة يعني نسخًا متعدّدة لاسمٍ واحد،
+/// وأوّل إعادة تسميةٍ تصنع فصلين بعنوانين متقاربين لا فصلًا واحدًا.
+/// والجدول يجعله كيانًا يُعاد تسميته مرّة، وله ترتيبٌ مستقلّ عن ترتيب
+/// موادّه.
+model Chapter {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title String
+
+  /// ترتيب الفصل داخل المقرر
+  position Int @default(0)
+
+  materials CourseMaterial[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, position])
+  @@map("chapters")
+}
+
 model Announcement {
   id String @id @default(cuid())
 

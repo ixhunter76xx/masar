@@ -234,3 +234,116 @@ export async function deletePlannedLesson(
   revalidatePublicCourses();
   return { ok: true };
 }
+
+/* ══ الفصول ═════════════════════════════════════════════════════════
+   الفصل يجمع محاضراتِ وحدةٍ دراسية وملفّاتها معًا على المسار. وهو
+   كيانٌ مستقلّ لا نصٌّ على المادة — فيُعاد تسميته مرّة، ولا تتفرّق
+   المادة الواحدة بين عنوانين متقاربين.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const chapterTitleSchema = z
+  .string()
+  .trim()
+  .min(2, "عنوان الفصل قصير جدًا.")
+  .max(120, "عنوان الفصل طويل جدًا.");
+
+/** فصلٌ جديد في آخر المقرر */
+export async function createChapter(
+  courseId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await requireManager(courseId);
+  if (!user) return fail("ليس لديك صلاحية في هذا المقرر.");
+
+  const parsed = chapterTitleSchema.safeParse(formData.get("title"));
+  if (!parsed.success) return fail(parsed.error.issues[0]!.message);
+
+  const last = await db.chapter.findFirst({
+    where: { courseId },
+    orderBy: { position: "desc" },
+    select: { position: true },
+  });
+
+  await db.chapter.create({
+    data: {
+      courseId,
+      title: parsed.data,
+      position: (last?.position ?? -1) + 1,
+    },
+  });
+
+  revalidatePath(`/learn/${courseId}`);
+  revalidatePublicCourses();
+  return { ok: true };
+}
+
+export async function renameChapter(
+  courseId: string,
+  chapterId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await requireManager(courseId);
+  if (!user) return fail("ليس لديك صلاحية في هذا المقرر.");
+
+  const parsed = chapterTitleSchema.safeParse(formData.get("title"));
+  if (!parsed.success) return fail(parsed.error.issues[0]!.message);
+
+  /* التقييد بـ`courseId` مقصود: معرّف فصلٍ من مقرَّرٍ آخر لا يُعدَّل
+     من هنا ولو كان المستدعي مديرًا لهذا المقرر. */
+  const { count } = await db.chapter.updateMany({
+    where: { id: chapterId, courseId },
+    data: { title: parsed.data },
+  });
+  if (count === 0) return fail("الفصل غير موجود.");
+
+  revalidatePath(`/learn/${courseId}`);
+  revalidatePublicCourses();
+  return { ok: true };
+}
+
+/**
+ * حذف فصل — وموادّه تعود «بلا فصل» ولا تُهلَك.
+ *
+ * ⚠ `onDelete: SetNull` في المخطّط هو ما يضمن ذلك. ولو كان `Cascade`
+ * لكان حذفُ فصلٍ يحذف محاضراتٍ تشير إليها `ProductItem` — أي يقصّ
+ * حزمًا اشتراها طلاب فعلًا.
+ */
+export async function deleteChapter(
+  courseId: string,
+  chapterId: string,
+): Promise<ActionResult> {
+  const user = await requireManager(courseId);
+  if (!user) return fail("ليس لديك صلاحية في هذا المقرر.");
+
+  const { count } = await db.chapter.deleteMany({ where: { id: chapterId, courseId } });
+  if (count === 0) return fail("الفصل غير موجود.");
+
+  revalidatePath(`/learn/${courseId}`);
+  revalidatePublicCourses();
+  return { ok: true };
+}
+
+/** إسناد مادة إلى فصل — أو إخراجها منه بـ`null` */
+export async function setLessonChapter(
+  courseId: string,
+  lessonId: string,
+  chapterId: string | null,
+): Promise<ActionResult> {
+  const user = await requireManager(courseId);
+  if (!user) return fail("ليس لديك صلاحية في هذا المقرر.");
+
+  if (chapterId) {
+    const owns = await db.chapter.count({ where: { id: chapterId, courseId } });
+    if (owns === 0) return fail("الفصل غير موجود في هذا المقرر.");
+  }
+
+  const { count } = await db.courseMaterial.updateMany({
+    where: { id: lessonId, courseId },
+    data: { chapterId },
+  });
+  if (count === 0) return fail("الدرس غير موجود.");
+
+  revalidatePath(`/learn/${courseId}`);
+  revalidatePublicCourses();
+  return { ok: true };
+}

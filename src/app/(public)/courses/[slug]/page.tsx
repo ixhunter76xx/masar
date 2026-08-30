@@ -304,7 +304,7 @@ function PreviewPlayer({
             عنوانُ الدرس المجاني ومطلعُ المسار من بيانات المقرر نفسه:
             نفس **وظيفة** الملصق (يُري ما يُشترى) بمصدرٍ يعمّ كل مقرر
             بدل نصٍّ ثابت يكذب على مقرر غير عربي. */}
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-center gap-3 p-6 sm:p-8">
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 p-6 text-center sm:p-8">
           <span className="text-[11px] font-medium text-subtle">الدرس المجاني</span>
           <p className="text-balance text-[clamp(1.125rem,2.6vw,1.75rem)] font-semibold leading-[1.4] tracking-[-0.02em] text-paper">
             {title}
@@ -329,7 +329,7 @@ function PreviewPlayer({
             border-0 py-1.5 pe-4 ps-1.5 text-[13px] font-semibold text-ink
             transition-transform duration-200 ease-out group-hover:-translate-y-0.5
             shadow-[0_16px_40px_-14px_var(--shadow-lift)]
-            [inset-inline-start:clamp(1rem,3vw,1.6rem)]
+            left-1/2 -translate-x-1/2
             [background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]"
         >
           <span className="grid size-[34px] place-items-center rounded-full bg-[color-mix(in_srgb,var(--color-ink)_12%,transparent)]">

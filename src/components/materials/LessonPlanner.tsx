@@ -15,11 +15,14 @@ import {
 import { Card } from "@/components/ui/Card";
 import { uploadVideo } from "@/lib/upload-client";
 import {
+  createChapter,
   createPlannedLesson,
+  deleteChapter,
   deletePlannedLesson,
   moveLesson,
   renameLesson,
   setFreePreviewLesson,
+  setLessonChapter,
 } from "@/app/(app)/learn/[courseId]/lessons/actions";
 
 export type PlannerLesson = {
@@ -31,7 +34,12 @@ export type PlannerLesson = {
   /** رُفع فعلًا (بمفتاح) — يميّز «قيد الرفع» عن «مخطَّط» */
   hasFile: boolean;
   isPublished: boolean;
+  /** الفصل الذي أُسند إليه — `null` يعني خارج الفصول */
+  chapterId: string | null;
 };
+
+/** فصلٌ في المقرر، لقائمة الإسناد */
+export type PlannerChapter = { id: string; title: string; position: number };
 
 /**
  * سكّة المقرر — تخطيطًا ورفعًا في مكان واحد.
@@ -49,10 +57,13 @@ export type PlannerLesson = {
 export function LessonPlanner({
   courseId,
   lessons,
+  chapters = [],
   hideHeading = false,
 }: {
   courseId: string;
   lessons: PlannerLesson[];
+  /** فصول المقرر — تُملأ منها قائمة الإسناد */
+  chapters?: PlannerChapter[];
   /**
    * تُخفي ترويسة «سكّة المقرر» الداخلية.
    *
@@ -67,17 +78,24 @@ export function LessonPlanner({
   const [busy, setBusy] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [title, setTitle] = React.useState("");
+  const [chapterTitle, setChapterTitle] = React.useState("");
   const [percent, setPercent] = React.useState<Record<string, number>>({});
 
   const fileInputs = React.useRef<Record<string, HTMLInputElement | null>>({});
 
-  async function run(key: string, fn: () => Promise<{ ok: boolean; message?: string }>) {
+  /** تُرجع نجاحَ العملية — فيُمسح حقلُ الإدخال عند النجاح وحده، ولا
+      يفقد المستخدم ما كتبه حين يُرفض. */
+  async function run(
+    key: string,
+    fn: () => Promise<{ ok: boolean; message?: string }>,
+  ): Promise<boolean> {
     setBusy(key);
     setError(null);
     const result = await fn();
     if (result.ok) router.refresh();
     else setError(result.message ?? "تعذّر إتمام العملية.");
     setBusy(null);
+    return result.ok;
   }
 
   async function onAdd(event: React.FormEvent<HTMLFormElement>) {
@@ -156,6 +174,70 @@ export function LessonPlanner({
         <p className="mt-2 text-[11px] text-subtle">
           خطّط المنهج كاملًا الآن، وارفع فيديو كل درس متى صُوّر.
         </p>
+
+        {/* ── الفصول ──────────────────────────────────────────────
+            الفصل يجمع محاضرات وحدةٍ وملفّاتها معًا على المسار. ودرسٌ
+            بلا فصلٍ ليس خطأً: يظهر في مجموعةٍ أولى بلا عنوان، وهي
+            حال كل مقرَّرٍ لم تُنشأ له فصول بعد. */}
+        <div className="mt-3.5 border-t border-line-soft pt-3.5">
+          <form
+            onSubmit={async (event) => {
+              event.preventDefault();
+              const data = new FormData();
+              data.set("title", chapterTitle);
+              const done = await run("chapter", () => createChapter(courseId, data));
+              if (done) setChapterTitle("");
+            }}
+            className="flex flex-wrap items-center gap-2"
+          >
+            <label htmlFor="new-chapter" className="sr-only">
+              عنوان الفصل الجديد
+            </label>
+            <input
+              id="new-chapter"
+              value={chapterTitle}
+              onChange={(event) => setChapterTitle(event.target.value)}
+              placeholder="عنوان فصل — مثال: الوحدة الأولى"
+              className="input-field flex-1 text-[13px]"
+            />
+            <button
+              type="submit"
+              disabled={busy !== null}
+              className="press inline-flex min-h-touch items-center gap-1.5 rounded-[10px]
+                border border-line bg-ink px-3.5 text-xs text-paper
+                transition-colors hover:border-accent-deep disabled:cursor-not-allowed"
+            >
+              {busy === "chapter" ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <Plus size={14} strokeWidth={2} aria-hidden="true" />
+              )}
+              أضف فصلًا
+            </button>
+          </form>
+
+          {chapters.length > 0 && (
+            <ul className="mt-2.5 flex flex-wrap gap-1.5">
+              {chapters.map((chapter) => (
+                <li
+                  key={chapter.id}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line-soft bg-ink px-2.5 py-1 text-[11px] text-muted"
+                >
+                  {chapter.title}
+                  <button
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={() => run(chapter.id, () => deleteChapter(courseId, chapter.id))}
+                    aria-label={`حذف فصل ${chapter.title}`}
+                    className="press text-subtle transition-colors hover:text-danger disabled:cursor-not-allowed"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </Card>
 
       <ul className="space-y-2">
@@ -170,6 +252,32 @@ export function LessonPlanner({
                 <span className="min-w-0 flex-1 truncate text-[13px] text-paper">
                   {lesson.title}
                 </span>
+
+                {chapters.length > 0 && (
+                  <>
+                    <label htmlFor={`chapter-${lesson.id}`} className="sr-only">
+                      فصل الدرس
+                    </label>
+                    <select
+                      id={`chapter-${lesson.id}`}
+                      value={lesson.chapterId ?? ""}
+                      disabled={busy !== null}
+                      onChange={(event) =>
+                        run(lesson.id, () =>
+                          setLessonChapter(courseId, lesson.id, event.target.value || null),
+                        )
+                      }
+                      className="input-field max-w-[10rem] shrink-0 text-[11px]"
+                    >
+                      <option value="">بلا فصل</option>
+                      {chapters.map((chapter) => (
+                        <option key={chapter.id} value={chapter.id}>
+                          {chapter.title}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
 
                 <Status lesson={lesson} percent={percent[lesson.id]} />
 

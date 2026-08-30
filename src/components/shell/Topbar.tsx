@@ -1,5 +1,6 @@
 import { MobileNav } from "@/components/shell/MobileNav";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { UserMenu } from "@/components/shell/UserMenu";
 import { TopbarTitleText } from "@/components/shell/TopbarTitle";
 import type { NavCounts } from "@/lib/navigation";
 import type { Role } from "@/generated/prisma/enums";
@@ -37,8 +38,14 @@ export function Topbar({
         <span className="flex-1 min-[560px]:hidden" aria-hidden="true" />
 
         {/* ⚠ زال من هنا مدخل الكتالوج المختصر — `AreaSwitch` يحمله
-            الآن في كل عرض، لا دون ١٠٢٤px وحدها. */}
-        <SignOutButton />
+            الآن في كل عرض، لا دون ١٠٢٤px وحدها.
+
+            والخروج لم يعد زرًّا عاريًا: صار بندًا تحت اسم المستخدم.
+            الاسم يجيب «بأيّ حسابٍ أنا داخل؟» وهو سؤالٌ يتكرّر، والخروج
+            فعلٌ نادر — فلا يأخذ أبرز موضعٍ في الشريط. */}
+        <UserMenu name={user.name} role={user.role}>
+          <SignOutButton menuItem />
+        </UserMenu>
       </div>
     </header>
   );

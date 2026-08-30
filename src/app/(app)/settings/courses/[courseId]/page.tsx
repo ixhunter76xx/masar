@@ -17,7 +17,7 @@ import { LessonPlanner } from "@/components/materials/LessonPlanner";
 import { VideoUploader } from "@/components/materials/VideoUploader";
 import { Card } from "@/components/ui/Card";
 import { requireAdmin } from "@/lib/data/admin";
-import { listLessonsForPlanner } from "@/lib/data/materials";
+import { listChapters, listLessonsForPlanner } from "@/lib/data/materials";
 import { db } from "@/server/db";
 import { formatFils } from "@/lib/price";
 import { Role } from "@/generated/prisma/enums";
@@ -79,7 +79,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
 
   if (!course) notFound();
 
-  const [faculties, instructors, plan] = await Promise.all([
+  const [faculties, instructors, plan, chapters] = await Promise.all([
     db.faculty.findMany({
       orderBy: { sortOrder: "asc" },
       select: { id: true, name: true },
@@ -90,6 +90,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
       select: { id: true, name: true },
     }),
     listLessonsForPlanner(courseId),
+    listChapters(courseId),
   ]);
 
   const publishedProducts = course.products.filter((p) => p.isPublished).length;
@@ -172,7 +173,7 @@ export default async function CourseWorkspacePage({ params }: Params) {
         description="اكتب عناوين الدروس ورتّبها الآن — بلا رفع أي فيديو. الدرس المخطَّط يحجز مكانه في المسار، وتضعه في الباقات، وترفع فيديوه متى شئت. وعلامة «مجاني» تُوضع على أكثر من درس."
       />
       <Card className="mb-4 px-5 py-4">
-        <LessonPlanner courseId={course.id} lessons={plan} hideHeading />
+        <LessonPlanner courseId={course.id} lessons={plan} chapters={chapters} hideHeading />
       </Card>
 
       <details className="mb-8">

@@ -6,6 +6,7 @@ import { db } from "@/server/db";
 import { accessibleLessonIds } from "@/lib/data/access";
 import { getLiveUser } from "@/lib/data/session";
 import { Role, MaterialStatus } from "@/generated/prisma/enums";
+import type { MaterialListItem } from "@/lib/material-track";
 
 /**
  * يتحقق أن المستخدم يملك حق **الإدارة** في هذا المقرر:
@@ -55,16 +56,13 @@ export const canManageCourse = cache(async function canManageCourse(
   return false;
 });
 
-export type MaterialListItem = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: MaterialStatus;
-  sizeBytes: number | null;
-  durationSec: number | null;
-  isPublished: boolean;
-  createdAt: Date;
-};
+/* ⚠ الشكل والتجميع يعيشان في `@/lib/material-track` لا هنا.
+   هذا الملفّ عليه `server-only`، و`MaterialList` مكوّن عميل يحتاج
+   التجميع نفسه — فبقاؤه هنا كان يُسقط البناء. ويُعاد تصديرهما ليبقى
+   `@/lib/data/materials` المدخل الوحيد لمن يقرأ من الخادم. */
+export type { MaterialChapter, MaterialListItem } from "@/lib/material-track";
+export { groupIntoChapters } from "@/lib/material-track";
+
 
 /**
  * كل دروس المقرر بترتيبها — لشاشة التخطيط، للمدير وحده.
@@ -85,6 +83,7 @@ export async function listLessonsForPlanner(courseId: string) {
       status: true,
       objectKey: true,
       publishedAt: true,
+      chapterId: true,
     },
   });
 
@@ -97,7 +96,17 @@ export async function listLessonsForPlanner(courseId: string) {
        يكتمل. التمييز هو ما يفرّق «بانتظار الرفع» عن «قيد الرفع». */
     hasFile: row.objectKey !== null,
     isPublished: row.publishedAt !== null,
+    chapterId: row.chapterId,
   }));
+}
+
+/** فصول المقرر بترتيبها — لقائمة الإسناد في شاشة التخطيط */
+export async function listChapters(courseId: string) {
+  return db.chapter.findMany({
+    where: { courseId },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    select: { id: true, title: true, position: true },
+  });
 }
 
 /**
@@ -151,11 +160,13 @@ export async function getCourseMaterials(
         id: true,
         title: true,
         description: true,
+        kind: true,
         status: true,
         sizeBytes: true,
         durationSec: true,
         publishedAt: true,
         createdAt: true,
+        chapter: { select: { id: true, title: true, position: true } },
       },
     }),
   ]);
@@ -166,11 +177,13 @@ export async function getCourseMaterials(
     id: r.id,
     title: r.title,
     description: r.description,
+    kind: r.kind,
     status: r.status,
     // BigInt لا يُسلسَل إلى JSON — نحوّله عند حدود طبقة البيانات
     sizeBytes: r.sizeBytes === null ? null : Number(r.sizeBytes),
     durationSec: r.durationSec,
     isPublished: r.publishedAt !== null,
     createdAt: r.createdAt,
+    chapter: r.chapter,
   }));
 }

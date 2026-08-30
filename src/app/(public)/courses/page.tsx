@@ -19,6 +19,21 @@ export const metadata: Metadata = {
  *
  * `listCatalogueByFaculty` لا تقرأ الجلسة إطلاقًا: هذه صفحة عامة، وأي
  * استدعاء لـ `auth()` هنا يخلط العام بالخاص بلا سبب.
+ *
+ * ══ لماذا صار الترتيب هكذا — قرار المالك بعد استعمال الموقع ═════════
+ *
+ * كان أعلى الصفحة عمودين: وعدٌ كبير إلى جانب لوحة شرحٍ كاملة. وكان
+ * ذلك **شاشةً كاملة قبل أول مقرر**: يفتح الطالب الموقع فلا يرى ما جاء
+ * من أجله إلا بعد تمريرٍ طويل. والزائر هنا لا يأتي ليُقنَع بالفكرة —
+ * يأتي ليسأل سؤالًا واحدًا: **هل عندكم مقرَّري؟**
+ *
+ * فالبطل الآن سطران وسطرُ شرحٍ وزرّان، موسَّطًا ومضغوطًا، ثمّ المقررات
+ * مباشرةً. وما كان يزاحمها — لوحةُ الشرح — نزل إلى أسفل بوصفه ما هو
+ * فعلًا: **دليلٌ يُراجَع بعد السؤال، لا بوّابةٌ قبله.**
+ *
+ * والرابط `#examples` باقٍ يعمل: من أراد الدليل قفز إليه بنقرة، ومن
+ * أراد مقرّره وجده بلا نقرة. وهذا هو الفرق كلّه.
+ * ═══════════════════════════════════════════════════════════════════
  */
 export default async function CatalogPage() {
   const [groups, hiddenFaculties] = await Promise.all([
@@ -30,32 +45,22 @@ export default async function CatalogPage() {
 
   return (
     <div className={`${amiri.variable} mx-auto max-w-[1180px] px-4 sm:px-8`}>
-      {/* ── الأبطل عمودان: الوعد، والدليل عليه ─────────────────────────
-          العمود الثاني ليس زخرفة — هو الشرح نفسه بحجمه الكامل. الوعد
-          وحده يقوله كل موقع تعليمي؛ والدليل بجانبه هو ما لا يُنسخ. */}
-      <section className="grid items-center gap-[clamp(2rem,4vw,3.5rem)] pb-[clamp(2rem,5vw,3.5rem)] pt-[clamp(3rem,8vw,6rem)] min-[940px]:grid-cols-[0.92fr_1.08fr]">
-        <div>
-        {/* البطل يدخل بترتيب يقرأ به: الوسم، ثم العنوان، ثم الشرح،
-            ثم الدعوة. التأخيرات صغيرة (٦٠ms) — تكفي لصنع تسلسل ولا
-            تكفي لأن يشعر الزائر بأنه ينتظر. */}
+      {/* ══ البطل — مضغوطٌ وموسَّط ═══════════════════════════════════
+          التأخيرات صغيرة (٦٠ms): تكفي لصنع تسلسلٍ يُقرأ، ولا تكفي
+          لأن يشعر الزائر بأنه ينتظر. */}
+      <section className="mx-auto max-w-[46rem] pb-[clamp(1.75rem,4vw,2.5rem)] pt-[clamp(2rem,5vw,3.25rem)] text-center">
         <Reveal delay={0}>
-          <span className="inline-flex items-center gap-2 text-xs text-accent">
-            <span className="h-0.5 w-3.5 rounded-full bg-accent-deep" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-3 py-1 text-[11px] text-accent">
+            <span className="size-1.5 rounded-full bg-spark" />
             جامعة البحرين
           </span>
         </Reveal>
 
-        {/* ── العنوان ─────────────────────────────────────────────────
-            «شرح مقرَّرك الجامعي كما يُدرَّس لك» وصفٌ صحيح، لكنه وصفٌ
-            يستطيع أي موقع تدريس أن يكتبه. وهذه تُدخل الاسم في الجملة
-            نفسها: تذكر الآليةَ (مسارٌ للمقرر) لا النتيجةَ وحدها،
-            وتُقرأ عربيةً سليمة لمن لا يعرف أن «مسار» اسم الموقع —
-            فلا تطلب من الزائر حلَّ مفارقة قبل أن يفهم أين هو.
-
-            و`text-wrap:balance` تقسمه سطرين متوازنين بدل سطرٍ طويل
-            وكلمةٍ يتيمة تحته. */}
+        {/* الاسم داخل الجملة نفسها: تذكر الآليةَ (مسارٌ للمقرر) لا
+            النتيجةَ وحدها، وتُقرأ عربيةً سليمة لمن لا يعرف أن «مسار»
+            اسم الموقع — فلا تطلب حلَّ مفارقة قبل فهم أين هو. */}
         <Reveal delay={0.06}>
-          <h1 className="mt-4 text-display text-balance">
+          <h1 className="mt-4 text-balance text-display">
             حين يكون للمقرر{" "}
             <em
               className="bg-clip-text not-italic text-transparent
@@ -68,19 +73,14 @@ export default async function CatalogPage() {
         </Reveal>
 
         <Reveal delay={0.12}>
-          <p className="mt-5 max-w-[38ch] text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
+          <p className="mx-auto mt-4 max-w-[46ch] text-balance text-[clamp(0.9375rem,1.6vw,1.0625rem)] font-light leading-[1.9] text-muted">
             دروس بالعربية، مبنية على توصيف مقرَّرك نفسه — وحداته،
             ومصطلحاته، وما يُسأل عنه فعلًا.
           </p>
         </Reveal>
 
-        {/* ── لماذا لا صفّ إحصاءات هنا ────────────────────────────────
-            كان أعلى الصفحة يحمل «١ مقرر متاح · ٤ درس مسجّل · ١ درس
-            مجاني». الرقم يخدم المنصة الكبيرة؛ أما هنا فهو يعلن صغر
-            الكتالوج في أول ما تقع عليه العين، ولا يجيب سؤال الزائر:
-            هل عندكم مقرري؟ الجواب في البطاقات أسفله، فنُقدّمها. */}
         <Reveal delay={0.18}>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
             {previewCourse && (
               <Link
                 href={`/courses/${previewCourse.slug}`}
@@ -97,16 +97,10 @@ export default async function CatalogPage() {
             </a>
           </div>
         </Reveal>
-        </div>
-
-        <Reveal delay={0.1}>
-          <div id="examples" className="scroll-mt-24">
-          <LessonBoard />
-          </div>
-        </Reveal>
       </section>
 
-      <div className="mb-4 flex items-center gap-2.5">
+      {/* ══ المقررات — أول ما يُرى بعد سطرين ═══════════════════════ */}
+      <div className="mb-5 flex items-center gap-2.5">
         <h2 className="flex items-center gap-2.5 text-title-lg">
           <span className="h-[19px] w-[3px] rounded-sm bg-gradient-to-b from-accent-bright to-accent-deep" />
           اختر كليتك
@@ -122,13 +116,28 @@ export default async function CatalogPage() {
            كان لكل كلية عنوانٌ خافت وشبكة تحته. عند البيانات الحقيقية
            — كلية واحدة فيها مقرر واحد — تُصيّر الشبكةُ بطاقةً وحيدة
            في صفٍّ ثلاثي الأعمدة، فيبدو ثلثا الصفحة فارغًا وكأن شيئًا
-           لم يُحمَّل. والكليات نفسها كانت عناوين صامتة لا يمكن
-           اختيارها.
+           لم يُحمَّل. والكليات نفسها كانت عناوين صامتة لا تُختار.
 
-           المحطّات تحلّ الاثنين معًا: الصفحة تمتلئ بالكليات لا
-           بالمقررات، والاختيار حاضر بلا بوّابة تسبق المحتوى. */
+           المحطّات تحلّ الاثنين: الصفحة تمتلئ بالكليات لا بالمقررات،
+           والاختيار حاضرٌ بلا بوّابة تسبق المحتوى. */
         <FacultyStations stations={buildStations(groups, hiddenFaculties)} />
       )}
+
+      {/* ══ الدليل — بعد السؤال لا قبله ════════════════════════════
+          العمود الذي كان يزاحم المقررات أعلى الصفحة. وهو ليس زخرفة:
+          الوعد يقوله كل موقع تعليميّ، والدليل بجانبه هو ما لا يُنسخ —
+          لكن موضعه بعد أن يجد الزائر مقرَّره، لا قبله. */}
+      <section id="examples" className="scroll-mt-24 pb-4 pt-[clamp(3rem,7vw,4.5rem)]">
+        <div className="mb-5 flex items-center gap-2.5">
+          <h2 className="flex items-center gap-2.5 text-title-lg">
+            <span className="h-[19px] w-[3px] rounded-sm bg-gradient-to-b from-accent-bright to-accent-deep" />
+            كيف يُبنى الشرح؟
+          </h2>
+        </div>
+        <Reveal>
+          <LessonBoard />
+        </Reveal>
+      </section>
     </div>
   );
 }

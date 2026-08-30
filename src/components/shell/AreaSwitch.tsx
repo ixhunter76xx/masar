@@ -53,8 +53,8 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
     <nav
       aria-label="منطقة الموقع"
       className="fixed top-3 left-1/2 z-50 -translate-x-1/2
-        flex gap-0.5 rounded-full border border-line-soft bg-[var(--sunk)] p-[3px]
-        shadow-[0_6px_20px_-12px_var(--shadow-lift)] backdrop-blur-md"
+        flex gap-0.5 rounded-full border border-line bg-ink/85 p-[3px]
+        shadow-[inset_0_1px_0_rgba(0,0,0,0.5),0_8px_24px_-14px_var(--shadow-lift)] backdrop-blur-md"
     >
       {areas.map((area) => {
         const isHere = area.key === current;
@@ -69,7 +69,10 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
               /* المقاسات من المعاينة حرفيًّا: ‎.78rem/‎.4rem ‎.85rem،
                  وتصغيرٌ تحت ٦٢٠px إلى ‎.73rem/‎.4rem ‎.6rem — وهو علاج
                  المعاينة للضيق: يتقلّص المبدّل، لا يُختصر ما حوله. */
-              "py-1.5 text-[0.73rem] px-2.5 sm:px-3.5 sm:text-[0.78rem]",
+              /* ⚠ كان ‎.73rem — أي ‏١١٫٦٨px مقيسة على الهاتف. وهو دون
+                 حدّ القراءة المريحة لنصٍّ عربيّ قصير، ويجعل المبدّل
+                 يُقرأ «زخرفةً» لا عنصرَ تحكّم. */
+              "px-3.5 py-2 text-[0.8125rem] sm:text-[0.82rem]",
               "font-medium transition-colors",
               /* ── مساحة لمسٍ ٤٤px دون تكبير الحبّة ──────────────────
                  الحبّة ٥٣×٣٤px مقيسة على الجهاز، وهو دون الحدّ الأدنى
@@ -77,10 +80,15 @@ export function AreaSwitch({ current }: { current: "catalogue" | "study" }) {
                  وحدها بلا أي أثر بصريّ ولا إزاحة تخطيط — الشكل كما هو
                  في المعاينة، واليد تصيبه.
                  `-inset-y-[6px]` يرفع الارتفاع الفعّال من ٣٤ إلى ٤٦px. */
-              "after:absolute after:-inset-y-[6px] after:inset-x-0 after:content-['']",
+              "after:absolute after:-inset-y-[3px] after:inset-x-0 after:content-['']",
+              /* ── الحالة النشطة تُقرأ الآن ─────────────────────────
+                 كانت `panel-high` (‏#3a3634) على مسارٍ شبه أسود:
+                 فارقٌ مقيس لا يكفي ليقول «أنت هنا». أُضيف إليها حدٌّ
+                 فاتح وظلٌّ داخليّ، فصارت **حبّةً مرفوعة** لا لونًا
+                 أغمق بدرجة. */
               isHere
-                ? "bg-panel-high font-semibold text-paper"
-                : "text-subtle hover:text-paper",
+                ? "bg-panel-high font-semibold text-paper shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_2px_10px_-4px_rgba(0,0,0,0.7)] ring-1 ring-line"
+                : "text-muted hover:text-paper",
             )}
           >
             <AreaSwitchLabel label={area.label} />
