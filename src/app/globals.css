@@ -842,6 +842,22 @@
      نظير `.track-draw` الرأسيّ. و`transform-origin` لا يقبل الكلمات
      المنطقية (`inline-start` تسقط إلى المركز صامتةً — وقعت في هذا
      المستودع من قبل)، فالجهة مشروطة بـ`[dir]` صراحةً. */
+  /* ══ تسمية قوّة كلمة المرور ══════════════════════════════════════
+     تُعاد تركيبًا بـ`key` كلّما تبدّلت، فتُعاد الحركة مع التركيب.
+
+     ⚠ كانت `motion.span`، وكانت **وحدها** سببَ جلب حزمة الحركة
+     كاملةً إلى `/login` و`/signup` — أثقل صفحتين في المنصّة وهما
+     نموذجان بسيطان. والحركة هنا تلاشٍ وإزاحةُ ثلاث بكسلات: لا تحتاج
+     محرّكًا، وCSS تؤدّيها على المُركِّب بلا كيلوبايت واحد. */
+  .strength-label {
+    animation: strength-label var(--dur-fast) var(--ease-out) both;
+  }
+
+  @keyframes strength-label {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: none; }
+  }
+
   .track-draw-x {
     transform: scaleX(0);
     transform-origin: left;

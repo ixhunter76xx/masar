@@ -14,6 +14,7 @@ import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { r2, r2Bucket, videoObjectKey } from "@/server/r2";
 import { canManageCourse } from "@/lib/data/materials";
+import { revalidatePublicCourses } from "@/lib/public-course-cache";
 import { MaterialStatus } from "@/generated/prisma/enums";
 import {
   ALLOWED_VIDEO_TYPE,
@@ -358,6 +359,15 @@ export async function POST(
       publishedAt: new Date(),
     },
   });
+
+  /* ⚠ كان هذا المسار **الكاتب الوحيد** الذي لا يُبطل الكتالوج العامّ.
+     واكتمالُ الرفع يغيّر ما يراه الزائر فعلًا: عدد الدروس الجاهزة،
+     وتوفّر المعاينة المجانية. فكان يبقى قديمًا حتى تنقضي مهلة التخزين
+     — وكانت دقيقةً واحدة فلم يُلحَظ.
+
+     وتصحيحُه شرطُ إطالة المهلة: بلا هذا السطر يصير الرفع غير مرئيٍّ
+     ساعةً كاملة. */
+  revalidatePublicCourses();
 
   return NextResponse.json({ ok: true, materialId: material.id });
 }

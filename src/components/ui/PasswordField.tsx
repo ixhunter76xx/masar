@@ -2,11 +2,9 @@
 
 import * as React from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { motion } from "motion/react";
 
 import { Label, Input, HelpText, type InputProps } from "@/components/ui/Field";
 import { estimateStrength, type StrengthLevel } from "@/lib/password-strength";
-import { DUR, EASE, SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export interface PasswordFieldProps
@@ -184,7 +182,7 @@ function StrengthMeter({
               key={index}
               className="h-1 flex-1 overflow-hidden rounded-full bg-line"
             >
-              <motion.span
+              <span
                 /* ⚠ `origin-[inline-start]` كان هنا، و`inline-start`
                    **قيمةٌ غير صالحة** لـ`transform-origin`: الخاصّية
                    لا تقبل الكلمات المنطقية أصلًا. فكان المتصفّح
@@ -194,24 +192,19 @@ function StrengthMeter({
 
                    والمنصّة RTL مثبَّتة في وسم `<html>`، فالبداية
                    يمينًا و`origin-right` هي الصحيحة صراحةً. */
-                className={cn("block h-full origin-right", BAR_COLOR[level])}
-                initial={false}
-                animate={{ scaleX: index <= level ? 1 : 0 }}
-                transition={SPRING.soft}
+                className={cn(
+                  "block h-full origin-right transition-transform duration-[320ms] ease-[var(--ease-out)]",
+                  BAR_COLOR[level],
+                )}
+                style={{ transform: `scaleX(${index <= level ? 1 : 0})` }}
               />
             </span>
           ))}
         </div>
 
-        <motion.span
-          key={label}
-          initial={{ opacity: 0, y: -3 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DUR.fast, ease: EASE.out }}
-          className="text-[11px] text-muted"
-        >
+        <span key={label} className="strength-label text-[11px] text-muted">
           {label}
-        </motion.span>
+        </span>
       </div>
 
       {hint && <p className="mt-1.5 text-[11px] text-subtle">{hint}</p>}

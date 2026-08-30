@@ -371,14 +371,29 @@ export const getCourseResume = cache(async function getCourseResume(
   };
   if (!session?.user) return empty;
 
-  /* الملكية وقائمة الدروس سؤالان مستقلان؛ تصفيتهما تقع بعد وصولهما. */
-  const [{ isStaff, owned }, ready] = await Promise.all([
+  /* ══ ثلاثة أسئلة مستقلّة في دورةٍ واحدة ═══════════════════════════
+     الملكية وقائمة الدروس والتقدّم — تصفيتها كلّها تقع بعد وصولها.
+
+     ⚠ كان التقدّم يُسأل **بعد** الاثنين، مقيَّدًا بمعرّفات الدروس
+     المملوكة. وذلك ربطٌ غير ضروريّ: التقييد بالمقرر يعطي المجموعة
+     نفسها وزيادةً تُصفّى في الذاكرة، والمجموعة عشراتُ صفوفٍ لكل
+     مستخدم لا آلاف.
+
+     والفرق مقيس: دورةٌ واحدة إلى Neon (us-east-2) = **‏٢٤٢ms**. فكل
+     انتظارٍ متسلسلٍ زائدٍ هنا يُضرب في عدد الصفحات التي تستدعيها —
+     وهي «مقرراتي» ولوحة النشاط، أكثرُ شاشتين يفتحهما الطالب. */
+  const [{ isStaff, owned }, ready, allProgress] = await Promise.all([
     accessibleLessonIds(courseId),
     /* الدروس الجاهزة والمنشورة فقط: الدرس المخطَّط بلا ملف لا يُستأنف */
     db.courseMaterial.findMany({
       where: { courseId, status: "READY", publishedAt: { not: null } },
       orderBy: { position: "asc" },
       select: { id: true, title: true, position: true },
+    }),
+    db.lessonProgress.findMany({
+      where: { userId: session.user.id, lesson: { courseId } },
+      orderBy: { updatedAt: "desc" },
+      select: { lessonId: true, completedAt: true },
     }),
   ]);
 
@@ -387,12 +402,9 @@ export const getCourseResume = cache(async function getCourseResume(
     return { ...empty, totalReady: ready.length };
   }
 
-  const mineIds = mine.map((m) => m.id);
-  const progress = await db.lessonProgress.findMany({
-    where: { userId: session.user.id, lessonId: { in: mineIds } },
-    orderBy: { updatedAt: "desc" },
-    select: { lessonId: true, completedAt: true },
-  });
+  /* التصفية في الذاكرة تُعيد بالضبط ما كان يُعيده التقييد بالمعرّفات */
+  const mineIds = new Set(mine.map((m) => m.id));
+  const progress = allProgress.filter((p) => mineIds.has(p.lessonId));
 
   const completed = progress.filter((p) => p.completedAt !== null).length;
   const lastOpen = progress.find((p) => p.completedAt === null);

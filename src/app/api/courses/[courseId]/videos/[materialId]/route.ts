@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/server/db";
 import { r2, r2Bucket } from "@/server/r2";
 import { canManageCourse } from "@/lib/data/materials";
+import { revalidatePublicCourses } from "@/lib/public-course-cache";
 import { MaterialStatus } from "@/generated/prisma/enums";
 
 /**
@@ -120,10 +121,15 @@ export async function DELETE(
         publishedAt: null,
       },
     });
+    revalidatePublicCourses();
     return NextResponse.json({ ok: true, cleared: material.title });
   }
 
   await db.courseMaterial.delete({ where: { id: material.id } });
+
+  /* الحذف كالرفع يغيّر ما يراه الزائر: عددَ الدروس، وربّما الدرسَ
+     المجانيّ نفسه. فيُبطَل الكتالوج في الحالتين. */
+  revalidatePublicCourses();
 
   return NextResponse.json({ ok: true, deleted: material.title });
 }
