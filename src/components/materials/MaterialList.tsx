@@ -10,6 +10,9 @@ import { formatBytes } from "@/lib/uploads";
 import { relativeTime } from "@/lib/format";
 import { groupIntoChapters, type MaterialListItem } from "@/lib/material-track";
 import { Counted } from "@/components/ui/Num";
+import { ar, LESSON_FORMS } from "@/lib/numerals";
+import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
+import { cn } from "@/lib/utils";
 
 /** صيغ المعدود للملفّات — نظير `LESSON_FORMS`، وتُنقل إلى
     `numerals.ts` متى احتاجها موضعٌ ثانٍ. */
@@ -19,9 +22,6 @@ const FILE_FORMS = {
   few: "ملفات",
   many: "ملفًّا",
 } as const;
-import { ar, LESSON_FORMS } from "@/lib/numerals";
-import { StaggerList, StaggerItem } from "@/components/motion/Stagger";
-import { cn } from "@/lib/utils";
 
 /**
  * ═══ المسار — عنصر التوقيع ═══════════════════════════════════════════
