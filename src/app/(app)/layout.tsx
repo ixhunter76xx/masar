@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { AreaSwitch } from "@/components/shell/AreaSwitch";
+import { BottomNav } from "@/components/shell/BottomNav";
 import { PageTransition } from "@/components/motion/PageTransition";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
@@ -39,7 +40,9 @@ export default async function AppLayout({
       <Sidebar user={shell.user} counts={shell.counts} />
 
       {/* الهامش يقابل عرض الشريط الجانبي — ms أي يمين في RTL ويسار في LTR */}
-      <div className="min-[1060px]:ms-[260px]">
+      {/* الحشو السفليّ على الهاتف يقابل ارتفاع `BottomNav` الثابت، وإلا
+          استقرّ آخر المحتوى تحته */}
+      <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1060px]:ms-[260px] min-[1060px]:pb-0">
         {/*
           الرأسية **فوق** `PageTransition` عمدًا، لا داخله:
 
@@ -53,6 +56,9 @@ export default async function AppLayout({
           <PageTransition stationary>{children}</PageTransition>
         </TopbarTitleProvider>
       </div>
+
+      {/* خارج `PageTransition` كالشريط الجانبي: مرساةٌ لا تتلاشى مع المحتوى */}
+      <BottomNav role={shell.user.role} counts={shell.counts} />
     </div>
   );
 }

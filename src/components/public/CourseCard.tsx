@@ -1,122 +1,84 @@
-"use client";
-
 import { NavLink as Link } from "@/components/ui/NavLink";
-import { ArrowLeft } from "lucide-react";
-
 import { Price } from "@/components/public/Price";
 import { Counted } from "@/components/ui/Num";
-import { cn } from "@/lib/utils";
 import type { CourseCard as CourseCardData } from "@/lib/data/courses";
+import { LESSON_FORMS } from "@/lib/numerals";
 
 /**
- * بطاقة مقرر في الكتالوج.
+ * بطاقة مقرر في الكتالوج — إعادة التصميم 2026-09-14.
  *
- * نُقلت من صفحة الكتالوج إلى هنا لأن محطّات الكليات تعيد رسم الشبكة
- * عند كل اختيار — وهو تفاعل عميل. المكوّن الخادمي لا يُعاد تصييره
- * على حالة العميل، فبقاؤه هناك يعني بطاقة مجمَّدة على أول كلية.
+ * ── فعلٌ واحد، وهو ليس الشراء ───────────────────────────────────────
+ * مسار لا تبيع من الشبكة. البطاقة كلّها رابطٌ إلى صفحة المقرر، وهناك
+ * الباقات الثلاث والمعاينة. فالزرّ المرسوم أسفلها «استعرض المقرر»
+ * **امتدادٌ للرابط نفسه** (`span` لا `button`): عنصرٌ تفاعليّ داخل
+ * رابط يُكسر لوحة المفاتيح وقارئ الشاشة، وزرّان يعني قرارين.
+ *
+ * ── على الهاتف عمودان ───────────────────────────────────────────────
+ * المقاسات تنكمش تحت `sm` لتتّسع بطاقتان في ٣٧٥px: الكثافة هنا هي ما
+ * يجعل الكتالوج يُقرأ «مباشرًا» — الطالب يرى ستّ مقررات لا اثنين.
  */
 export function CourseCard({ course }: { course: CourseCardData }) {
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group glow-edge relative flex h-full flex-col overflow-hidden rounded-card
-        border border-line p-[1.375rem] surface-card
-        transition-[transform,border-color,box-shadow] duration-[320ms] ease-out
-        hover:-translate-y-1.5 hover:border-accent-deep/85"
+      className="group flex h-full flex-col rounded-[14px] border border-line-soft bg-panel p-3 sm:rounded-card sm:px-5 sm:pb-[18px] sm:pt-5
+        transition-[translate,scale,border-color,background-color,box-shadow] duration-[320ms] ease-spring
+        hover:-translate-y-1.5 hover:border-spark/40 hover:bg-panel-lift hover:shadow-[0_26px_50px_-34px_rgb(0_0_0/0.9)]
+        active:scale-[0.985]"
     >
-      {/* ضوء يسقط من الأعلى عند التصويب — لا ظل عام بلا مصدر */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-36 opacity-0
-          transition-opacity duration-[320ms] ease-out group-hover:opacity-100
-          [background:radial-gradient(70%_100%_at_50%_0%,color-mix(in_srgb,var(--color-accent-bright)_13%,transparent),transparent_72%)]"
-      />
-
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-title-sm">{course.title}</h3>
-        <span className="code shrink-0 rounded-[7px] border border-line bg-ink/80 px-2 py-[0.3rem] text-[11px] text-accent">
+      {/* الرمز لاتينيّ (`.code` = `direction: ltr`)، فالتخطيط على غلافٍ
+          خارجه — انظر قاعدة `.numeric` في globals.css */}
+      <div>
+        <span className="code text-[10.5px] font-medium text-spark sm:text-xs">
           {course.code}
         </span>
       </div>
 
-      {course.summary && (
-        <p className="mt-3 text-body-sm text-muted">{course.summary}</p>
-      )}
+      <h3 className="mt-2 text-[13px] font-semibold leading-[1.45] tracking-[-0.015em] sm:mt-3 sm:text-[1.0625rem] sm:leading-[1.5]">
+        {course.title}
+      </h3>
 
-      {/* ── عمود الدروس ═══════════════════════════════════════════════
-          الشكوى المعالَجة: «مستطيلات متماثلة». والعلاج ليس زخرفة
-          تُضاف من خارج، بل بيانٌ يُعرض — عدد الدروس يتفاوت بين
-          المقررات، فرسمُه علاماتٍ يجعل البطاقة تُظهر مقاسها بنفسها،
-          فتختلف البطاقات لأن محتواها مختلف لا لأننا زخرفناها.
+      <p className="mt-1 text-[10.5px] text-subtle sm:text-[12.5px]">
+        {course.presenterName}
+        {course.presenterName && course.lessonCount > 0 && (
+          <span className="hidden sm:inline"> · </span>
+        )}
+        {/* الإخفاء على غلافٍ خارجيّ لا على `Counted`: صنفه يصل إلى الرقم
+            وحده، فكان الهاتف يعرض «دروس» بلا عدد. */}
+        {course.lessonCount > 0 && (
+          <span className={course.presenterName ? "hidden sm:inline" : undefined}>
+            <Counted n={course.lessonCount} {...LESSON_FORMS} />
+          </span>
+        )}
+      </p>
 
-          والدرس المجاني علامة **أطول** لا ملوّنة — تمييزٌ بالامتلاء
-          والحجم، كما يقتضي نظامٌ أحاديّ مأخوذ من لوغو أحاديّ. */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="flex h-[18px] items-end gap-[3px]" aria-hidden="true">
-          {Array.from({ length: course.lessonCount }, (_, i) => {
-            const lit = course.hasFreePreview && i === 0;
-            return (
-              <i
-                key={i}
-                className={cn(
-                  /* الارتفاع ثابتٌ لكل علامة (`lit` لا يتبدّل بعد
-                     التصيير)، فإدراجه في قائمة الانتقال كان يَعِد
-                     بحركةٍ لا تقع — ويُبقي خاصّية تخطيطٍ في مسار
-                     الانتقال بلا مقابل. اللون وحده هو ما يتحرّك. */
-                  "w-2 rounded-[2px] transition-colors duration-200",
-                  lit
-                    ? "h-[18px] bg-accent group-hover:bg-accent-bright"
-                    : "h-2 bg-line group-hover:bg-accent-deep",
-                )}
-              />
-            );
-          })}
-        </span>
-        <span className="text-[11px] text-subtle">
-          <Counted n={course.lessonCount} few="دروس" many="درسًا" />
-          {course.hasFreePreview && " · أوّلها مجاني"}
-        </span>
-      </div>
-
-      <div className="mt-auto flex items-end justify-between gap-4 border-t border-line/75 pt-[1.125rem]">
-        <span className="flex items-center gap-2 text-xs text-subtle">
-          {course.presenterName && (
-            <>
-              <span
-                className="grid size-7 shrink-0 place-items-center rounded-full text-[11px]
-                  font-bold text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.075)]
-                  [background:linear-gradient(160deg,var(--color-accent-bright),var(--color-accent-deep))]"
-                aria-hidden="true"
-              >
-                {course.presenterName.replace(/^د\.\s*/, "").charAt(0)}
-              </span>
-              {course.presenterName}
-            </>
-          )}
-        </span>
-
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5 sm:mt-3.5 sm:gap-2.5">
         {course.fromPriceFils !== null && (
-          <span className="text-start">
-            <small className="block text-[11px] text-subtle">يبدأ من</small>
-            <Price fils={course.fromPriceFils} />
+          <span className="flex items-baseline gap-1 text-[10.5px] text-muted sm:text-[12.5px]">
+            من
+            <Price
+              fils={course.fromPriceFils}
+              size="sm"
+              className="[&_b]:text-[13px] [&_b]:text-paper sm:[&_b]:text-[15px]"
+            />
+          </span>
+        )}
+        {course.hasFreePreview && (
+          <span className="rounded-full border border-accent/30 bg-accent/8 px-[7px] py-[3px] text-[9.5px] font-medium text-accent sm:px-[9px] sm:py-1 sm:text-[11px]">
+            <span className="sm:hidden">معاينة</span>
+            <span className="hidden sm:inline">معاينة مجانية</span>
           </span>
         )}
       </div>
 
+      <span className="min-h-1.5 flex-1" aria-hidden="true" />
+      <span className="my-2.5 h-px bg-line-soft sm:mb-3.5 sm:mt-4" aria-hidden="true" />
+
       <span
-        className="press mt-[1.125rem] flex min-h-touch items-center justify-center gap-1.5
-          rounded-field border border-line bg-ink/70 text-sm font-medium text-paper
-          transition-colors duration-200
-          group-hover:border-transparent group-hover:text-ink
-          group-hover:[background:linear-gradient(180deg,var(--color-accent-bright),var(--color-action))]"
+        className="flex min-h-touch items-center justify-center rounded-[10px] bg-spark text-xs font-semibold text-on-spark sm:rounded-field sm:text-sm
+          transition-[filter,translate] duration-200 ease-spring group-hover:-translate-y-0.5 group-hover:brightness-110"
       >
-        استعرض المقرر والأسعار
-        <ArrowLeft
-          size={14}
-          strokeWidth={2}
-          aria-hidden="true"
-          className="transition-transform duration-200 ease-out group-hover:-translate-x-1"
-        />
+        استعرض المقرر
       </span>
     </Link>
   );

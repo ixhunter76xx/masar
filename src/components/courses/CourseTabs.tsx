@@ -83,7 +83,9 @@ export function CourseTabs({
                   layoutId="course-tab-indicator"
                   transition={SPRING.indicator}
                   aria-hidden="true"
-                  className="absolute inset-x-[0.55rem] bottom-0 h-0.5 rounded-full bg-gradient-to-l from-accent-bright to-accent-deep"
+                  /* الذهبيّ: «أين أنت» في المقرر هو موضعك على المسار —
+                     وهو اللون نفسه الذي يمتلئ به شريط التقدّم تحته. */
+                  className="absolute inset-x-[0.55rem] bottom-0 h-0.5 rounded-full bg-spark"
                 />
               )}
             </li>

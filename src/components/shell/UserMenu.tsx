@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CircleUserRound } from "lucide-react";
 
+import { NavLink as Link } from "@/components/ui/NavLink";
 import { ROLE_LABELS } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/generated/prisma/enums";
@@ -115,6 +116,19 @@ export function UserMenu({
           <div className="border-b border-line-soft px-3.5 py-3">
             <p className="truncate text-[13px] font-semibold text-paper">{name}</p>
             <p className="mt-0.5 truncate text-[11px] text-subtle">{ROLE_LABELS[role]}</p>
+          </div>
+          {/* الملف الشخصي هنا لا في الشريط السفليّ: خمس خاناتٍ أقصى ما
+              يتّسع على الهاتف، وهو أندرُ ما يُفتح — فمكانه تحت الاسم. */}
+          <div className="p-1.5 pb-0">
+            <Link
+              href="/profile"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="press flex min-h-touch items-center gap-2.5 rounded-[10px] px-2.5 text-[13px] text-muted hover:bg-panel hover:text-paper"
+            >
+              <CircleUserRound size={16} strokeWidth={1.75} aria-hidden="true" />
+              الملف الشخصي
+            </Link>
           </div>
           {/* نموذج الخروج — يأتي من الخادم كما هو */}
           <div className="p-1.5">{children}</div>

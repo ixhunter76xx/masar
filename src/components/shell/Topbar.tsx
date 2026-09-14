@@ -1,5 +1,7 @@
-import { MobileNav } from "@/components/shell/MobileNav";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { NavLink as Link } from "@/components/ui/NavLink";
+import { Logo } from "@/components/ui/Logo";
+import { SITE } from "@/lib/site";
 import { UserMenu } from "@/components/shell/UserMenu";
 import { TopbarTitleText } from "@/components/shell/TopbarTitle";
 import type { NavCounts } from "@/lib/navigation";
@@ -25,7 +27,12 @@ export function Topbar({
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
       <div className="flex h-16 items-center gap-3 px-4">
-        <MobileNav user={user} counts={counts} />
+        {/* الشعار على الهاتف مكان زرّ القائمة المنسحبة — التنقّل صار
+            في `BottomNav` أسفل الشاشة (إعادة التصميم 2026-09-14)، والشريط
+            الجانبيّ بشعاره مخفيٌّ تحت ١٠٦٠px. */}
+        <Link href="/dashboard" aria-label={SITE.name} className="press shrink-0 min-[1060px]:hidden">
+          <Logo size={34} variant="full" bare />
+        </Link>
 
         {/* ⚠ يختفي تحت ٥٦٠px — العتبة من المعاينة المعتمدة حرفيًّا
             (كنت نفّذتُها عند ٦٤٠ من الذاكرة، وهو خطأ).

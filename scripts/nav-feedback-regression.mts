@@ -124,9 +124,18 @@ for (const file of walk("src")) {
    الخطر نفسه بين القائمتين: `SidebarContent` يُصيَّر مرّتين — المثبّت
    واللوحة المنسحبة — والمثبّت باقٍ في الشجرة وإن خفي. */
 const sidebar = read("src/components/shell/Sidebar.tsx");
-const mobileNav = read("src/components/shell/MobileNav.tsx");
 assert.match(sidebar, /scope="sidebar"/, "الشريط المثبّت يجب أن يمرّر نطاقه");
-assert.match(mobileNav, /scope="drawer"/, "اللوحة المنسحبة يجب أن تمرّر نطاقًا مختلفًا");
+
+/* اللوحة المنسحبة حُذفت في إعادة التصميم (2026-09-14) وحلّ محلّها
+   الشريط السفليّ. فالحراسة عليه: مركَّبٌ في تخطيط المنطقة المحمية،
+   ويمرّ من `NavLink` فتعترف روابطه بالنقرة. */
+const bottomNav = read("src/components/shell/BottomNav.tsx");
+assert.match(read("src/app/(app)/layout.tsx"), /<BottomNav /, "الشريط السفليّ غاب عن تخطيط المنطقة المحمية");
+assert.match(bottomNav, /from "@\/components\/ui\/NavLink"/, "الشريط السفليّ يجب أن يمرّ من NavLink");
+assert.ok(
+  !fs.existsSync(path.join(root, "src/components/shell/MobileNav.tsx")),
+  "MobileNav عاد — والشريط السفليّ يحلّ محلّه، فنسختان تعنيان بابين للشيء نفسه",
+);
 
 const ids = walk("src")
   .flatMap((file) => [...read(file).matchAll(/layoutId=\{?["'`]([^"'`}]+)/g)]

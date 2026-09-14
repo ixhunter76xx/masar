@@ -14,6 +14,8 @@ import { Role } from "@/generated/prisma/enums";
 export type NavItem = {
   href: string;
   label: string;
+  /** تسمية الشريط السفليّ على الهاتف — غيابها يعني `label` نفسها */
+  short?: string;
   icon: LucideIcon;
   /** نبرة العدّاد: محايدة أو تتطلب انتباهًا */
   badgeTone?: "neutral" | "danger";
@@ -32,7 +34,7 @@ export type NavItem = {
  *   الأستاذ ٥: بلا طلبات ولا إعدادات — لا يشتري ولا يدير
  */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: "/dashboard", label: "سجل النشاط", icon: History },
+  { href: "/dashboard", label: "سجل النشاط", short: "النشاط", icon: History },
   {
     /* `/learn` لا `/courses`: الأخيرة صارت كتالوج البيع العام الذي
        يراه الزائر المجهول. بيئة الدراسة انتقلت إلى `/learn`. */

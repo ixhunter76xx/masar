@@ -74,7 +74,8 @@ async function main() {
   const checks: Probe[] = [
     // حدود الزائر المجهول
     { path: "/",                as: "anon",  expect: "307→/courses" },
-    { path: "/courses",         as: "anon",  expect: "200", marker: "اختر كليتك" },
+    /* 2026-09-14: عنوان الكتالوج صار «المقررات المتاحة» مع إعادة التصميم */
+    { path: "/courses",         as: "anon",  expect: "200", marker: "المقررات المتاحة" },
     { path: "/dashboard",       as: "anon",  expect: "307→/login" },
     { path: "/learn",           as: "anon",  expect: "307→/login" },
     { path: "/settings/orders", as: "anon",  expect: "307→/login" },

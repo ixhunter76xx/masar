@@ -32,7 +32,7 @@ import sharp from "sharp";
 const sha = (buf: Buffer) => crypto.createHash("sha256").update(buf).digest("hex");
 
 /** لون القاعدة — نفسه في `globals.css` و`manifest.ts` و`viewport` */
-const INK = "#1a1817";
+const INK = "#131110";
 
 /**
  * منحدر الشفافية بدل عتبةٍ صمّاء.

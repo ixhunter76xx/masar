@@ -1,3 +1,5 @@
+import { ArrowLeft } from "lucide-react";
+
 import { NavLink as Link } from "@/components/ui/NavLink";
 
 import { auth } from "@/auth";
@@ -64,16 +66,25 @@ export default async function PublicLayout({
                */
               <Link
                 href="/login"
-                /* `tap-44`: مساحة الإصابة ٤٤px بلا تغيير الشكل. المقاس
-                   ‹34px› منقولٌ من المصدر ويبقى كما هو؛ والمقيس على
-                   هاتف ٣٩٠px كان **٣٤px إصابةً أيضًا** — أي دون الحدّ
-                   الأدنى. وهذا الزرّ هو الباب الوحيد إلى نصف المنتج. */
-                className="press tap-44 inline-flex min-h-[34px] items-center rounded-full
-                  bg-action px-[0.95rem] text-[0.78rem] font-semibold text-ink
-                  shadow-[0_1px_0_var(--hair),0_6px_18px_-10px_var(--shadow)]
-                  hover:bg-accent-bright"
+                /* إعادة التصميم 2026-09-14: حبّةٌ بحدٍّ ذهبيّ خافت وسهمٍ
+                   في دائرة — السهم يشير يسارًا، أي إلى الأمام عربيًّا.
+                   والارتفاع ٤٤px كاملًا: هذا الباب الوحيد إلى نصف المنتج. */
+                className="press inline-flex min-h-touch items-center gap-2 rounded-full
+                  border border-spark/30 bg-panel/55 ps-4 pe-[7px] text-[13px] font-medium text-paper
+                  backdrop-blur-sm transition-[border-color,background-color,translate] duration-200 ease-spring
+                  hover:-translate-y-0.5 hover:border-spark/60 hover:bg-panel-lift sm:ps-5 sm:pe-2 sm:text-sm"
               >
-                دخول
+                {/* على الهاتف كلمةٌ واحدة: المبدّل موسَّطٌ مطلقًا في
+                    الرأسية، والتسمية الكاملة كانت تنزلق تحته — المقيس
+                    على ٣٧٥px «جيل الدخول». */}
+                <span className="sm:hidden">دخول</span>
+                <span className="hidden sm:inline">تسجيل الدخول</span>
+                <span
+                  aria-hidden="true"
+                  className="grid size-6 place-items-center rounded-full bg-spark/15 text-spark sm:size-7"
+                >
+                  <ArrowLeft size={14} strokeWidth={2} />
+                </span>
               </Link>
             )}
 

@@ -16,6 +16,7 @@ import {
 } from "@/lib/data/materials";
 import { getCourseQuizzes } from "@/lib/data/quizzes";
 import { getCourseAssignments } from "@/lib/data/assignments";
+import { getCompletedLessonIds } from "@/lib/data/progress";
 import { ar } from "@/lib/numerals";
 
 type Params = { params: Promise<{ courseId: string }> };
@@ -25,11 +26,12 @@ export default async function CourseContentPage({ params }: Params) {
   // تحقّق مستقل عن التخطيط — Next.js ينفّذهما على التوازي
   const { user } = await requireCourseAccess(courseId);
 
-  const [canManage, materials, quizzes, assignments] = await Promise.all([
+  const [canManage, materials, quizzes, assignments, completedIds] = await Promise.all([
     canManageCourse(courseId),
     getCourseMaterials(courseId),
     getCourseQuizzes(courseId, user.id, user.role),
     getCourseAssignments(courseId, user.id, user.role),
+    getCompletedLessonIds(courseId),
   ]);
 
   /* السكّة للمدير وحده: تشمل المخطَّط وغير المنشور، وهو ما لا يراه
@@ -77,6 +79,7 @@ export default async function CourseContentPage({ params }: Params) {
                 materials={materials}
                 courseId={courseId}
                 canManage={canManage}
+                completedIds={completedIds}
               />
             ) : (
               <p className="rounded-[12px] border border-line bg-panel px-5 py-6 text-[13px] leading-relaxed text-subtle">

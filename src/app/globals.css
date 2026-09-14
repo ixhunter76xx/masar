@@ -23,12 +23,18 @@
      `accent-bright` كما هو. تغميقه على خلفية داكنة يخفض التباين،
      والقاعدة الموثّقة أن العلاج زيادة التشبّع لا التغميق.
      ═══════════════════════════════════════════════════════════════════ */
-  --color-ink: #1a1817; /* القاعدة */
-  --color-panel: #262322; /* سطح البطاقة */
+  /* ══ إعادة التصميم 2026-09-14 — لوحة نموذج «Masar Prototype» ════════
+     القاعدة نزلت درجتين (`#1a1817` → `#131110`) والبطاقة تبعتها، فاتّسع
+     المدى بين الخلفية والنصّ الورقيّ من جديد. العائلة الدافئة نفسها،
+     ولا لون جديد. `panel-high` باقٍ كما هو: هو خلفية اللوغو.
+     ⚠ القاعدة مكتوبة أيضًا في `manifest.ts` و`layout.tsx` و
+     `generate-icons.mts` — و`brand-regression` يُسقط أي اختلاف. */
+  --color-ink: #131110; /* القاعدة */
+  --color-panel: #1b1817; /* سطح البطاقة */
   --color-panel-high: #3a3634; /* أعلى سطح — وهو خلفية اللوغو نفسها */
-  --color-line: #453f3b; /* حدّ مرئي فعلًا، لا تلميح */
-  --color-line-soft: #2e2a28; /* فاصل داخلي بين عناصر السطح الواحد */
-  --color-paper: #f4f1ec; /* أبيض الشعار — النص الأساسي */
+  --color-line: #423b36; /* حدّ مرئي فعلًا، لا تلميح */
+  --color-line-soft: #2b2725; /* فاصل داخلي، وحدّ البطاقة الهادئ */
+  --color-paper: #f5f2ed; /* أبيض الشعار — النص الأساسي */
 
   /* --- الأزرق الرمادي (لون التمييز) --- */
   /* «التمييز» أبيض عظميّ — لون اللوغو مخفَّفًا، لا أزرق */
@@ -39,18 +45,18 @@
   /* --- لون الفعل الأساسي --- */
   /* درجة أعلى تشبّعًا من نفس العائلة، مخصّصة للأزرار الأساسية والضوابط
      المفعّلة. تباينها مع سطح البطاقة 7.83:1 ومع النص الداكن 8.51:1. */
-  --color-action: #e8e2d6;
-  --color-action-active: #d8d1c2;
+  --color-action: #ece6da;
+  --color-action-active: #ddd6c8;
   /* درجة أعلى من `accent-bright` لتصويب الأزرار المملوءة. كانت
      مكتوبة `#bcd4e3` حرفيًّا في ثلاثة ملفات، فلم يبلغها تبديل اللوحة. */
   --color-accent-lift: #f4f0e9;
   /* نصّ الأسطح المملوءة — `bg-action text-ink` هو الاقتران القائم في
      `Button`, وهو الصحيح هنا: الفعل مملوءٌ فاتح ونصّه داكن. */
-  --color-on-accent: #1a1817;
-  --color-on-spark: #241703;
+  --color-on-accent: #131110;
+  --color-on-spark: #1a1512;
 
   /* --- النصوص والحالات --- */
-  --color-muted: #b5aca2; /* نص ثانوي — الوصف والمساعدة */
+  --color-muted: #b8afa5; /* نص ثانوي — الوصف والمساعدة */
 
   /* نص معلوماتي خافت: تواريخ، تسميات حقول، أحجام ملفات.
      أُضيف لأن `disabled` كان يُستخدم لهذا الغرض وهو يرسب في WCAG AA
@@ -59,9 +65,9 @@
      أي دون AA بقليل — وهو لون التسميات الصغيرة في كل مكان. هذا يعطي
      5.48 على `ink` و4.83 على `panel`. ولم يُفتَح أكثر عمدًا: عند
      #a8a096 يبلغ 6.85 فيذوب الفرق بينه وبين `muted` (7.91). */
-  --color-subtle: #968e84;
+  --color-subtle: #8f877e; /* 2026-09-14: ٥٫٢٧ على `ink` و٤٫٧٠ على `panel` */
   /* أخفت من `subtle` — للحدود والرموز غير النصّية، لا لنصّ يُقرأ */
-  --color-faint: #6b645d;
+  --color-faint: #665f59;
 
   /* معطل — حالة عدم الإتاحة فقط، لا نصوص معلوماتية.
      تباينه المنخفض مقصود: العنصر المعطّل يجب أن يبدو غير متاح. */
@@ -88,6 +94,8 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* نابضٌ خفيف — للارتفاع عند التصويب والضغط، لا للدخول */
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 
   /* --- الحد الأدنى لمساحة اللمس --- */
   --spacing-touch: 44px;
@@ -129,26 +137,31 @@
      و«الذهبي = إنجاز» قراءة عالمية لا تحتاج تعليمًا.
 
      ⚠ يخالف قاعدة «لا ذهب» الموروثة من هوية مركز حساب — وهي هوية
-     استُبدلت باللوغو الجديد، وهذا الاستبدال قرارٌ من صاحب المنتج. */
-  --color-spark: #e0a94a;
+     استُبدلت باللوغو الجديد، وهذا الاستبدال قرارٌ من صاحب المنتج.
+
+     ⚠ توسيعٌ مقصود — إعادة التصميم 2026-09-14: الشرارة صارت أيضًا لون
+     **الفعل الأساسيّ الواحد في الشاشة** (زرّ «استعرض المقرر»، الحبّة
+     المختارة في الفرز). والحدّ باقٍ: لا للزخرفة، ولا لفعلين في شاشةٍ
+     واحدة — وإلا فقدت معناها. */
+  --color-spark: #e6b055;
   --color-spark-deep: #a87a28;
 
-  --color-ink-lift: #201e1c; /* سطح أعلى بدرجة من القاعدة */
-  --color-panel-lift: #302c2a; /* اللوحة عند التصويب */
+  --color-ink-lift: #171413; /* سطح أعلى بدرجة من القاعدة */
+  --color-panel-lift: #211d1b; /* اللوحة عند التصويب */
   --glow: color-mix(in srgb, var(--color-accent-bright) 12%, transparent);
   --glow-soft: color-mix(in srgb, var(--color-accent-bright) 6%, transparent);
 
   /* ══ رموز دلالية للعمق ══════════════════════════════════════════════
      منقولة من المعاينة المعتمدة. تبقى رغم غياب وضعٍ فاتح اليوم: هي ما
      يجعل قلب النظام ممكنًا، وإعادةُ اشتقاقها لاحقًا أغلى من حملها. */
-  --sunk: rgba(14, 13, 12, 0.5);
-  --sunk-2: rgba(38, 35, 34, 0.6);
+  --sunk: rgba(10, 9, 8, 0.5);
+  --sunk-2: rgba(27, 24, 23, 0.6);
   --hair: rgba(255, 255, 255, 0.045);
   --shadow: rgba(0, 0, 0, 0.32);
   --shadow-lift: rgba(0, 0, 0, 0.58);
-  --glass: rgba(26, 24, 23, 0.78);
+  --glass: rgba(19, 17, 16, 0.78);
   --halo-1: rgba(180, 160, 130, 0.13);
-  --halo-2: rgba(224, 169, 74, 0.07);
+  --halo-2: rgba(230, 176, 85, 0.07);
   --halo-3: rgba(160, 145, 125, 0.06);
   --watermark: rgba(234, 228, 217, 0.04);
   --grain: 0.026;
@@ -671,165 +684,190 @@
     }
   }
 
-  /* المشهد الخاص بكل كلية في الكتالوج. الرسم زخرفي، خفيف، ويرث لوحة
-     مسار نفسها؛ ولا يضيف صورة مخزون أو أصلًا شبكيًا جديدًا. */
-  .faculty-scene {
+  /* ══ الكتالوج — النسيج والخيوط (إعادة التصميم 2026-09-14) ═══════════
+     حلّت محلّ مشاهد الكليات بقرار المالك: خلفيةٌ واحدة للصفحة، والفرز
+     بالحبوب لا بالمحطّات.
+
+     ── ما صُحّح عن النموذج، ولماذا ─────────────────────────────────────
+     ١ · خيوط النموذج تحمل `transform: rotate(-45deg)` ثمّ تتحرّك بـ
+         `transform: translate3d(…)` — والثانية **تمحو** الأولى، فتعبر
+         الخيوطُ أفقيةً لا مائلة. هنا الميلُ في `rotate` والرحلةُ في
+         `translate`: خاصّيتان مستقلّتان لا تتنازعان.
+     ٢ · نسيج النموذج يُزاح (-104, 104) — موازيًا لخطوطه تمامًا، فلا
+         يُرى أيّ تحرّك. الإزاحة هنا عموديةٌ على الخطوط وبطول دورةٍ واحدة
+         (٥٢px ÷ √٢ = ٣٦٫٧٧px لكل محور)، فيسري النسيج ويلتفّ بلا قفزة.
+     ٣ · بلا `filter: blur` على الهالتين: التدرّج الشعاعيّ ناعمٌ بذاته،
+         والضبابيّة على طبقةٍ متحرّكة بعرض الشاشة أغلى ما يُرسم على هاتف.
+     ٤ · القناع على الغلاف والحركة على الابن، فلا ينزاح القناع مع النسيج.
+
+     الحركة كلّها `translate`/`scale`/`opacity`. والخيوط تنزل نحو اليسار،
+     أي إلى الأمام في قراءةٍ عربية.
+     ═══════════════════════════════════════════════════════════════════ */
+  .catalog-backdrop {
     position: absolute;
-    inset-block-start: -2.5rem;
     inset-inline: 0;
+    inset-block-start: 0;
     z-index: -1;
-    height: 360px;
-    pointer-events: none;
-    opacity: 0;
-    contain: layout paint;
-    mask-image: linear-gradient(to bottom, #000 42%, transparent 96%);
-    animation: faculty-scene-in 420ms var(--ease-out) both;
-  }
-
-  .faculty-scene svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  .faculty-scene path,
-  .faculty-scene circle,
-  .faculty-scene line,
-  .faculty-scene ellipse,
-  .faculty-scene rect {
-    stroke: var(--color-accent);
-    fill: none;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .faculty-scene .faculty-draw {
-    stroke-dasharray: none;
-    stroke-dashoffset: 0;
-  }
-
-  .faculty-scene .faculty-pulse {
-    fill: var(--color-spark);
-    stroke: none;
-    animation: faculty-pulse 6s ease-in-out infinite;
-  }
-
-  .faculty-scene .faculty-spin {
-    transform-origin: center;
-    animation: faculty-spin 34s linear infinite;
-  }
-
-  .faculty-scene .faculty-flow {
-    stroke-dasharray: 26 340;
-    stroke-dashoffset: 0;
-  }
-
-  .faculty-scene .faculty-drift {
-    animation: faculty-drift 18s ease-in-out infinite;
-  }
-
-  .faculty-scene .faculty-breathe {
-    transform-origin: center;
-    animation: faculty-breathe 14s ease-in-out infinite;
-  }
-
-  /* انثناء الجمالون تحت الحمل: انضغاطٌ رأسيّ ضئيل حول سطح الجسر
-     نفسه، فالسطح والمساند ثابتة وينزل الوتر العلويّ وحده — وهو ما
-     يحدث فعلًا. `scaleY` محضة، فلا تخطيط ولا إعادة رسم. */
-  .faculty-scene .faculty-flex {
-    animation: faculty-flex 13s ease-in-out infinite;
-  }
-
-  .faculty-glyphs {
-    position: absolute;
-    inset: 0;
+    height: min(62rem, 140vh);
     overflow: hidden;
     pointer-events: none;
-    animation: faculty-glyph-drift 22s ease-in-out infinite;
+    contain: strict;
   }
 
-  .faculty-glyphs span {
+  .catalog-weave {
     position: absolute;
-    color: var(--color-accent);
-    font-family: var(--font-amiri), serif;
-    font-weight: 700;
-    opacity: 0.22;
+    inset: 0;
+    mask-image: radial-gradient(120% 72% at 50% 0%, #000 18%, transparent 76%);
   }
 
-  /* لا حاجة لتحريك مشهد لا تراه العين. الإيقاف يحافظ على موضع كل
-     عنصر، ثم يُكمل الحركة حين يقترب القسم من إطار العرض. */
-  .faculty-scene[data-paused="true"],
-  .faculty-scene[data-paused="true"] * {
-    animation-play-state: paused !important;
+  .catalog-weave::before {
+    content: "";
+    position: absolute;
+    inset: -120px;
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-paper) 4.5%, transparent) 0 1px,
+      transparent 1px 52px
+    );
+    animation: catalog-weave 22s linear infinite;
   }
 
-  @keyframes faculty-scene-in {
-    from { opacity: 0; transform: translateY(-10px) scale(1.04); }
-    to { opacity: 0.5; transform: none; }
+  .catalog-threads {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: -2.5rem;
+    height: 48rem;
+    mask-image: radial-gradient(100% 80% at 50% 8%, #000 20%, transparent 74%);
   }
 
-  @keyframes faculty-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
-  @keyframes faculty-spin { to { transform: rotate(360deg); } }
-  @keyframes faculty-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-  @keyframes faculty-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
-  @keyframes faculty-flex { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.978); } }
-  /* ══ حركات المشهدين الجديدين ═════════════════════════════════════
-     النبضة على مسار الأسلاك: `stroke-dashoffset` وحدها تتحرّك،
-     والطول ثابت. `pathLength` غير مستعمل عمدًا — الطول الحقيقيّ
-     للمسار هو ما يجعل سرعة النبضة واحدة في كل مقطع منه.
-
-     ⚠ الشرطة الطويلة (٢٤ ظاهرة، ٢٢٠٠ فراغ) مقصودة: المسار مركّب من
-     تسع قطعٍ منفصلة (`M` متكرّرة)، والفراغ الواسع يمنع ظهور نبضةٍ
-     في كل قطعةٍ دفعةً واحدة. */
-  .faculty-scene .it-signal {
-    stroke-dasharray: 24 2200;
-    stroke-dashoffset: 2224;
-    opacity: 0.9;
-    animation: it-signal 7s linear infinite;
+  .catalog-thread {
+    position: absolute;
+    height: 1px;
+    rotate: -45deg;
+    transform-origin: 100% 50%;
+    opacity: 0;
+    animation: catalog-thread var(--dur, 12s) linear var(--delay, 0s) infinite;
   }
 
-  /* المسنّنان: اتجاهان متضادّان، والصغير أسرع بنسبة أسنانه — وهي
-     النسبة الحقيقية في التعاشق لا رقمٌ اختير للشكل. */
-  .faculty-scene .gear-cw {
-    animation: faculty-spin 44s linear infinite;
+  .catalog-mote {
+    position: absolute;
+    border-radius: 999px;
+    opacity: 0.3;
+    animation: catalog-mote var(--dur, 20s) ease-in-out var(--delay, 0s) infinite;
   }
 
-  .faculty-scene .gear-ccw {
-    animation: faculty-spin 30s linear infinite reverse;
+  .catalog-aura {
+    position: absolute;
+    border-radius: 999px;
   }
 
-  .faculty-scene .hex-breathe {
-    animation: faculty-breathe 9s ease-in-out infinite;
+  .catalog-aura-a {
+    inset-block-start: -22%;
+    inset-inline-start: 8%;
+    width: 58%;
+    height: 64%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--color-spark) 11%, transparent), transparent);
+    animation: catalog-aura-a 34s ease-in-out infinite;
   }
 
-  /* خطوط القياس تُرسم مرّةً ثمّ تثبت: اللوحة «قيد الإنشاء» لحظةَ
-     دخولها، لا وميضٌ دائم يسحب العين عن المحتوى. */
-  .faculty-scene .dim-draw {
-    animation: dim-draw 1400ms var(--ease-out) 220ms both;
+  .catalog-aura-b {
+    inset-block-start: 8%;
+    inset-inline-end: -14%;
+    width: 56%;
+    height: 56%;
+    scale: 1.1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--color-accent) 6%, transparent), transparent);
+    animation: catalog-aura-b 46s ease-in-out infinite;
   }
 
-  @keyframes it-signal {
-    to { stroke-dashoffset: 0; }
+  .catalog-glow {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    height: 35rem;
+    background: radial-gradient(76% 100% at 50% 0%, color-mix(in srgb, var(--color-spark) 7%, transparent), transparent 70%);
+    animation: catalog-breathe 12s ease-in-out infinite;
   }
 
-  @keyframes dim-draw {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  .catalog-fade {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    height: 26rem;
+    background: linear-gradient(to top, var(--color-ink) 12%, transparent);
   }
 
-  @keyframes faculty-glyph-drift {
-    0%, 100% { opacity: 0.76; transform: translateY(6px); }
-    50% { opacity: 1; transform: translateY(-10px); }
+  @keyframes catalog-weave { to { translate: -36.77px -36.77px; } }
+  @keyframes catalog-thread {
+    0% { translate: 0 0; opacity: 0; }
+    18%, 76% { opacity: var(--peak, 1); }
+    100% { translate: -30vw 30vw; opacity: 0; }
+  }
+  @keyframes catalog-mote {
+    0%, 100% { translate: 0 0; opacity: 0.15; }
+    50% { translate: -14px -20px; opacity: 0.7; }
+  }
+  @keyframes catalog-aura-a { 50% { translate: -7% 4%; scale: 1.18; } }
+  @keyframes catalog-aura-b { 50% { translate: 6% -5%; scale: 1; } }
+  @keyframes catalog-breathe { 0%, 100% { opacity: 0.34; } 50% { opacity: 0.72; } }
+
+  /* نقطة شارة البطل: تتنفّس لتقول «حيّ» — والدورة أقصر من الخلفية */
+  .catalog-dot {
+    animation: catalog-breathe 2.6s ease-in-out infinite;
   }
 
-  [data-offer-segment].offer-off {
-    opacity: 0.4;
+  /* الحركة كلّها زخرفة: من طلب حركةً أقلّ يُعطى الخلفية ساكنة، لا
+     خيوطًا تومض مرّةً وتختفي بفعل تقصير المدّة العامّ. */
+  @media (prefers-reduced-motion: reduce) {
+    .catalog-backdrop *,
+    .catalog-backdrop *::before {
+      animation: none !important;
+    }
   }
 
-  [data-offer-segment].offer-on {
-    border-color: color-mix(in srgb, var(--color-accent-bright) 55%, transparent);
+  /* ══ صفحة المقرر ولوح الطلب (إعادة التصميم 2026-09-14) ══════════════
+     حلّت محلّ قواعد `[data-offer-segment]`: الإضاءة بالتصويب صارت
+     اختيارًا صريحًا للباقة في `CourseOffer`. */
+  .catalog-backdrop-short {
+    height: 26rem;
   }
 
-  section[data-offer-segment].offer-on {
-    background: color-mix(in srgb, var(--color-panel-lift) 45%, transparent);
+  /* نافذة تأكيد الطلب: لوحٌ سفليّ على الهاتف، ونافذةٌ وسطى من ٦٤٠px.
+     الحركتان `transform` و`opacity` وحدهما. */
+  .order-dialog {
+    animation: order-sheet 380ms var(--ease-out) both;
+  }
+
+  @media (min-width: 640px) {
+    .order-dialog {
+      animation: order-modal 380ms var(--ease-spring) both;
+    }
+  }
+
+  .anim-fade {
+    animation: anim-fade 220ms linear both;
+  }
+
+  @keyframes order-sheet { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes order-modal { from { opacity: 0; transform: translateY(10px) scale(0.965); } to { opacity: 1; transform: none; } }
+  @keyframes anim-fade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ══ مسار الدراسة — إتمام الدرس ══════════════════════════════════════
+     العقدة تنبض مرّةً حين تصير ذهبية: مكافأةٌ على إنجاز، لا وميضٌ دائم. */
+  .anim-pop {
+    animation: anim-pop 420ms var(--ease-spring) both;
+  }
+
+  @keyframes anim-pop { 0% { transform: scale(1); } 45% { transform: scale(1.28); } 100% { transform: scale(1); } }
+
+  /* شريط التقدّم يمتلئ من بداية السطر. `transform-origin` لا يقبل
+     الكلمات المنطقية، فالجهة مشروطة بـ`[dir]` صراحةً. */
+  .progress-fill {
+    transform-origin: left;
+  }
+
+  html[dir="rtl"] .progress-fill {
+    transform-origin: right;
   }
 
   /* ══ المسار: رسم السكّة وحياة العقدة ═══════════════════════════════
@@ -838,10 +876,6 @@
      بلا إعادة تخطيط، والثانية تُجبر المتصفّح على إعادة حساب كل عنصر
      تحتها في كل إطار.
      ═══════════════════════════════════════════════════════════════════ */
-  /* ══ السكّة الأفقية ══════════════════════════════════════════════
-     نظير `.track-draw` الرأسيّ. و`transform-origin` لا يقبل الكلمات
-     المنطقية (`inline-start` تسقط إلى المركز صامتةً — وقعت في هذا
-     المستودع من قبل)، فالجهة مشروطة بـ`[dir]` صراحةً. */
   /* ══ تسمية قوّة كلمة المرور ══════════════════════════════════════
      تُعاد تركيبًا بـ`key` كلّما تبدّلت، فتُعاد الحركة مع التركيب.
 
@@ -856,20 +890,6 @@
   @keyframes strength-label {
     from { opacity: 0; transform: translateY(-3px); }
     to { opacity: 1; transform: none; }
-  }
-
-  .track-draw-x {
-    transform: scaleX(0);
-    transform-origin: left;
-    animation: track-draw-x 900ms var(--ease-out) 120ms forwards;
-  }
-
-  html[dir="rtl"] .track-draw-x {
-    transform-origin: right;
-  }
-
-  @keyframes track-draw-x {
-    to { transform: scaleX(1); }
   }
 
   .track-draw {
