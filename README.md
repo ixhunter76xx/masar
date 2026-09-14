@@ -96,7 +96,7 @@ src/
 │     └─ forgot-password/
 ├─ components/
 │  ├─ ui/                     # Button, Field, Card, Logo, Badge, EmptyState
-│  ├─ shell/                  # Sidebar, SidebarNav, Topbar, MobileNav, AppPage
+│  ├─ shell/                  # Sidebar, SidebarNav, Topbar, BottomNav, UserMenu, AppPage
 │  ├─ activity/               # ActivityFeed
 │  └─ auth/                   # LoginForm, SignOutButton
 ├─ server/db.ts              # عميل Prisma (singleton) عبر driver adapter
@@ -941,7 +941,7 @@ logical = physical × (dir === "rtl" ? −1 : +1)
 | `motion/MotionRoot` | `reducedMotion="user"` — يُلغي الإزاحة لمن يطلب تقليل الحركة |
 | `motion/PageTransition` | دخول/خروج الصفحة، مع تجميد الموجّه أثناء الخروج |
 | `motion/Stagger` | `StaggerList` + `StaggerItem` بديلا `ol`/`li` بلا عقد إضافية |
-| `shell/MobileNav` | نابض + سحب للإغلاق + حبس التركيز |
+| `shell/BottomNav` | شريط الهاتف السفليّ: علامةٌ منزلقة + حالة متفائلة (بدل القائمة المنسحبة منذ 2026-09-14) |
 | `courses/CourseSwipeArea` | سحب بين التبويبات، للمس فقط |
 | `courses/CourseTabs` | مؤشّر منزلق بـ `layoutId` |
 
