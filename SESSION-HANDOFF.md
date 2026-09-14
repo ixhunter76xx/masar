@@ -7,8 +7,15 @@
 
 ## ١ · أين نقف
 
-**الإنتاج `masar-bh.com` على `c2fa44e`**، و`master` و`masar-port`
-متطابقان معه ومدفوعان إلى `origin`. الشجرة نظيفة.
+**الإنتاج على `7780ffb`** (إعادة التصميم + ترقيع Next.js الحرج)، و`master` و
+`masar-redesign` متطابقان ومدفوعان. نشرة Netlify `ready`.
+
+> ⚠ **`masar-bh.com` معلَّقٌ لدى Namecheap لفشل التحقّق من WHOIS** — خوادم
+> الأسماء `failed-whois-verification.namecheap.com`. بيد المالك من بريد
+> حساب Namecheap. وحتى ذلك: **`https://hisab-lms.netlify.app`** (عامّ، ٢٠٠).
+>
+> المستودع على GitHub **عامّ** الآن، والفرع الافتراضيّ `master`، وحماية
+> الزيارة على Netlify أُطفئت. التفصيل في رأس `CLAUDE.md`.
 
 آخر أربعة إيداعات:
 
