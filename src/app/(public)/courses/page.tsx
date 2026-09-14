@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 
 import { CatalogBackdrop } from "@/components/public/CatalogBackdrop";
 import { CatalogBrowser } from "@/components/public/CatalogBrowser";
-import { LessonBoard } from "@/components/public/LessonBoard";
-import { amiri } from "@/lib/amiri-font";
 import { buildStations } from "@/lib/faculties";
 import { getCachedCatalogue, getCachedHiddenFaculties } from "@/lib/public-course-cache";
 import { SITE } from "@/lib/site";
@@ -64,7 +62,7 @@ const PILLARS = [
  * ══ الترتيب — إعادة التصميم 2026-09-14 ══════════════════════════════
  * سطران من الوعد، ثمّ المقررات. لا زرّ في البطل: الزائر يأتي بسؤالٍ
  * واحد — هل مقرَّري هنا؟ — وجوابه على بُعد نصف شاشة لا نقرة. ثمّ ما
- * يميّز مسار، ثمّ الدليل («كيف يُبنى الشرح؟») لمن أراد أن يقتنع.
+ * يميّز مسار. (لوحة «كيف يُبنى الشرح؟» حُذفت بطلب المالك 2026-09-14.)
  * ═══════════════════════════════════════════════════════════════════
  */
 export default async function CatalogPage() {
@@ -76,7 +74,7 @@ export default async function CatalogPage() {
   const hasCourses = stations.some((s) => s.courses.length > 0);
 
   return (
-    <div className={`${amiri.variable} relative isolate overflow-hidden`}>
+    <div className="relative isolate overflow-hidden">
       <CatalogBackdrop />
 
       <div className="mx-auto max-w-[1180px] px-3.5 sm:px-8">
@@ -144,13 +142,6 @@ export default async function CatalogPage() {
           ))}
         </section>
 
-        {/* ══ الدليل — بعد السؤال لا قبله ═══════════════════════════════ */}
-        <section id="examples" className="scroll-mt-24 pb-4 pt-12 sm:pt-[74px]">
-          <SectionTitle>كيف يُبنى الشرح؟</SectionTitle>
-          <div className="mt-5">
-            <LessonBoard />
-          </div>
-        </section>
       </div>
     </div>
   );

@@ -77,7 +77,10 @@
      5.65 على `ink` و4.98 على `panel`، ويبقى أحمر لا يُلتبس. */
   --color-danger: #d07a72; /* خطر — حذف أو خطأ */
   --color-warning: #d79a52; /* تحذير — موعد يقترب */
-  --color-success: #6f9b6a; /* نجاح — تسليم ناجح */
+  /* ⚠ 2026-09-14 بطلب المالك: لا أخضر في الهوية إطلاقًا. النجاح صار رمليًّا
+     دافئًا — أفتح وأقلّ تشبّعًا من `warning` البرتقاليّ فلا يُلتبسان، وأدفأ
+     من `accent` الرماديّ فيُقرأ حالةً لا نصًّا. ٩٫٦ على `ink` و٨٫٦ على `panel`. */
+  --color-success: #d6c29a; /* نجاح — تسليم ناجح، طلبٌ مدفوع */
 
   /* --- الخطوط --- */
   --font-sans: var(--font-plex-arabic), system-ui, sans-serif;
@@ -342,36 +345,6 @@
      وبلا أي مكوّن أفقي فلا معنى للاتجاه هنا. */
   .anim-rise {
     animation: anim-rise var(--dur-slow) var(--ease-out) both;
-  }
-
-  /* الخطّ النسخيّ — لكلمات الإعراب في لوح الأبطل وحدها */
-  .font-amiri {
-    font-family: var(--font-amiri), serif;
-  }
-
-  /* تبدّل اللوح: يتقدّم نحو العين بدل أن ينزلق جانبًا — الانزلاق
-     الأفقي يحتاج قلبًا في RTL، والتقدّم في العمق لا اتجاه له. */
-  @keyframes boardIn {
-    from {
-      opacity: 0.2;
-      transform: translateZ(-30px) scale(0.985);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  /* كشف كلمة الإعراب أو خطوة الحلّ، واحدةً بعد أخرى */
-  @keyframes pwIn {
-    from {
-      opacity: 0;
-      transform: translateY(7px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
   }
 
   @keyframes anim-rise {
